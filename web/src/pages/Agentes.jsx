@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
+import AgentAvatar from '../components/AgentAvatar.jsx';
 
 const FILTROS = ['Todos', 'Bioeconomia', 'Negócios', 'Tecnologia', 'Jurídico', 'ESG'];
 
@@ -38,8 +39,8 @@ export default function Agentes() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {agentes.bio.map(a => (
               <div key={a.id} className="zd-agent-card rounded-2xl p-4 text-center border-[#00ff6433]">
-                <div className="text-3xl zd-float inline-block">{a.emoji}</div>
-                <div className="font-heading font-bold text-sm mt-2">{a.nome}</div>
+                <AgentAvatar agente={a} size="w-24 h-24" />
+                <div className="font-heading font-bold text-sm mt-2.5">{a.nome}</div>
                 <div className="text-[11px] text-white/50 mt-1">{a.papel}</div>
                 <div className="zd-tag rounded-full px-2 py-0.5 inline-block mt-2.5">bio</div>
               </div>
@@ -54,8 +55,8 @@ export default function Agentes() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {(filtro === 'Todos' ? agentes.gerais : visiveis.filter(a => !a.is_bio)).map(a => (
               <div key={a.id} className="zd-agent-card rounded-xl p-4 text-center">
-                <div className="text-2xl">{a.emoji}</div>
-                <div className="text-sm font-bold mt-1.5">{a.nome}</div>
+                <AgentAvatar agente={a} size="w-20 h-20" rounded="rounded-xl" />
+                <div className="text-sm font-bold mt-2">{a.nome}</div>
                 <div className="text-[11px] text-white/45 mt-0.5">{a.papel}</div>
                 <div className="zd-tag-blue rounded-full px-2 py-0.5 inline-block mt-2">{a.categoria}</div>
               </div>

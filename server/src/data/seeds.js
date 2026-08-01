@@ -1,32 +1,36 @@
-// Dados-semente clonados do protótipo Base44 (ver docs/spec-prototipo-base44.md)
+// Dados-semente clonados do protótipo Base44 — nomes, papéis, cores e IMAGENS ORIGINAIS
+// extraídos da entidade Agent do app real (ver docs/spec-prototipo-base44.md).
+// Imagens servidas localmente em web/public/assets/agents/.
 
 export const AGENTES_BIO = [
-  { id: 'curupira', nome: 'Curupira AI', papel: 'Guardião da biodiversidade e mapeamento florestal', emoji: '🌳', categoria: 'Bioeconomia', is_bio: true },
-  { id: 'iara', nome: 'Iara AI', papel: 'Especialista em recursos hídricos amazônicos', emoji: '💧', categoria: 'Bioeconomia', is_bio: true },
-  { id: 'boto', nome: 'Boto AI', papel: 'Comunidades tradicionais e etnociências', emoji: '🐬', categoria: 'Bioeconomia', is_bio: true },
-  { id: 'seringueiro', nome: 'Seringueiro AI', papel: 'Cadeias produtivas sustentáveis e bioeconomia', emoji: '🌿', categoria: 'Bioeconomia', is_bio: true },
-  { id: 'tucuju', nome: 'Tucuju AI', papel: 'Protocolos COP30 e acordos climáticos globais', emoji: '🌍', categoria: 'Bioeconomia', is_bio: true },
+  { id: 'curupira', nome: 'Curupira AI', papel: 'Guardião da biodiversidade e mapeamento florestal', emoji: '🌳', categoria: 'Bioeconomia', is_bio: true, cor: '#22c55e', imagem: '/assets/agents/curupira.png' },
+  { id: 'iara', nome: 'Iara AI', papel: 'Especialista em recursos hídricos amazônicos', emoji: '💧', categoria: 'Bioeconomia', is_bio: true, cor: '#00c8ff', imagem: '/assets/agents/iara.png' },
+  { id: 'boto', nome: 'Boto AI', papel: 'Comunidades tradicionais e etnociências', emoji: '🐬', categoria: 'Bioeconomia', is_bio: true, cor: '#22c55e', imagem: '/assets/agents/boto.png' },
+  { id: 'seringueiro', nome: 'Seringueiro AI', papel: 'Cadeias produtivas sustentáveis e bioeconomia', emoji: '🌿', categoria: 'Bioeconomia', is_bio: true, cor: '#00ff64', imagem: '/assets/agents/seringueiro.png' },
+  { id: 'tucuju', nome: 'Tucuju AI', papel: 'Protocolos COP30 e acordos climáticos globais', emoji: '🌍', categoria: 'ESG', is_bio: true, cor: '#22c55e', imagem: '/assets/agents/tucuju.png' },
 ];
 
 export const AGENTES_GERAIS = [
-  { id: 'ceo', nome: 'CEO AI', papel: 'Estratégia e visão de negócio', emoji: '👑', categoria: 'Negócios' },
-  { id: 'cto', nome: 'CTO AI', papel: 'Arquitetura e decisões técnicas', emoji: '🧠', categoria: 'Tecnologia' },
-  { id: 'cmo', nome: 'CMO AI', papel: 'Marketing e posicionamento', emoji: '📣', categoria: 'Negócios' },
-  { id: 'cfo', nome: 'CFO AI', papel: 'Finanças e projeções', emoji: '💰', categoria: 'Negócios' },
-  { id: 'ux', nome: 'UX Designer', papel: 'Experiência e interface', emoji: '🎨', categoria: 'Tecnologia' },
-  { id: 'dev', nome: 'Dev Master', papel: 'Desenvolvimento full-stack', emoji: '⚡', categoria: 'Tecnologia' },
-  { id: 'juridico', nome: 'Jurídico', papel: 'Contratos e conformidade', emoji: '⚖️', categoria: 'Jurídico' },
-  { id: 'financeiro', nome: 'Financeiro', papel: 'Fluxo de caixa e captação', emoji: '📈', categoria: 'Negócios' },
-  { id: 'esg', nome: 'ESG Impacto', papel: 'Métricas ESG e relatórios', emoji: '🌱', categoria: 'ESG' },
-  { id: 'editais', nome: 'Editais IA', papel: 'Fomento público e submissões', emoji: '📋', categoria: 'Negócios' },
-  { id: 'growth', nome: 'Growth Hacker', papel: 'Aquisição e experimentos', emoji: '🚀', categoria: 'Negócios' },
-  { id: 'investidor', nome: 'Investidor IA', papel: 'Preparação para captação', emoji: '🤝', categoria: 'Negócios' },
-  { id: 'carbono', nome: 'Carbono AI', papel: 'Créditos de carbono e MRV', emoji: '🍃', categoria: 'ESG' },
-  { id: 'react', nome: 'React Dev', papel: 'Frontend React + Tailwind', emoji: '⚛️', categoria: 'Tecnologia' },
-  { id: 'flutter', nome: 'Flutter Dev', papel: 'Apps mobile multiplataforma', emoji: '📱', categoria: 'Tecnologia' },
-  { id: 'deploy', nome: 'Deploy AI', papel: 'CI/CD e publicação 1-click', emoji: '☁️', categoria: 'Tecnologia' },
-  { id: 'hr', nome: 'HR AI', papel: 'Time e cultura', emoji: '🧑‍🤝‍🧑', categoria: 'Negócios' },
-  { id: 'mercado', nome: 'Mercado', papel: 'Análise competitiva e TAM/SAM/SOM', emoji: '🔎', categoria: 'Negócios' },
+  { id: 'ceo', nome: 'CEO AI', papel: 'Estratégia e liderança executiva', emoji: '👑', categoria: 'Negócios', cor: '#00ff64', imagem: '/assets/agents/ceo.png' },
+  { id: 'cto', nome: 'CTO AI', papel: 'Arquitetura e decisões técnicas', emoji: '🧠', categoria: 'Tecnologia', cor: '#00c8ff', imagem: '/assets/agents/cto.png' },
+  { id: 'cmo', nome: 'CMO AI', papel: 'Marketing e crescimento', emoji: '📣', categoria: 'Negócios', cor: '#ffd700', imagem: '/assets/agents/cmo.png' },
+  { id: 'cfo', nome: 'CFO AI', papel: 'Finanças e captação de recursos', emoji: '💰', categoria: 'Negócios', cor: '#a855f7', imagem: '/assets/agents/cfo.png' },
+  { id: 'ux', nome: 'UX Designer', papel: 'Design e experiência do usuário', emoji: '🎨', categoria: 'Tecnologia', cor: '#ff6b6b', imagem: '/assets/agents/ux.png' },
+  { id: 'dev', nome: 'Dev Master', papel: 'Código, integração e automação', emoji: '⚡', categoria: 'Tecnologia', cor: '#00ff64', imagem: '/assets/agents/dev.png' },
+  { id: 'juridico', nome: 'Jurídico', papel: 'Documentos e compliance legal', emoji: '⚖️', categoria: 'Jurídico', cor: '#00c8ff', imagem: '/assets/agents/juridico.png' },
+  { id: 'financeiro', nome: 'Financeiro', papel: 'Planejamento e análise financeira', emoji: '📈', categoria: 'Negócios', cor: '#ffd700', imagem: '/assets/agents/financeiro.png' },
+  { id: 'esg', nome: 'ESG Impacto', papel: 'Sustentabilidade e impacto social', emoji: '🌱', categoria: 'ESG', cor: '#22c55e', imagem: '/assets/agents/esg.png' },
+  { id: 'bio_agente', nome: 'Bio Agente', papel: 'Bioeconomia e biodiversidade', emoji: '🍀', categoria: 'Bioeconomia', cor: '#00ff64', imagem: '/assets/agents/bio_agente.png' },
+  { id: 'editais', nome: 'Editais IA', papel: 'Mapeia e aplica em editais', emoji: '📋', categoria: 'Negócios', cor: '#ffd700', imagem: '/assets/agents/editais.png' },
+  { id: 'growth', nome: 'Growth Hacker', papel: 'Estratégias de crescimento acelerado', emoji: '🚀', categoria: 'Negócios', cor: '#00c8ff', imagem: '/assets/agents/growth.png' },
+  { id: 'investidor', nome: 'Investidor IA', papel: 'Pitch e captação de investimento', emoji: '🤝', categoria: 'Negócios', cor: '#a855f7', imagem: '/assets/agents/investidor.png' },
+  { id: 'bio_amazonia', nome: 'Bio Agente Amazônia', papel: 'Protocolos cognitivos amazônicos', emoji: '🌎', categoria: 'Bioeconomia', cor: '#00ff64', imagem: '/assets/agents/bio_amazonia.png' },
+  { id: 'carbono', nome: 'Carbono AI', papel: 'Créditos de carbono e rastreabilidade', emoji: '🍃', categoria: 'Bioeconomia', cor: '#22c55e', imagem: '/assets/agents/carbono.png' },
+  { id: 'react', nome: 'React Dev', papel: 'Desenvolvimento React e Next.js', emoji: '⚛️', categoria: 'Tecnologia', cor: '#00c8ff', imagem: '/assets/agents/react.png' },
+  { id: 'flutter', nome: 'Flutter Dev', papel: 'Apps mobile iOS e Android', emoji: '📱', categoria: 'Tecnologia', cor: '#ffd700', imagem: '/assets/agents/flutter.png' },
+  { id: 'deploy', nome: 'Deploy AI', papel: 'CI/CD e infraestrutura cloud', emoji: '☁️', categoria: 'Tecnologia', cor: '#a855f7', imagem: '/assets/agents/deploy.png' },
+  { id: 'hr', nome: 'HR AI', papel: 'Recursos humanos e gestão de pessoas', emoji: '🧑‍🤝‍🧑', categoria: 'Negócios', cor: '#ff6b6b', imagem: '/assets/agents/hr.png' },
+  { id: 'mercado', nome: 'Mercado', papel: 'Analista de mercado e concorrência', emoji: '🔎', categoria: 'Negócios', cor: '#00c8ff', imagem: null },
 ];
 
 export const EDITAIS_SEED = [

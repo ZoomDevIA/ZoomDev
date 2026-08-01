@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-// Logo ZoomDev: "Z" em duas ondas — superior verde, inferior azul (clone do protótipo)
+// Logo ZoomDev original (asset do app do fundador em /assets/logo.png),
+// com fallback em SVG caso o arquivo não esteja disponível.
 export default function Logo({ className = 'w-8 h-8' }) {
+  const [erro, setErro] = useState(false);
+
+  if (!erro) {
+    return (
+      <img
+        src="/assets/logo.png"
+        alt="ZoomDev"
+        className={`${className} object-contain`}
+        onError={() => setErro(true)}
+      />
+    );
+  }
+
   return (
     <svg viewBox="0 0 48 48" className={className} aria-label="ZoomDev">
       <defs>

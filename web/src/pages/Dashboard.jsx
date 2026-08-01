@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import JourneyBar from '../components/JourneyBar.jsx';
+import AgentAvatar from '../components/AgentAvatar.jsx';
 
 // Ações rápidas do protótipo (analyzeStartup): market | financial | edital | competitor
 const QUICK_ACTIONS = [
@@ -190,8 +191,8 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
             {[...agentes.bio.slice(0, 2), ...agentes.gerais.slice(0, 4)].map(a => (
               <div key={a.id} className="zd-agent-card rounded-xl p-3.5 text-center">
-                <div className="text-2xl">{a.emoji}</div>
-                <div className="text-xs font-bold mt-1.5">{a.nome}</div>
+                <AgentAvatar agente={a} size="w-16 h-16" rounded="rounded-xl" />
+                <div className="text-xs font-bold mt-2">{a.nome}</div>
                 <div className="text-[10px] text-white/45 mt-0.5 line-clamp-2">{a.papel}</div>
               </div>
             ))}
