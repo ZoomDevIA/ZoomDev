@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============ Design System ZoomDev OS — clonado do protótipo Base44 ============ */
+:root {
+  --brand-green: #00ff64;
+  --brand-blue: #00c8ff;
+  --brand-bg: #030d07;
+}
+
+body {
+  background: var(--brand-bg);
+  color: #fff;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+h1, h2, h3, .font-heading { font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; }
+
+.zd-bg { background: var(--brand-bg); }
+.zd-sidebar { background: linear-gradient(180deg, #050f08, #040c07); border-right: 1px solid rgba(0,255,100,.08); }
+.zd-card { background: #05140acc; border: 1px solid rgba(0,255,100,.12); backdrop-filter: blur(12px); }
+.zd-card-glow { background: #05140ae6; border: 1px solid rgba(0,255,100,.2); backdrop-filter: blur(16px); box-shadow: 0 0 20px #00ff640d, inset 0 1px #00ff641a; }
+.zd-green { color: var(--brand-green); }
+.zd-green-dim { color: #00cc50; }
+.zd-blue { color: var(--brand-blue); }
+.zd-gradient-text { background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-blue) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.zd-gradient-btn { background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-blue) 100%); color: var(--brand-bg); font-weight: 700; transition: all .2s ease; }
+.zd-gradient-btn:hover:not(:disabled) { background: linear-gradient(135deg, #00ff80, #00d460); transform: translateY(-1px); }
+.zd-gradient-btn:disabled { opacity: .45; cursor: not-allowed; }
+.zd-menu-item { color: #ffffff80; transition: all .2s ease; }
+.zd-menu-item:hover { color: #ffffffe6; background: #00ff640f; }
+.zd-menu-item.active { color: #00ff64; background: #00ff641a; border-right: 2px solid #00ff64; }
+.zd-stat-card { background: #00ff640a; border: 1px solid rgba(0,255,100,.1); transition: all .3s ease; }
+.zd-stat-card:hover { border-color: #00ff6440; background: #00ff6412; }
+.zd-agent-card { background: #05140ae6; border: 1px solid rgba(0,255,100,.15); transition: all .3s ease; }
+.zd-agent-card:hover { border-color: #00ff6466; transform: translateY(-2px); box-shadow: 0 8px 25px #00ff641a; }
+.zd-glow-green { box-shadow: 0 0 30px #00ff6426; }
+.zd-glow-blue { box-shadow: 0 0 30px #00c8ff26; }
+.zd-circuit-bg { background-image: radial-gradient(circle at 20% 50%, rgba(0,255,100,.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(0,200,255,.03) 0%, transparent 50%); }
+.zd-notification { background: #05140af2; border: 1px solid rgba(0,255,100,.15); border-left: 3px solid #00ff64; }
+.zd-tag { background: #00ff641a; border: 1px solid rgba(0,255,100,.2); color: #00ff64; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.zd-tag-blue { background: #00c8ff1a; border: 1px solid rgba(0,200,255,.25); color: #00c8ff; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.zd-input { background: #05140acc; border: 1px solid rgba(0,255,100,.18); color: #fff; transition: border-color .2s; }
+.zd-input:focus { outline: none; border-color: #00ff6466; box-shadow: 0 0 0 3px #00ff6415; }
+.zd-input::placeholder { color: #ffffff45; }
+
+@keyframes zdPulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px #00ff6430; } 50% { opacity: .75; box-shadow: 0 0 26px #00ff6455; } }
+@keyframes zdFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes zdPop { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+.zd-pulse { animation: zdPulse 2s ease-in-out infinite; }
+.zd-float { animation: zdFloat 4s ease-in-out infinite; }
+.zd-pop { animation: zdPop .4s ease-out both; }
+
+/* Jornada gamificada */
+.journey-node { transition: all .3s ease; }
+.journey-node.concluida { border-color: #00ff64; background: #00ff641f; }
+.journey-node.atual { border-color: #00c8ff; background: #00c8ff14; animation: zdPulse 2.4s ease-in-out infinite; }
+.journey-node.bloqueada { opacity: .38; }
+.journey-line { height: 2px; background: linear-gradient(90deg, #00ff6455, #00c8ff33); flex: 1; }
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: #04100a; }
+::-webkit-scrollbar-thumb { background: #00ff6428; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #00ff6445; }
