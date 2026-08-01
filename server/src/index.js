@@ -6,6 +6,7 @@ import { register, login, authMiddleware, publicUser } from './auth.js';
 import { save } from './store.js';
 import { projectsRouter } from './routes/projects.js';
 import { carbonRouter } from './routes/carbon.js';
+import { platformRouter } from './routes/platform.js';
 import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gamification.js';
 
 const app = express();
@@ -40,6 +41,7 @@ app.get('/api/me', (req, res) => {
 
 app.use('/api/projects', projectsRouter);
 app.use('/api/carbon', carbonRouter);
+app.use('/api', platformRouter);
 
 app.use((err, _req, res, _next) => {
   const status = err.status || 500;

@@ -7,8 +7,15 @@ import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Ideacao from './pages/Ideacao.jsx';
 import Projeto from './pages/Projeto.jsx';
-import Carbono from './pages/Carbono.jsx';
+import Projetos from './pages/Projetos.jsx';
+import CarbonPay from './pages/CarbonPay.jsx';
 import Planos from './pages/Planos.jsx';
+import Agentes from './pages/Agentes.jsx';
+import Bioeconomia from './pages/Bioeconomia.jsx';
+import Editais from './pages/Editais.jsx';
+import Investidores from './pages/Investidores.jsx';
+import Configuracoes from './pages/Configuracoes.jsx';
+import StrategyCore from './pages/StrategyCore.jsx';
 
 export const UserContext = createContext(null);
 export const useUser = () => useContext(UserContext);
@@ -68,10 +75,18 @@ export default function App() {
           <Layout>
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/strategy" element={<StrategyCore />} />
               <Route path="/ideacao" element={<Ideacao />} />
+              <Route path="/agentes" element={<Agentes />} />
+              <Route path="/projetos" element={<Projetos />} />
               <Route path="/projetos/:id" element={<Projeto />} />
-              <Route path="/carbono" element={<Carbono />} />
+              <Route path="/bioeconomia" element={<Bioeconomia />} />
+              <Route path="/editais" element={<Editais />} />
+              <Route path="/investidores" element={<Investidores />} />
+              <Route path="/carbonpay" element={<CarbonPay />} />
+              <Route path="/carbono" element={<Navigate to="/carbonpay" replace />} />
               <Route path="/planos" element={<Planos />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </Layout>

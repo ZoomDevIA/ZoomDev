@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 
+// Calculadora de passivo ambiental (GHG Protocol) — extraída da antiga página Carbono
 const CAMPOS = [
   { grupo: 'Energia e combustíveis (Escopos 1 e 2)', itens: [
     ['energiaKwhMes', 'Energia elétrica (kWh/mês)', 'Ex.: 350'],
@@ -25,7 +26,7 @@ const CAMPOS = [
 
 const fmtBRL = (v) => `R$ ${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
-export default function Carbono() {
+export default function CalculadoraPassivo() {
   const { celebrar, refreshUser } = useUser();
   const [dados, setDados] = useState({});
   const [resultado, setResultado] = useState(null);
@@ -63,15 +64,7 @@ export default function Carbono() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl font-bold">🍃 Calculadora de <span className="zd-gradient-text">Passivo Ambiental</span></h1>
-        <p className="text-white/55 text-sm mt-1.5 max-w-2xl">
-          Metodologia GHG Protocol (escopos 1, 2 e 3) com fatores brasileiros (MCTI/SIRENE).
-          Estime a pegada anual do seu negócio e compense com créditos de carbono verificados via <b className="zd-green">CarbonPay</b>.
-        </p>
-      </div>
-
+    <div className="space-y-6">
       <form onSubmit={calcular} className="zd-card-glow rounded-2xl p-6 space-y-6">
         {CAMPOS.map(g => (
           <div key={g.grupo}>
@@ -91,7 +84,7 @@ export default function Carbono() {
         <button type="submit" disabled={calculando} className="zd-gradient-btn rounded-xl px-6 py-3 text-sm">
           {calculando ? 'Calculando…' : '⚡ Calcular passivo ambiental'}
         </button>
-        <p className="text-[11px] text-white/35">Deixe em branco o que não se aplica — só preencha o que você já sabe. Você pode refinar depois.</p>
+        <p className="text-[11px] text-white/35">Deixe em branco o que não se aplica — comece só com conta de luz + combustível. Você refina depois.</p>
       </form>
 
       {resultado && (
@@ -131,14 +124,14 @@ export default function Carbono() {
           </section>
 
           <section>
-            <h2 className="font-heading text-lg font-bold mb-1">💚 CarbonPay — compense com créditos verificados</h2>
+            <h2 className="font-heading text-lg font-bold mb-1">💚 Compense com créditos verificados</h2>
             <p className="text-xs text-white/45 mb-4">
-              Projetos com aposentadoria em registro público (Verra/Gold Standard) e certificado rastreável em seu nome.
+              Aposentadoria em registro público (Verra/Gold Standard) e certificado rastreável em seu nome.
             </p>
             {pedido && (
               <div className="zd-notification rounded-xl p-4 mb-4 text-sm">
                 ✅ Pedido <b>{pedido.id}</b> registrado: {pedido.toneladas} tCO2e em "{pedido.projeto}" — {fmtBRL(pedido.valorTotal)}.
-                <span className="text-white/50"> Após o pagamento, os créditos são aposentados no registro e você recebe o certificado público.</span>
+                <span className="text-white/50"> Após o pagamento, os créditos são aposentados e você recebe o certificado público.</span>
               </div>
             )}
             <div className="grid md:grid-cols-3 gap-4">

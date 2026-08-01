@@ -49,3 +49,28 @@ export async function structured({ system, user, schema, effort = 'high', maxTok
     throw Object.assign(new Error('A IA retornou um formato inesperado.'), { code: 'BAD_JSON' });
   }
 }
+
+/**
+ * Conversa em texto livre (Zoom Intelligence / copiloto).
+ * messages: [{role:'user'|'assistant', content}]
+ */
+export async function conversar({ system, messages, effort = 'medium', maxTokens = 4000 }) {
+  if (!config.hasApiKey) {
+    throw Object.assign(new Error('Sem ANTHROPIC_API_KEY — use o modo demo.'), { code: 'NO_API_KEY' });
+  }
+  const anthropic = await client();
+  const stream = anthropic.beta.messages.stream({
+    model: config.model,
+    max_tokens: maxTokens,
+    betas: ['server-side-fallback-2026-07-01'],
+    fallbacks: 'default',
+    system,
+    output_config: { effort },
+    messages,
+  });
+  const response = await stream.finalMessage();
+  if (response.stop_reason === 'refusal') {
+    throw Object.assign(new Error('Não posso ajudar com esse pedido — reformule, por favor.'), { code: 'REFUSAL' });
+  }
+  return response.content.filter(b => b.type === 'text').map(b => b.text).join('');
+}

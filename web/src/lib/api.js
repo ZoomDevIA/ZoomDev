@@ -42,6 +42,16 @@ export const api = {
   carbonCalcular: (body) => req('/carbon/calcular', { method: 'POST', body: JSON.stringify(body) }),
   carbonCompensar: (body) => req('/carbon/compensar', { method: 'POST', body: JSON.stringify(body) }),
   carbonPedidos: () => req('/carbon/pedidos'),
+  carbonMarketplace: () => req('/carbon/marketplace'),
+  carbonSequestro: (body) => req('/carbon/sequestro', { method: 'POST', body: JSON.stringify(body) }),
+  carbonComprar: (body) => req('/carbon/comprar', { method: 'POST', body: JSON.stringify(body) }),
+  agents: () => req('/agents'),
+  notificacoes: () => req('/notificacoes'),
+  editais: () => req('/editais'),
+  editalAderencia: (editalId, projetoId) => req(`/editais/${editalId}/aderencia`, { method: 'POST', body: JSON.stringify({ projetoId }) }),
+  analyze: (body) => req('/analyze', { method: 'POST', body: JSON.stringify(body) }),
+  chat: (mensagens) => req('/chat', { method: 'POST', body: JSON.stringify({ mensagens }) }),
+  chatHistorico: () => req('/chat'),
 };
 
 // SSE da geração do plano (EventSource não envia headers → usa fetch streaming)
