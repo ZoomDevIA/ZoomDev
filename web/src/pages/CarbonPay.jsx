@@ -51,6 +51,26 @@ export default function CarbonPay() {
         A fintech verde da ZoomDev: calcule seu passivo, estime o potencial de geração de créditos da sua área e negocie créditos verificados.
       </p>
 
+      {/* Banner original do CarbonPay (arte + 3 pilares do protótipo) */}
+      <div className="zd-card-glow rounded-2xl overflow-hidden relative">
+        <img src="/assets/site/carbonpay-art.png" alt="" className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(3,13,7,.94) 35%, rgba(3,13,7,.72))' }} />
+        <div className="relative p-6 grid sm:grid-cols-3 gap-4">
+          {[
+            ['💰', 'Monetize seu projeto ambiental', 'Gere renda certificando e vendendo créditos de carbono.'],
+            ['🛡️', 'Auditoria MRV automatizada', 'Validação e rastreabilidade com padrões internacionais.'],
+            ['🌐', 'Conecte-se com compradores globais', 'Demanda corporativa por créditos verificados da Amazônia.'],
+          ].map(([ic, t, d]) => (
+            <div key={t}>
+              <div className="text-xl">{ic}</div>
+              <div className="text-sm font-bold mt-1.5">{t}</div>
+              <div className="text-xs text-white/55 mt-1">{d}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Stats do marketplace — clone do protótipo */}
       {mkt && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

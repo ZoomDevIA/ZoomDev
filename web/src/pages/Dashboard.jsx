@@ -52,9 +52,12 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-7">
-      {/* Hero — copy literal do protótipo */}
-      <div className="zd-card-glow rounded-2xl p-6">
-        <div className="flex flex-col md:flex-row md:items-center gap-5 justify-between">
+      {/* Hero — copy literal do protótipo, com o background original de floresta digital */}
+      <div className="zd-card-glow rounded-2xl p-6 relative overflow-hidden">
+        <img src="/assets/site/login-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(3,13,7,.93) 40%, rgba(3,13,7,.78))' }} />
+        <div className="relative flex flex-col md:flex-row md:items-center gap-5 justify-between">
           <div>
             <h1 className="font-heading text-2xl font-bold">Bem-vindo de volta, {user.nome}! 👋</h1>
             <p className="text-white/55 text-sm mt-1.5">
@@ -63,7 +66,7 @@ export default function Dashboard() {
           </div>
           <Link to="/ideacao" className="zd-gradient-btn rounded-xl px-6 py-3 text-sm text-center shrink-0">✦ Nova Ideia</Link>
         </div>
-        <div className="flex flex-wrap gap-2.5 mt-5">
+        <div className="relative flex flex-wrap gap-2.5 mt-5">
           {QUICK_ACTIONS.map(a => (
             <button key={a.tipo} onClick={() => analisar(a.tipo)}
               className="zd-stat-card rounded-xl px-4 py-2.5 text-sm font-semibold hover:scale-[1.02] transition-transform">

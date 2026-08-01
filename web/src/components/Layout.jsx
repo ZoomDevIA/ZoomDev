@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useUser } from '../App.jsx';
 import { api, setToken } from '../lib/api.js';
 import Logo from './Logo.jsx';
+import BrandLockup from './BrandLockup.jsx';
 import Copiloto from './Copiloto.jsx';
 
 // Sidebar de 7 itens — clone do protótipo Base44
@@ -46,12 +47,8 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen zd-bg zd-circuit-bg flex">
       <aside className="zd-sidebar w-60 shrink-0 hidden md:flex flex-col">
-        <div className="px-5 py-6 flex items-center gap-2">
-          <Logo className="w-9 h-9" />
-          <div>
-            <div className="font-heading font-bold text-lg leading-none">ZoomDev <span className="zd-green">OS</span></div>
-            <div className="text-[10px] tracking-[.25em] text-white/40 mt-1">IDEA TO EXIT</div>
-          </div>
+        <div className="px-4 py-6">
+          <BrandLockup symbolSize={40} wordmarkHeight={32} />
         </div>
         <nav className="flex-1 mt-1">
           {MENU.map(m => (
@@ -65,7 +62,8 @@ export default function Layout({ children }) {
         </nav>
         <div className="p-4 border-t border-white/5">
           <div className="zd-card rounded-xl p-3.5 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full zd-gradient-btn flex items-center justify-center text-base shrink-0">🤖</div>
+            <img src="/assets/site/copiloto-avatar.png" alt="Zoom Intelligence"
+              className="w-10 h-10 rounded-full object-cover object-top border border-[#00ff6433] shrink-0" />
             <div className="min-w-0">
               <div className="text-xs font-bold truncate">Zoom Intelligence</div>
               <div className="text-[10px] text-white/45">Sua IA de confiança</div>
@@ -79,8 +77,8 @@ export default function Layout({ children }) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="border-b border-white/5">
           <div className="flex items-center justify-between gap-4 px-5 py-3">
-            <div className="md:hidden flex items-center gap-2">
-              <Logo className="w-7 h-7" /><span className="font-heading font-bold">ZoomDev OS</span>
+            <div className="md:hidden">
+              <BrandLockup symbolSize={28} wordmarkHeight={22} />
             </div>
             <nav className="hidden lg:flex items-center gap-1">
               {TABS.map(t => (

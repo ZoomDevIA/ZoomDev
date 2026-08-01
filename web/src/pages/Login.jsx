@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api, setToken } from '../lib/api.js';
 import { useUser } from '../App.jsx';
-import Logo from '../components/Logo.jsx';
+import BrandLockup from '../components/BrandLockup.jsx';
 
 export default function Login() {
   const { refreshUser } = useUser();
@@ -9,6 +9,12 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '', nome: '' });
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [aviso, setAviso] = useState(null);
+
+  const emBreve = (nome) => {
+    setAviso(`Login com ${nome} estará disponível em breve.`);
+    setTimeout(() => setAviso(null), 3500);
+  };
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -28,10 +34,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen zd-bg zd-circuit-bg flex items-center justify-center p-6">
-      <div className="grid lg:grid-cols-2 gap-12 max-w-5xl w-full items-center">
+    <div className="min-h-screen zd-bg flex items-center justify-center p-6 relative"
+      style={{ backgroundImage: 'url(/assets/site/login-hero.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(3,13,7,.82), rgba(3,13,7,.9))' }} />
+      <div className="grid lg:grid-cols-2 gap-12 max-w-5xl w-full items-center relative">
         <div className="hidden lg:block">
-          <Logo className="w-14 h-14 mb-8" />
+          <BrandLockup symbolSize={56} wordmarkHeight={46} className="mb-8" />
           <h1 className="font-heading text-4xl font-bold leading-tight">
             Construa o futuro. Com <span className="zd-green">IA</span>. Com propósito.
           </h1>
@@ -84,10 +92,33 @@ export default function Login() {
               <label className="text-xs text-white/60 block mb-1.5">Senha</label>
               <input type="password" required minLength={8} className="zd-input w-full rounded-lg px-3 py-2.5 text-sm" placeholder="••••••••" value={form.password} onChange={set('password')} />
             </div>
+            {tab === 'entrar' && (
+              <div className="flex items-center justify-between text-xs">
+                <label className="flex items-center gap-2 text-white/55 cursor-pointer">
+                  <input type="checkbox" defaultChecked className="accent-[#00ff64]" /> Lembrar de mim
+                </label>
+                <button type="button" onClick={() => emBreve('recuperação de senha')} className="zd-green hover:underline">Esqueci minha senha</button>
+              </div>
+            )}
             <button type="submit" disabled={enviando} className="zd-gradient-btn w-full rounded-lg py-3 text-sm">
               {enviando ? 'Aguarde…' : tab === 'entrar' ? 'Entrar na plataforma →' : 'Criar conta →'}
             </button>
           </form>
+
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-[10px] text-white/40 uppercase tracking-wider">ou continue com</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+          {aviso && <div className="zd-notification rounded-lg px-3 py-2 text-xs mb-3">{aviso}</div>}
+          <div className="grid grid-cols-3 gap-2">
+            {[['Google', 'G'], ['GitHub', '⌥'], ['Microsoft', '⊞'], ['Apple', ''], ['Biometria', '👆']].map(([nome, ic]) => (
+              <button key={nome} type="button" onClick={() => emBreve(nome)}
+                className="rounded-lg border border-white/12 bg-white/[.04] hover:bg-white/[.08] transition-colors py-2 text-xs text-white/70 flex items-center justify-center gap-1.5">
+                <span>{ic}</span> {nome}
+              </button>
+            ))}
+          </div>
           <p className="text-[11px] text-white/35 mt-5">🔒 Seus dados estão protegidos com criptografia de ponta a ponta.</p>
         </div>
       </div>

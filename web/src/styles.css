@@ -45,6 +45,8 @@ h1, h2, h3, .font-heading { font-family: 'Space Grotesk', ui-sans-serif, system-
 .zd-input:focus { outline: none; border-color: #00ff6466; box-shadow: 0 0 0 3px #00ff6415; }
 .zd-input::placeholder { color: #ffffff45; }
 
+@keyframes zdSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.zd-spin-logo { animation: zdSpin 4s linear infinite; }
 @keyframes zdPulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px #00ff6430; } 50% { opacity: .75; box-shadow: 0 0 26px #00ff6455; } }
 @keyframes zdFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes zdPop { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }

@@ -46,22 +46,24 @@ export default function Copiloto() {
     <>
       {!aberto && (
         <button onClick={() => setAberto(true)}
-          className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full zd-gradient-btn zd-glow-green flex items-center justify-center text-2xl zd-float"
+          className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full zd-glow-green zd-float overflow-hidden border-2 border-[#00ff64]"
           title="Zoom Intelligence — sua IA de confiança">
-          🤖
+          <img src="/assets/site/copiloto-avatar.png" alt="Zoom Intelligence" className="w-full h-full object-cover object-top" />
         </button>
       )}
       {aberto && (
         <div className="fixed bottom-5 right-5 z-40 w-[min(400px,calc(100vw-2rem))] h-[540px] zd-card-glow rounded-2xl flex flex-col overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-white/[.03]">
-            <div className="w-9 h-9 rounded-full zd-gradient-btn flex items-center justify-center">🤖</div>
+            <img src="/assets/site/copiloto-avatar.png" alt="Zoom Intelligence"
+              className="w-9 h-9 rounded-full object-cover object-top border border-[#00ff6433]" />
             <div className="flex-1">
               <div className="text-sm font-bold">Zoom Intelligence</div>
               <div className="text-[10px] zd-green flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#00ff64] inline-block" /> Online</div>
             </div>
             <button onClick={() => setAberto(false)} className="text-white/40 hover:text-white text-lg">✕</button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 relative"
+            style={{ backgroundImage: 'linear-gradient(180deg, rgba(4,14,8,.94), rgba(4,14,8,.96)), url(/assets/site/chat-bg.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
             {mensagens.map((m, i) => (
               <div key={i} className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap ${
                 m.role === 'user' ? 'ml-auto bg-[#00c8ff1a] border border-[#00c8ff33]' : 'bg-white/[.05] border border-white/10 text-white/80'

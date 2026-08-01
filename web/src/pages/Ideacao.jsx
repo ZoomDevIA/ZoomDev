@@ -9,6 +9,13 @@ const TIPOS = [
   { id: 'biostartup', label: '🌿 BioStartup', desc: 'Bioeconomia, floresta, carbono e impacto' },
 ];
 
+// Exemplos do protótipo (imagens originais do app) — clique preenche a ideia
+const EXEMPLOS = [
+  { titulo: 'EditalBot', tag: 'AI SaaS', img: '/assets/site/exemplo-editalbot.png', ideia: 'Um assistente de IA que pesquisa editais de fomento e redige propostas completas para startups, com score de aderência e lembretes de prazo.' },
+  { titulo: 'BioBazaar', tag: 'Marketplace Bio', img: '/assets/site/exemplo-biobazaar.png', ideia: 'Marketplace de ingredientes bioeconômicos da Amazônia com rastreabilidade blockchain da colheita à entrega, conectando cooperativas a indústrias.' },
+  { titulo: 'ForestEye', tag: 'IoT Ambiental', img: '/assets/site/exemplo-foresteye.png', ideia: 'Plataforma de monitoramento florestal com sensoriamento satelital e gêmeo digital da biomassa para projetos de carbono e conservação.' },
+];
+
 export default function Ideacao() {
   const nav = useNavigate();
   const { celebrar, refreshUser } = useUser();
@@ -88,6 +95,28 @@ export default function Ideacao() {
           Se não escolher o tipo, a IA classifica sua ideia como Startup ou BioStartup e mostra a jornada correspondente.
         </p>
       </form>
+
+      <section>
+        <h2 className="font-heading text-sm font-bold text-white/60 uppercase tracking-wider mb-3">Precisa de inspiração? Exemplos criados na ZoomDev</h2>
+        <div className="grid sm:grid-cols-3 gap-4">
+          {EXEMPLOS.map(ex => (
+            <button type="button" key={ex.titulo} onClick={() => { setDescricao(ex.ideia); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className="zd-agent-card rounded-2xl overflow-hidden text-left cursor-pointer">
+              <div className="h-32 w-full relative">
+                <img src={ex.img} alt={ex.titulo} loading="lazy" className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 40%, #05140af2)' }} />
+                <span className="zd-tag rounded-full px-2 py-0.5 absolute top-2.5 left-2.5">{ex.tag}</span>
+              </div>
+              <div className="p-4">
+                <div className="font-heading font-bold">{ex.titulo}</div>
+                <p className="text-[11px] text-white/50 mt-1 line-clamp-2">{ex.ideia}</p>
+                <div className="text-[11px] zd-green mt-2">usar como ponto de partida →</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

@@ -3,16 +3,18 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import AgentAvatar from '../components/AgentAvatar.jsx';
 
-// Explorer bio — clone do PlatformExplorer + BioStartups do protótipo
+// Explorer bio — clone do PlatformExplorer + BioModulePage do protótipo (10 módulos, imagens originais)
 const BIO_MODULOS = [
-  { id: 'bioeconomia', nome: 'Bioeconomia', emoji: '🌿', desc: 'Cadeias produtivas da sociobiodiversidade' },
-  { id: 'comunidades', nome: 'Comunidades', emoji: '🏘️', desc: 'Povos tradicionais e etnociências' },
-  { id: 'carbono', nome: 'Carbono', emoji: '🍃', desc: 'Créditos, MRV e compensação' },
-  { id: 'rastreabilidade', nome: 'Rastreabilidade', emoji: '📍', desc: 'Da colheita à entrega, com prova' },
-  { id: 'esg', nome: 'ESG', emoji: '📊', desc: 'Relatórios e compliance ambiental' },
-  { id: 'biodiversidade', nome: 'Biodiversidade', emoji: '🦜', desc: 'Mapeamento e monitoramento' },
-  { id: 'projetos_amazonicos', nome: 'Projetos Amazônicos', emoji: '🌳', desc: 'Casos e parcerias regionais' },
-  { id: 'editais_especificos', nome: 'Editais Específicos', emoji: '📋', desc: 'MCTI, FINEP, COP30, BID, Banco Mundial' },
+  { id: 'bioeconomia', nome: 'Bioeconomia', emoji: '🌿', desc: 'Cadeias produtivas da sociobiodiversidade', img: '/assets/modules/bioeconomia.png' },
+  { id: 'comunidades', nome: 'Comunidades', emoji: '🏘️', desc: 'Povos tradicionais e etnociências', img: '/assets/modules/comunidades.png' },
+  { id: 'carbono', nome: 'Carbono', emoji: '🍃', desc: 'Créditos, MRV e compensação', img: '/assets/modules/carbono.png' },
+  { id: 'rastreabilidade', nome: 'Rastreabilidade', emoji: '📍', desc: 'Da colheita à entrega, com prova', img: '/assets/modules/rastreabilidade.png' },
+  { id: 'esg', nome: 'ESG', emoji: '📊', desc: 'Relatórios e compliance ambiental', img: '/assets/modules/esg.png' },
+  { id: 'biodiversidade', nome: 'Biodiversidade', emoji: '🦜', desc: 'Mapeamento e monitoramento', img: '/assets/modules/biodiversidade.png' },
+  { id: 'projetos_amazonicos', nome: 'Projetos Amazônicos', emoji: '🌳', desc: 'Casos e parcerias regionais', img: '/assets/modules/projetos-amazonicos.png' },
+  { id: 'editais_especificos', nome: 'Editais Específicos', emoji: '📋', desc: 'MCTI, FINEP, COP30, BID, Banco Mundial', img: '/assets/modules/editais-especificos.png' },
+  { id: 'protocolos_cognitivos', nome: 'Protocolos Cognitivos', emoji: '⚡', desc: 'Metodologias de IA bio-inspiradas', img: '/assets/modules/protocolos-cognitivos.png' },
+  { id: 'agentes_amazonicos', nome: 'Agentes Amazônicos', emoji: '🧠', desc: 'Curupira, Iara, Boto, Seringueiro e Tucuju', img: '/assets/modules/agentes-amazonicos.png' },
 ];
 
 export default function Bioeconomia() {
@@ -99,12 +101,19 @@ export default function Bioeconomia() {
       {/* Módulos bio */}
       <section>
         <h2 className="font-heading text-lg font-bold mb-3">Módulos Bio</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {BIO_MODULOS.map(m => (
-            <div key={m.id} className="zd-agent-card rounded-xl p-4">
-              <div className="text-xl">{m.emoji}</div>
-              <div className="text-sm font-bold mt-1.5">{m.nome}</div>
-              <div className="text-[11px] text-white/45 mt-0.5">{m.desc}</div>
+            <div key={m.id} className="zd-agent-card rounded-xl overflow-hidden">
+              <div className="h-24 w-full relative">
+                <img src={m.img} alt={m.nome} loading="lazy" className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 30%, #05140ae6)' }} />
+                <div className="absolute bottom-1.5 left-2.5 text-lg">{m.emoji}</div>
+              </div>
+              <div className="p-3">
+                <div className="text-sm font-bold">{m.nome}</div>
+                <div className="text-[11px] text-white/45 mt-0.5">{m.desc}</div>
+              </div>
             </div>
           ))}
         </div>
