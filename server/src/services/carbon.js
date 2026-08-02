@@ -118,3 +118,51 @@ export function calcularPassivo(dados) {
 }
 
 function round2(v) { return Math.round(v * 100) / 100; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SEQUESTRO ADICIONAL COM BIOGENESIS COT BIOTECHNOLOGY
+// Integra o ganho de biomassa (documentado em laudo) à calculadora de carbono.
+// SEMPRE em modo ESTIMATIVA. A conversão em crédito exige MRV + verificação.
+// ═══════════════════════════════════════════════════════════════════════════
+import { simular360 } from './impactoRegenerativo.js';
+import { CULTURAS, CENARIOS_UPLIFT } from '../science/biogenesis.js';
+
+export const CULTURAS_BIOGENESIS = Object.entries(CULTURAS).map(([id, c]) => ({
+  id, nome: c.nome, emoji: c.emoji, prioridadeAmapa: Boolean(c.prioridadeAmapa),
+}));
+
+export const CENARIOS_BIOGENESIS = Object.values(CENARIOS_UPLIFT).map(c => ({
+  id: c.id, nome: c.nome, base: c.base, selo: c.selo,
+  upliftPercentual: Math.round(c.upliftProdutividade * 100),
+}));
+
+/**
+ * Calcula quanto do passivo (tCO2e/ano) pode ser compensado por uma área
+ * cultivada com Biogenesis — apresentando as duas leituras separadas:
+ * ESTIMATIVA (o que a área faz) e CRÉDITO VERIFICÁVEL (o que exige MRV).
+ */
+export function sequestroBiogenesis({ culturaId, hectares, cenarioId = 'conservador', passivoTco2eAno = 0 }) {
+  const sim = simular360({ culturaId, hectares, cenarioId });
+  const sequestro = sim.dimensoes.carbono.co2eSequestradoTonAno;
+  const evitado = sim.dimensoes.energetico.co2EvitadoTonAno;
+  const totalMitigado = round2(sequestro + evitado);
+  const passivo = Math.max(0, Number(passivoTco2eAno) || 0);
+
+  return {
+    insumo: 'Biogenesis COT BioTechnology',
+    cultura: sim.dimensoes.carbono.cultura,
+    cenario: sim.entrada.cenario,
+    modo: 'ESTIMATIVA',
+    sequestroAdicionalTonAno: sequestro,
+    emissaoEvitadaTonAno: evitado,
+    totalMitigadoTonAno: totalMitigado,
+    coberturaDoPassivo: passivo > 0 ? Math.min(100, Math.round((totalMitigado / passivo) * 100)) : null,
+    credito: {
+      modo: 'CRÉDITO VERIFICÁVEL',
+      elegivel: false,
+      requisitos: ['MRV instrumentado (sensores + satélite)', 'Verificação por terceira parte acreditada', 'Aposentadoria em registro público', 'Avaliação de adicionalidade e permanência'],
+    },
+    disclaimer: sim.conformidade,
+    selo: sim.selo,
+  };
+}

@@ -106,9 +106,19 @@ const SPECS = {
     gatilhos: ['biostartup sem parceria científica mapeada'],
   },
   carbono: {
-    especialidade: 'Créditos de carbono: quantificação GHG Protocol, elegibilidade Verra/Gold Standard, MRV digital, aposentadoria em registro público e tokenização com lastro.',
-    cooperacao: ['tucuju', 'esg', 'curupira'],
-    gatilhos: ['usuário calculou passivo e não compensou em 7 dias', 'biostartup sem cálculo de passivo ambiental'],
+    especialidade: 'Créditos de carbono: quantificação GHG Protocol, elegibilidade Verra/Gold Standard, MRV digital, aposentadoria em registro público e o ativo BIOGEN (1 token = 1 tCO₂e verificado e aposentado). Domina o sequestro adicional por ganho de área foliar com Biogenesis COT — sempre em modo ESTIMATIVA até haver MRV instrumentado.',
+    cooperacao: ['tucuju', 'esg', 'curupira', 'gaia'],
+    gatilhos: ['usuário calculou passivo e não compensou em 7 dias', 'biostartup sem cálculo de passivo ambiental', 'projeto com área cultivada sem simulação de sequestro Biogenesis'],
+  },
+  energia: {
+    especialidade: 'Transição energética verde justa: biodigestão anaeróbia de resíduo agrícola, dimensionamento de biogestores comunitários, rota térmica (cocção, substitui GLP) vs rota elétrica (motor-gerador, substitui diesel), e balanço energético fechado sem dupla contagem. Justiça energética pela definição da OIT: a comunidade que regenera é dona da energia que produz.',
+    cooperacao: ['carbono', 'esg', 'seringueiro', 'boto'],
+    gatilhos: ['projeto agrícola com ganho de biomassa e sem aproveitamento de resíduo', 'comunidade dependente de diesel transportado por via fluvial'],
+  },
+  biogenesis: {
+    especialidade: 'Biogenesis COT BioTechnology: protocolo de aplicação (5 L/ha, 2 aplicações, 60 dias de intervalo), leitura de laudos, curadoria do Selo de Evidência e separação rigorosa entre resultado documentado e mecanismo em investigação. Conhece as 11 culturas validadas e o programa INCEMA/PNDR.',
+    cooperacao: ['helix', 'gaia', 'carbono', 'energia'],
+    gatilhos: ['biostartup agrícola sem protocolo de aplicação definido', 'alegação comercial usando conteúdo classificado como hipótese'],
   },
   react: {
     especialidade: 'Front-end de produto: React/Next.js, design systems, performance (Core Web Vitals) e integração com APIs de IA.',

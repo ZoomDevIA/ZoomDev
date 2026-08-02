@@ -68,6 +68,12 @@ export const api = {
   adminPicRejeitar: (id) => req(`/admin/pic/propostas/${id}/rejeitar`, { method: 'POST' }),
   adminPicRollback: (versao) => req('/admin/pic/rollback', { method: 'POST', body: JSON.stringify({ versao }) }),
   adminPicsAgentes: () => req('/admin/pics-agentes'),
+  // Impacto Regenerativo 360° · Biogenesis COT BioTechnology
+  biogenesis: () => req('/impacto/biogenesis'),
+  fomento: () => req('/impacto/fomento'),
+  biogen: () => req('/impacto/biogen'),
+  simularImpacto: (body) => req('/impacto/simular', { method: 'POST', body: JSON.stringify(body) }),
+  simularPrograma: (cenario = 'conservador') => req(`/impacto/simular-programa?cenario=${cenario}`),
 };
 
 // Abre o relatório do ecossistema (HTML autenticado) em nova aba

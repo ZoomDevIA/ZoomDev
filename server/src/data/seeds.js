@@ -31,6 +31,9 @@ export const AGENTES_GERAIS = [
   { id: 'deploy', nome: 'Deploy AI', papel: 'CI/CD e infraestrutura cloud', emoji: '☁️', categoria: 'Tecnologia', cor: '#a855f7', imagem: '/assets/agents/deploy.png' },
   { id: 'hr', nome: 'HR AI', papel: 'Recursos humanos e gestão de pessoas', emoji: '🧑‍🤝‍🧑', categoria: 'Negócios', cor: '#ff6b6b', imagem: '/assets/agents/hr.png' },
   { id: 'mercado', nome: 'Mercado', papel: 'Analista de mercado e concorrência', emoji: '🔎', categoria: 'Negócios', cor: '#00c8ff', imagem: null },
+  // Agentes da camada regenerativa (Biogenesis COT + transição energética justa)
+  { id: 'biogenesis', nome: 'Biogenesis AI', papel: 'Biotecnologia regenerativa e curadoria de evidência', emoji: '🧬', categoria: 'Bioeconomia', cor: '#00ff64', imagem: null },
+  { id: 'energia', nome: 'Energia Justa AI', papel: 'Biodigestão, biogás e transição energética verde justa', emoji: '⚡', categoria: 'ESG', cor: '#ffd700', imagem: null },
 ];
 
 export const EDITAIS_SEED = [

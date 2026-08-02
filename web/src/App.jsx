@@ -17,6 +17,7 @@ import Investidores from './pages/Investidores.jsx';
 import Configuracoes from './pages/Configuracoes.jsx';
 import StrategyCore from './pages/StrategyCore.jsx';
 import Admin from './pages/Admin.jsx';
+import Impacto from './pages/Impacto.jsx';
 
 export const UserContext = createContext(null);
 export const useUser = () => useContext(UserContext);
@@ -82,6 +83,7 @@ export default function App() {
               <Route path="/projetos" element={<Projetos />} />
               <Route path="/projetos/:id" element={<Projeto />} />
               <Route path="/bioeconomia" element={<Bioeconomia />} />
+              <Route path="/impacto" element={<Impacto />} />
               <Route path="/editais" element={<Editais />} />
               <Route path="/investidores" element={<Investidores />} />
               <Route path="/carbonpay" element={<CarbonPay />} />

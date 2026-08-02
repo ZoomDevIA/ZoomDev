@@ -8,6 +8,7 @@ import { projectsRouter } from './routes/projects.js';
 import { carbonRouter } from './routes/carbon.js';
 import { platformRouter } from './routes/platform.js';
 import { adminRouter } from './routes/admin.js';
+import { impactoRouter } from './routes/impacto.js';
 import { initPic } from './agents/sextaFeira.js';
 import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gamification.js';
 
@@ -44,6 +45,7 @@ app.get('/api/me', (req, res) => {
 app.use('/api/projects', projectsRouter);
 app.use('/api/carbon', carbonRouter);
 app.use('/api/admin', adminMiddleware, adminRouter);
+app.use('/api/impacto', impactoRouter);
 app.use('/api', platformRouter);
 
 app.use((err, _req, res, _next) => {

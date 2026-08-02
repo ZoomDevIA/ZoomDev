@@ -13,6 +13,7 @@ const MENU = [
   { to: '/agentes', label: 'Agentes', icon: '🤖' },
   { to: '/projetos', label: 'Projetos', icon: '📁' },
   { to: '/bioeconomia', label: 'Bioeconomia', icon: '🌿' },
+  { to: '/impacto', label: 'Impacto 360°', icon: '🌍', badge: 'ODS' },
   { to: '/carbonpay', label: 'CarbonPay', icon: '🍃', badge: 'Fintech' },
   { to: '/configuracoes', label: 'Configurações', icon: '⚙️' },
 ];
@@ -23,6 +24,7 @@ const TABS = [
   { to: '/agentes', label: 'Agentes' },
   { to: '/projetos', label: 'Projetos' },
   { to: '/bioeconomia', label: 'Bio Startups' },
+  { to: '/impacto', label: 'Impacto 360°' },
   { to: '/editais', label: 'Editais' },
   { to: '/investidores', label: 'Investidores' },
   { to: '/carbonpay', label: 'CarbonPay' },

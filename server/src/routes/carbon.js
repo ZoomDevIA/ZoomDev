@@ -2,7 +2,10 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { store, save, id } from '../store.js';
-import { calcularPassivo, PROJETOS_CARBONPAY, FATORES } from '../services/carbon.js';
+import {
+  calcularPassivo, PROJETOS_CARBONPAY, FATORES,
+  sequestroBiogenesis, CULTURAS_BIOGENESIS, CENARIOS_BIOGENESIS,
+} from '../services/carbon.js';
 import { awardXP } from '../services/gamification.js';
 import { CARBONPAY_ITENS, SEQUESTRO_BIOMAS, SEQUESTRO_TIPOS } from '../data/seeds.js';
 
@@ -92,6 +95,19 @@ carbonRouter.post('/comprar', (req, res) => {
 
 carbonRouter.get('/fatores', (_req, res) => {
   res.json({ fatores: FATORES, projetos: PROJETOS_CARBONPAY });
+});
+
+// Sequestro adicional com Biogenesis COT — modo ESTIMATIVA vs CRÉDITO VERIFICÁVEL
+carbonRouter.get('/biogenesis/opcoes', (_req, res) => {
+  res.json({ culturas: CULTURAS_BIOGENESIS, cenarios: CENARIOS_BIOGENESIS });
+});
+
+carbonRouter.post('/biogenesis', (req, res, next) => {
+  try {
+    const { culturaId, hectares, cenarioId, passivoTco2eAno } = req.body || {};
+    if (!culturaId || !hectares) return res.status(400).json({ error: 'Informe culturaId e hectares.' });
+    res.json(sequestroBiogenesis({ culturaId, hectares, cenarioId, passivoTco2eAno }));
+  } catch (e) { next(e); }
 });
 
 carbonRouter.post('/calcular', (req, res) => {
