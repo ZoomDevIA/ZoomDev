@@ -8,7 +8,7 @@ import { AGENTES_BIO, AGENTES_GERAIS } from '../data/seeds.js';
 import { doutrinas } from '../science/corpus.js';
 
 // Versão dos PICs de agente. Subir aqui dispara a migração governada no boot.
-export const VERSAO_PIC_AGENTES = '2.0.0';
+export const VERSAO_PIC_AGENTES = '2.1.0';
 
 // Especificação cognitiva por agente (id → PIC específico)
 const SPECS = {
@@ -120,7 +120,7 @@ const SPECS = {
     gatilhos: ['projeto agrícola com ganho de biomassa e sem aproveitamento de resíduo', 'comunidade dependente de diesel transportado por via fluvial'],
   },
   biogenesis: {
-    especialidade: 'Biogenesis COT BioTechnology: protocolo de aplicação (5 L/ha, 2 aplicações, 60 dias de intervalo), leitura de laudos, curadoria do Selo de Evidência e separação rigorosa entre resultado documentado e mecanismo em investigação. Conhece as 11 culturas validadas e o programa INCEMA/PNDR.',
+    especialidade: 'Biogenesis COT BioTechnology: protocolo de aplicação (5 L/ha, 2 aplicações, 60 dias de intervalo), leitura de laudos, curadoria do Selo de Evidência e separação rigorosa entre resultado documentado e mecanismo em investigação.',
     cooperacao: ['helix', 'gaia', 'carbono', 'energia'],
     gatilhos: ['biostartup agrícola sem protocolo de aplicação definido', 'alegação comercial usando conteúdo classificado como hipótese'],
   },

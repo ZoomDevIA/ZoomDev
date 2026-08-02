@@ -9,6 +9,7 @@ const empty = () => ({
   users: {}, projects: {}, sessions: {}, carbonOrders: {},
   pic: null, picAgentes: null, nudges: {}, reports: {},
   radar: null, pulso: null, planosCompensacao: {},
+  elenco: null, conselhos: {},
 });
 
 let db = empty();
@@ -58,6 +59,10 @@ export const store = {
   set pulso(v) { db.pulso = v; },
   // Planos de compensação salvos por usuário
   get planosCompensacao() { return db.planosCompensacao; },
+  // Elenco de agentes (ativação por casta) e atas do Conselho
+  get elenco() { return db.elenco; },
+  set elenco(v) { db.elenco = v; },
+  get conselhos() { return db.conselhos; },
 };
 
 export function id(prefix) {

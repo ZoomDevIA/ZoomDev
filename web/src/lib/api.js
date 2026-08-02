@@ -68,6 +68,13 @@ export const api = {
   nudgeDispensar: (id) => req(`/nudges/${id}/dispensar`, { method: 'POST' }),
   nudgeAceitar: (id) => req(`/nudges/${id}/aceitar`, { method: 'POST' }),
   // Super dashboard do administrador (Sexta-Feira)
+  elenco: () => req('/elenco'),
+  elencoPics: () => req('/elenco/pics'),
+  elencoAtivacao: (id, ativo) => req(`/elenco/${id}/ativacao`, { method: 'POST', body: JSON.stringify({ ativo }) }),
+  mundo: () => req('/mundo'),
+  conselhoConvocacao: (projId) => req(`/projects/${projId}/conselho/convocacao`),
+  realizarConselho: (projId) => req(`/projects/${projId}/conselho`, { method: 'POST' }),
+  conselhos: (projId) => req(`/projects/${projId}/conselho`),
   adminOverview: () => req('/admin/overview'),
   adminChat: (mensagens) => req('/admin/chat', { method: 'POST', body: JSON.stringify({ mensagens }) }),
   adminChatHistorico: () => req('/admin/chat'),

@@ -13,7 +13,7 @@ export default function Copiloto() {
     if (aberto && mensagens.length === 0) {
       api.chatHistorico().then(h => {
         if (h.length) setMensagens(h);
-        else setMensagens([{ role: 'assistant', content: 'Olá! Sou o **Zoom Intelligence** 🤖 — posso ajudar com sua ideia, plano de negócios, editais ou carbono. Por onde começamos?' }]);
+        else setMensagens([{ role: 'assistant', content: 'Olá! Sou a **Maiá** 🌸, a Inteligência Regenerativa da ZoomDev. Acompanho você da primeira ideia ao primeiro contrato — ciência, bioeconomia, editais e carbono. Por onde começamos?' }]);
       }).catch(() => {});
     }
   }, [aberto]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -47,17 +47,17 @@ export default function Copiloto() {
       {!aberto && (
         <button onClick={() => setAberto(true)}
           className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full zd-glow-green zd-float overflow-hidden border-2 border-[#00ff64]"
-          title="Zoom Intelligence — sua IA de confiança">
-          <img src="/assets/site/copiloto-avatar.png" alt="Zoom Intelligence" className="w-full h-full object-cover object-top" />
+          title="Maiá — Inteligência Regenerativa">
+          <img src="/assets/site/copiloto-avatar.png" alt="Maiá" className="w-full h-full object-cover object-top" />
         </button>
       )}
       {aberto && (
         <div className="fixed bottom-5 right-5 z-40 w-[min(400px,calc(100vw-2rem))] h-[540px] zd-card-glow rounded-2xl flex flex-col overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-white/[.03]">
-            <img src="/assets/site/copiloto-avatar.png" alt="Zoom Intelligence"
+            <img src="/assets/site/copiloto-avatar.png" alt="Maiá"
               className="w-9 h-9 rounded-full object-cover object-top border border-[#00ff6433]" />
             <div className="flex-1">
-              <div className="text-sm font-bold">Zoom Intelligence</div>
+              <div className="text-sm font-bold">Maiá 🌸</div>
               <div className="text-[10px] zd-green flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#00ff64] inline-block" /> Online</div>
             </div>
             <button onClick={() => setAberto(false)} className="text-white/40 hover:text-white text-lg">✕</button>

@@ -11,6 +11,7 @@ const MENU = [
   { to: '/strategy', label: 'Strategy Core', icon: '🧠', badge: 'IA' },
   { to: '/', label: 'Dashboard', icon: '◈' },
   { to: '/agentes', label: 'Agentes', icon: '🤖' },
+  { to: '/mundo', label: 'Vale ZoomDev', icon: '🌍', badge: '3D' },
   { to: '/projetos', label: 'Projetos', icon: '📁' },
   { to: '/bioeconomia', label: 'Bioeconomia', icon: '🌿' },
   { to: '/impacto', label: 'Impacto 360°', icon: '🌍', badge: 'ODS' },
@@ -65,11 +66,11 @@ export default function Layout({ children }) {
         </nav>
         <div className="p-4 border-t border-white/5">
           <div className="zd-card rounded-xl p-3.5 flex items-center gap-3">
-            <img src="/assets/site/copiloto-avatar.png" alt="Zoom Intelligence"
+            <img src="/assets/site/copiloto-avatar.png" alt="Maiá"
               className="w-10 h-10 rounded-full object-cover object-top border border-[#00ff6433] shrink-0" />
             <div className="min-w-0">
-              <div className="text-xs font-bold truncate">Zoom Intelligence</div>
-              <div className="text-[10px] text-white/45">Sua IA de confiança</div>
+              <div className="text-xs font-bold truncate">Maiá 🌸</div>
+              <div className="text-[10px] text-white/45">Inteligência Regenerativa</div>
               <div className="text-[10px] zd-green flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#00ff64] inline-block" /> Online</div>
             </div>
           </div>

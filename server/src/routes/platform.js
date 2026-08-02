@@ -6,11 +6,15 @@ import { config } from '../config.js';
 import { structured, conversar } from '../agents/claude.js';
 import { AGENTES_GERAIS, AGENTES_BIO, NOTIFICACOES_SEED } from '../data/seeds.js';
 import { nudgesDoDia, dispensarNudge, aceitarNudge } from '../services/agentBus.js';
+import { agentesLegado } from '../services/elenco.js';
+import { picNucleo } from '../protocols/picNucleo.js';
+import { renderSystemPromptAgente } from '../protocols/picAgentes.js';
 
 export const platformRouter = Router();
 
+// Só agentes ATIVOS, agrupados por casta (núcleo internacional / amazônicos / operacionais)
 platformRouter.get('/agents', (_req, res) => {
-  res.json({ gerais: AGENTES_GERAIS, bio: AGENTES_BIO });
+  res.json(agentesLegado());
 });
 
 platformRouter.get('/notificacoes', (_req, res) => {
@@ -90,7 +94,9 @@ platformRouter.post('/chat', async (req, res, next) => {
     }
 
     const projetos = Object.values(store.projects).filter(p => p.userId === req.user.id);
-    const system = `Você é o Zoom Intelligence, assistente de IA da plataforma ZoomDev OS (startups + bioeconomia amazônica).
+    const picMaia = picNucleo('maia');
+    const system = `${picMaia ? renderSystemPromptAgente(picMaia) : 'Você é a Maiá, Inteligência Regenerativa da ZoomDev OS.'}
+
 Responda de forma objetiva, acionável e use markdown quando útil. Responda sempre em pt-BR.
 Contexto do usuário: ${projetos.length} projeto(s)${projetos[0] ? ` — mais recente: "${projetos[0].nome}" (${projetos[0].classificacao}, fase ${projetos[0].fase})` : ''}. Créditos (seiva): ${req.user.creditos}.
 A plataforma tem: geração de plano de negócios pelos 5 agentes, jornada gamificada (Ideação→Validação→MVP→Tração→Escala), calculadora de passivo ambiental (GHG Protocol) e CarbonPay para compensação com créditos verificados.`;

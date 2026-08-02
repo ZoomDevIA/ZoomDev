@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api, gerarPlanoSSE, baixarPlano } from '../lib/api.js';
 import { useUser } from '../App.jsx';
+import Conselho from '../components/Conselho.jsx';
 import JourneyBar from '../components/JourneyBar.jsx';
 import PlanoView from '../components/PlanoView.jsx';
 
@@ -211,6 +212,8 @@ export default function Projeto() {
           <PlanoView projeto={proj} />
         </>
       )}
+      {projeto.plano && <Conselho projetoId={projeto.id} />}
+
     </div>
   );
 }

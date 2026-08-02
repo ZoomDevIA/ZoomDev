@@ -10,6 +10,7 @@ import { platformRouter } from './routes/platform.js';
 import { adminRouter } from './routes/admin.js';
 import { impactoRouter } from './routes/impacto.js';
 import { editaisRouter } from './routes/editais.js';
+import { elencoRouter } from './routes/elencoConselho.js';
 import { migrarPicAgentes } from './protocols/migracao.js';
 import { agendarPulso } from './services/pulsoDiario.js';
 import { initPic } from './agents/sextaFeira.js';
@@ -50,6 +51,7 @@ app.use('/api/carbon', carbonRouter);
 app.use('/api/admin', adminMiddleware, adminRouter);
 app.use('/api/impacto', impactoRouter);
 app.use('/api/editais', editaisRouter);
+app.use('/api', elencoRouter);
 app.use('/api', platformRouter);
 
 app.use((err, _req, res, _next) => {
