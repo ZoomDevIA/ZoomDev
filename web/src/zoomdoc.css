@@ -1,0 +1,327 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZOOMDOC — a folha, a página e os blocos vivos.
+
+   A metáfora do Word que vale a pena manter é a PÁGINA: um retângulo A4 com
+   margem, sobre um fundo que não é ele. É isso que faz alguém escrever um
+   documento em vez de escrever num campo de formulário.
+
+   O que não vale a pena manter é o papel branco de escritório dentro de uma
+   plataforma escura. Por isso a folha tem dois temas: ESCURO por padrão, na
+   linguagem da marca, e CLARO para quem vai imprimir e quer ver antes o que
+   vai sair. A exportação em DOCX e PDF sempre sai diagramada em claro,
+   independente do tema da tela.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.zd-folha {
+  --pg-fundo: #0a1a13;
+  --pg-texto: #dff6ec;
+  --pg-fraco: #ffffff5c;
+  --pg-linha: #00e5ff1f;
+  --pg-marca: #00e5ff;
+  background:
+    radial-gradient(900px 420px at 50% -8%, #00e5ff0a, transparent 70%),
+    #05100c;
+  padding: 22px 18px 56px;
+}
+
+.zd-folha[data-tema='claro'] {
+  --pg-fundo: #ffffff;
+  --pg-texto: #10231b;
+  --pg-fraco: #10231b8c;
+  --pg-linha: #10231b1f;
+  --pg-marca: #067a6b;
+  background: #cfd8d3;
+}
+
+/* ── A página ──────────────────────────────────────────────────────────── */
+.zd-pagina {
+  width: 210mm;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 18mm 16mm 14mm;
+  background: var(--pg-fundo);
+  color: var(--pg-texto);
+  box-shadow: 0 18px 50px #00000073, 0 0 0 1px var(--pg-linha);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  font-size: 11.2pt;
+  line-height: 1.62;
+}
+
+@media (max-width: 900px) {
+  .zd-folha { padding: 12px 8px 40px; }
+  .zd-pagina { padding: 12mm 8mm 10mm; font-size: 10.6pt; clip-path: none; }
+}
+
+/* ── Cabeçalho e rodapé do documento ───────────────────────────────────── */
+.zd-cabecalho {
+  border-bottom: 2px solid var(--pg-marca);
+  padding-bottom: 12px;
+  margin-bottom: 26px;
+}
+.zd-marca {
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; letter-spacing: .18em;
+  color: var(--pg-marca);
+  margin-bottom: 10px;
+}
+.zd-marca img { display: block; }
+.zd-titulo-doc {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: clamp(17pt, 4.4vw, 25pt); font-weight: 800; line-height: 1.1;
+  letter-spacing: -.015em;
+  margin: 0;
+}
+.zd-subtitulo-doc {
+  margin: 7px 0 0;
+  font-size: 10.5pt;
+  color: var(--pg-fraco);
+}
+.zd-rodape-doc {
+  margin-top: 34px; padding-top: 10px;
+  border-top: 1px solid var(--pg-linha);
+  display: flex; justify-content: space-between; gap: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--pg-fraco);
+}
+
+/* ── Conteúdo editável ─────────────────────────────────────────────────── */
+.zd-pagina-conteudo > * + * { margin-top: .82em; }
+
+.zd-pagina-conteudo h1,
+.zd-pagina-conteudo h2,
+.zd-pagina-conteudo h3,
+.zd-pagina-conteudo h4 {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.22;
+  margin-top: 1.5em;
+}
+.zd-pagina-conteudo h1 {
+  font-size: 19pt;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--pg-linha);
+}
+.zd-pagina-conteudo h2 { font-size: 15pt; color: var(--pg-marca); }
+.zd-pagina-conteudo h3 { font-size: 12.5pt; }
+.zd-pagina-conteudo h4 { font-size: 11pt; text-transform: uppercase; letter-spacing: .07em; color: var(--pg-fraco); }
+
+/* Numeração automática das seções: o plano de negócios se organiza sozinho */
+.zd-pagina-conteudo { counter-reset: zd-h1; }
+.zd-pagina-conteudo h1 { counter-increment: zd-h1; counter-reset: zd-h2; }
+.zd-pagina-conteudo h1::before {
+  content: counter(zd-h1) '. ';
+  color: var(--pg-marca);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: .78em;
+}
+.zd-pagina-conteudo h2 { counter-increment: zd-h2; }
+.zd-pagina-conteudo h2::before {
+  content: counter(zd-h1) '.' counter(zd-h2) '  ';
+  opacity: .5;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: .72em;
+}
+
+.zd-pagina-conteudo ul,
+.zd-pagina-conteudo ol { padding-left: 1.35em; }
+.zd-pagina-conteudo ul { list-style: square; }
+.zd-pagina-conteudo ol { list-style: decimal; }
+.zd-pagina-conteudo li + li { margin-top: .28em; }
+.zd-pagina-conteudo li::marker { color: var(--pg-marca); }
+
+.zd-pagina-conteudo blockquote {
+  border-left: 3px solid var(--pg-marca);
+  padding: 2px 0 2px 14px;
+  color: var(--pg-fraco);
+  font-style: italic;
+}
+
+.zd-pagina-conteudo hr {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--pg-marca), transparent);
+  margin: 1.6em 0;
+}
+
+.zd-pagina-conteudo a { color: var(--pg-marca); text-decoration: underline; text-underline-offset: 2px; }
+
+.zd-pagina-conteudo code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: .86em;
+  padding: 1px 5px;
+  background: #00e5ff14;
+  color: var(--pg-marca);
+}
+.zd-codigo {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9.2pt;
+  padding: 12px 14px;
+  background: #00120e;
+  color: #9fe8d5;
+  border-left: 2px solid var(--pg-marca);
+  overflow-x: auto;
+  white-space: pre;
+}
+.zd-folha[data-tema='claro'] .zd-codigo { background: #0f1f1a; }
+
+.zd-imagem { max-width: 100%; height: auto; display: block; margin: 1em auto; }
+
+/* ── Tabelas ───────────────────────────────────────────────────────────── */
+.zd-tabela {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1.1em 0;
+  font-size: .93em;
+}
+.zd-tabela td, .zd-tabela th {
+  border: 1px solid var(--pg-linha);
+  padding: 7px 9px;
+  vertical-align: top;
+  position: relative;
+}
+.zd-tabela th {
+  background: #00e5ff12;
+  color: var(--pg-marca);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  text-align: left;
+}
+.zd-tabela .selectedCell::after {
+  content: ''; position: absolute; inset: 0;
+  background: #00e5ff1f; pointer-events: none;
+}
+.zd-tabela .column-resize-handle {
+  position: absolute; right: -2px; top: 0; bottom: 0; width: 4px;
+  background: var(--pg-marca); pointer-events: none;
+}
+
+/* Espaço reservado do parágrafo vazio */
+.zd-pagina-conteudo p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left; height: 0; pointer-events: none;
+  color: var(--pg-fraco); opacity: .6;
+}
+
+/* ═══ BLOCOS VIVOS ═════════════════════════════════════════════════════ */
+
+.zd-bloco-indicador,
+.zd-bloco-selo,
+.zd-bloco-citacao { margin: 1.15em 0; }
+
+.zd-bloco-indicador.ProseMirror-selectednode,
+.zd-bloco-selo.ProseMirror-selectednode,
+.zd-bloco-citacao.ProseMirror-selectednode { outline: 1px solid var(--pg-marca); outline-offset: 3px; }
+
+/* ── Indicador ─────────────────────────────────────────────────────────── */
+.zd-bloco-indicador {
+  position: relative;
+  display: flex; align-items: stretch; gap: 12px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--cor, #00e5ff) 7%, transparent);
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+.zd-bi-barra { width: 3px; background: var(--cor, #00e5ff); flex-shrink: 0; }
+.zd-bi-corpo { min-width: 0; flex: 1; }
+.zd-bi-valor {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 21pt; font-weight: 800; line-height: 1.05;
+  color: var(--cor, #00e5ff);
+}
+.zd-bi-rotulo {
+  font-size: 9.5pt; margin-top: 2px;
+  letter-spacing: .04em;
+}
+.zd-bi-nota { font-size: 8.2pt; color: var(--pg-fraco); margin-top: 4px; }
+
+/* A paleta do bloco e o campo de nota vazio só aparecem quando o ponteiro
+   está sobre o bloco. Fora disso são ruído: cinco quadradinhos coloridos e um
+   texto cinza no meio do documento parecem conteúdo, e não são. */
+.zd-bloco-cores {
+  display: flex; flex-direction: column; gap: 3px; justify-content: center;
+  opacity: 0; transition: opacity .18s ease;
+}
+.zd-bloco-indicador:hover .zd-bloco-cores,
+.zd-bloco-indicador:focus-within .zd-bloco-cores { opacity: 1; }
+.zd-bloco-cor { width: 9px; height: 9px; border: 0; cursor: pointer; padding: 0; }
+
+.zd-bloco-indicador:not(:hover):not(:focus-within) .zd-bi-nota:empty,
+.zd-bloco-selo:not(:hover):not(:focus-within) .zd-selo-fonte:empty,
+.zd-bloco-citacao:not(:hover):not(:focus-within) .zd-cit-url:empty { display: none; }
+
+/* ── Selo de evidência ─────────────────────────────────────────────────── */
+.zd-bloco-selo {
+  padding: 11px 14px;
+  background: color-mix(in srgb, var(--cor, #ffc531) 6%, transparent);
+  border-left: 3px solid var(--cor, #ffc531);
+}
+.zd-selo-topo {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.zd-selo-etiqueta, .zd-selo-select {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8.5pt; font-weight: 700; letter-spacing: .09em;
+}
+.zd-selo-select {
+  background: transparent;
+  border: 1px solid currentColor;
+  padding: 1px 4px;
+  cursor: pointer;
+}
+.zd-selo-select option { background: #06140d; color: #dff6ec; }
+.zd-selo-desc { font-size: 8pt; color: var(--pg-fraco); }
+.zd-selo-aviso {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 7.5pt; letter-spacing: .08em; text-transform: uppercase;
+  color: #ff4d8d;
+  border: 1px solid #ff4d8d55;
+  padding: 1px 5px;
+}
+.zd-selo-texto { font-size: 10.2pt; line-height: 1.5; }
+.zd-selo-fonte { font-size: 8.2pt; color: var(--pg-fraco); margin-top: 5px; }
+
+/* ── Citação com fonte ─────────────────────────────────────────────────── */
+.zd-bloco-citacao {
+  padding: 12px 16px;
+  border-top: 1px solid var(--pg-linha);
+  border-bottom: 1px solid var(--pg-linha);
+}
+.zd-cit-texto {
+  font-size: 11pt; font-style: italic; line-height: 1.55;
+  white-space: pre-wrap;
+}
+.zd-cit-texto::before { content: '“'; color: var(--pg-marca); font-size: 1.3em; margin-right: 2px; }
+.zd-cit-rodape {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline;
+  margin-top: 7px;
+}
+.zd-cit-fonte { font-size: 8.6pt; font-weight: 700; letter-spacing: .04em; }
+.zd-cit-fonte::before { content: '— '; color: var(--pg-marca); }
+.zd-cit-url {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 7.6pt; color: var(--pg-marca);
+  word-break: break-all;
+}
+
+/* Campo de atributo editável dentro de um bloco */
+.zd-campo-bloco { outline: none; min-height: 1em; }
+.zd-campo-bloco:focus { box-shadow: inset 0 -1px 0 var(--pg-marca); }
+.zd-campo-bloco:empty::before {
+  content: attr(data-placeholder);
+  color: var(--pg-fraco); opacity: .55;
+}
+
+/* ── Impressão: a folha vira papel de verdade ──────────────────────────── */
+@media print {
+  .zd-folha { background: #fff; padding: 0; overflow: visible !important; }
+  .zd-pagina {
+    box-shadow: none; clip-path: none;
+    --pg-fundo: #fff; --pg-texto: #10231b; --pg-fraco: #10231b8c;
+    --pg-linha: #10231b26; --pg-marca: #067a6b;
+  }
+  .zd-bloco-cores, .zd-selo-select { display: none; }
+}

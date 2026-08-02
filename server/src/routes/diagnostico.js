@@ -171,6 +171,15 @@ diagnosticoRouter.get('/status', async (req, res) => {
       ? `Chave ${pista(pagamentosConfig.pixChave, { inicio: 3 })} · beneficiário ${pagamentosConfig.pixNome} · ${pagamentosConfig.pixCidade}`
       : 'PIX_CHAVE não definida: o BR Code é gerado com chave de exemplo, válido para teste mas não recebe de verdade');
 
+  // ── Transcrição de áudio do Studio ──
+  // Sem a chave o recurso não some da plataforma: o ditado pelo navegador
+  // continua funcionando de graça. O que se perde é anexar gravação.
+  const chaveDeepgram = (process.env.DEEPGRAM_API_KEY || '').trim();
+  add('transcricao', 'Transcrição de áudio (Deepgram)', Boolean(chaveDeepgram),
+    chaveDeepgram
+      ? `Ativa: chave ${pista(chaveDeepgram, { inicio: 4 })} · anexar áudio custa ${config.credits.transcricao} 🌿 por arquivo`
+      : 'DEEPGRAM_API_KEY não definida: anexar áudio fica indisponível. O ditado por voz na caixa de contexto continua funcionando, roda no navegador e não custa nada.');
+
   add('url', 'URL pública', Boolean(process.env.ZOOMDEV_URL),
     process.env.ZOOMDEV_URL
       ? `Definida: ${process.env.ZOOMDEV_URL}`

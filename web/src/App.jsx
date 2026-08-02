@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, lazy, Suspense, useContext, useEffect, useState, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { api, getToken, setToken } from './lib/api.js';
 import Layout from './components/Layout.jsx';
@@ -7,6 +7,7 @@ import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Ideacao from './pages/Ideacao.jsx';
 import Projeto from './pages/Projeto.jsx';
+
 import Projetos from './pages/Projetos.jsx';
 import CarbonPay from './pages/CarbonPay.jsx';
 import Planos from './pages/Planos.jsx';
@@ -19,12 +20,26 @@ import StrategyCore from './pages/StrategyCore.jsx';
 import Admin from './pages/Admin.jsx';
 import Impacto from './pages/Impacto.jsx';
 import Compensacao from './pages/Compensacao.jsx';
-import Mundo from './pages/Mundo.jsx';
+
 import Home from './pages/Home.jsx';
 import Estilo from './pages/Estilo.jsx';
 import Painel from './pages/Painel.jsx';
 import Redefinir from './pages/Redefinir.jsx';
 import Legal from './pages/Legal.jsx';
+
+// Carregados sob demanda: o Studio traz o editor de texto e o de código, e o
+// Mundo traz a engine 3D. Juntos, eles dobravam o pacote inicial de quem só
+// queria abrir o painel.
+const Studio = lazy(() => import('./pages/Studio.jsx'));
+const Mundo = lazy(() => import('./pages/Mundo.jsx'));
+
+function Carregando() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <div className="zd-gradient-text font-heading text-lg font-bold zd-pulse">carregando…</div>
+    </div>
+  );
+}
 
 
 export const UserContext = createContext(null);
@@ -96,6 +111,7 @@ export default function App() {
           </Routes>
         ) : (
           <Layout>
+            <Suspense fallback={<Carregando />}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -106,6 +122,7 @@ export default function App() {
               <Route path="/agentes" element={<Agentes />} />
               <Route path="/projetos" element={<Projetos />} />
               <Route path="/projetos/:id" element={<Projeto />} />
+              <Route path="/studio/:id" element={<Studio />} />
               <Route path="/bioeconomia" element={<Bioeconomia />} />
               <Route path="/impacto" element={<Impacto />} />
               <Route path="/editais" element={<Editais />} />
@@ -123,6 +140,7 @@ export default function App() {
               {user.isAdmin && <Route path="/admin" element={<Admin />} />}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
+            </Suspense>
           </Layout>
         )}
         <GamificationToasts />

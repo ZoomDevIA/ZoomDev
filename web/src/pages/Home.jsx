@@ -80,7 +80,7 @@ export default function Home() {
       sessionStorage.removeItem(RASCUNHO);
       ctx.celebrar?.(r.gamificacao);
       await ctx.refreshUser?.();
-      nav(`/projetos/${r.projeto.id}`, { state: { recemCriado: true } });
+      nav(`/studio/${r.projeto.id}`, { state: { recemCriado: true } });
     } catch (err) {
       setErro(err.message);
       setEnviando(false);

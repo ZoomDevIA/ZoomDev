@@ -150,9 +150,69 @@ export const api = {
   trocarSenha: (body) => req('/conta/senha', { method: 'POST', body: JSON.stringify(body) }),
   atualizarPerfil: (body) => req('/conta', { method: 'PATCH', body: JSON.stringify(body) }),
   aceitarTermos: () => req('/conta/termos', { method: 'POST' }),
+
+  // ── ZoomDev Studio ───────────────────────────────────────────────────────
+  preLeitura: (body, signal) => req('/studio/pre-leitura', { method: 'POST', body: JSON.stringify(body), signal }),
+  conversaStudio: (projId, body) => req(`/studio/${projId}/conversa`, { method: 'POST', body: JSON.stringify(body) }),
+  salvarDocumento: (projId, html) => req(`/studio/${projId}/documento`, { method: 'PUT', body: JSON.stringify({ html }) }),
+  salvarMetricas: (projId, metricas) => req(`/studio/${projId}/metricas`, { method: 'PUT', body: JSON.stringify(metricas) }),
+  salvarArquivoMvp: (projId, arquivo, conteudo) =>
+    req(`/studio/${projId}/mvp/arquivo`, { method: 'PUT', body: JSON.stringify({ arquivo, conteudo }) }),
+  // Consentimento de localização: o fundador escolhe, e a escolha fica gravada
+  salvarLocal: (local) => req('/studio/local', { method: 'PUT', body: JSON.stringify(local) }),
   excluirConta: (body) => req('/conta', { method: 'DELETE', body: JSON.stringify(body) }),
   termosVersao: () => req('/termos-versao'),
 };
+
+// ── Anexos do Studio ───────────────────────────────────────────────────────
+// Sobe o arquivo bruto e recebe de volta só o texto: o que o sistema precisa
+// é o conteúdo, não guardar o PDF de ninguém. Nada do arquivo fica no disco.
+export async function extrairAnexo(arquivo, signal) {
+  const forma = new FormData();
+  forma.append('arquivo', arquivo, arquivo.name);
+  const res = await fetch('/api/studio/anexo', {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: forma,
+    signal,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || `Erro ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+api.extrairAnexo = extrairAnexo;
+
+// SSE da escrita do plano de negócios no ZoomDoc
+export async function gerarDocumentoSSE(projId, handlers) {
+  const res = await fetch(`/api/studio/${projId}/documento/gerar`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const err = new Error(data.error || `Erro ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const blocos = buffer.split('\n\n');
+    buffer = blocos.pop();
+    for (const bloco of blocos) {
+      const ev = bloco.match(/^event: (.+)$/m);
+      const dt = bloco.match(/^data: (.+)$/m);
+      if (ev && dt) { try { await handlers[ev[1]]?.(JSON.parse(dt[1])); } catch { /* evento fora do contrato */ } }
+    }
+  }
+}
 
 // Baixa o pacote de dados do titular (LGPD, artigo 18)
 export async function baixarMeusDados() {

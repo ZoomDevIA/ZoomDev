@@ -486,3 +486,126 @@
 /* Barra de rolagem em bloco, sem raio */
 ::-webkit-scrollbar-thumb { border-radius: 0; background: #00e5ff33; }
 ::-webkit-scrollbar-thumb:hover { background: #00e5ff66; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STUDIO — o espaço de trabalho de duas janelas.
+
+   Console à esquerda (conversa, anexos, raciocínio), Palco à direita (o que a
+   fase atual pede: documento, código, métricas). O divisor entre os dois é
+   arrastável e a proporção fica guardada.
+
+   No celular não existe divisor: as duas janelas viram abas que deslizam.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.studio {
+  --console: 42%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  /* A altura vem do pai, que é medido em tempo de execução: subtrair um valor
+     fixo da viewport quebraria assim que o cabeçalho mudasse de altura. */
+  flex: 1;
+  min-height: 0;
+}
+@media (min-width: 1024px) {
+  .studio { grid-template-columns: var(--console) 7px 1fr; }
+}
+
+.studio-divisor {
+  display: none;
+  cursor: col-resize;
+  position: relative;
+  background: transparent;
+}
+@media (min-width: 1024px) { .studio-divisor { display: block; } }
+.studio-divisor::before {
+  content: '';
+  position: absolute; inset: 0 3px;
+  background: #00e5ff26;
+  transition: background .2s ease;
+}
+.studio-divisor:hover::before, .studio-divisor.arrastando::before { background: #00e5ff99; }
+/* Punho: três traços no meio da coluna, para o alvo de clique ficar óbvio */
+.studio-divisor::after {
+  content: '';
+  position: absolute; left: 1px; top: 50%; width: 5px; height: 34px;
+  transform: translateY(-50%);
+  background: repeating-linear-gradient(0deg, #00e5ff99 0 2px, transparent 2px 5px);
+}
+
+/* O display entra em :where() porque este arquivo carrega depois do Tailwind:
+   sem isso, `.studio-janela` venceria o `.hidden` do alternador de abas e o
+   celular mostraria console e palco empilhados ao mesmo tempo. */
+:where(.studio-janela) {
+  display: flex;
+  flex-direction: column;
+}
+.studio-janela {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Trilha de fases: cada etapa é um chevron que se encaixa no seguinte */
+.fase-trilha { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.fase-trilha::-webkit-scrollbar { display: none; }
+.fase-passo {
+  --cor: #00e5ff;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 92px;
+  padding: 7px 14px 7px 20px;
+  background: #0a1a12;
+  color: #ffffff4d;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%, 9px 50%);
+  transition: background .25s ease, color .25s ease;
+}
+.fase-passo:first-child { clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%); }
+.fase-passo:last-child { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 9px 50%); }
+.fase-passo.concluida { background: #0d2a1a; color: #00ff6499; }
+.fase-passo.atual {
+  background: var(--cor);
+  color: #04140a;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--cor) 40%, transparent);
+}
+
+/* Entrada do palco quando a fase troca: o conteúdo desliza e ganha foco */
+@keyframes palcoEntra {
+  from { opacity: 0; transform: translateY(14px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+.palco-entra { animation: palcoEntra .45s cubic-bezier(.22,1,.36,1) both; }
+
+/* Varredura que percorre o palco quando um agente termina uma peça */
+@keyframes varredura {
+  from { transform: translateY(-100%); opacity: 0; }
+  20%  { opacity: 1; }
+  to   { transform: translateY(100%); opacity: 0; }
+}
+.palco-varredura::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, #00e5ff1f 45%, #00e5ff3d 50%, #00e5ff1f 55%, transparent);
+  animation: varredura 1.1s ease-out;
+}
+
+/* Cursor de digitação do agente, para o texto parecer estar sendo escrito */
+.cursor-agente::after {
+  content: '';
+  display: inline-block;
+  width: 2px; height: 1.05em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: #00e5ff;
+  animation: hudPulso 1s steps(2) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palco-entra, .palco-varredura::after, .cursor-agente::after { animation: none; }
+}
