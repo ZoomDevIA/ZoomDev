@@ -6,7 +6,7 @@ import Logo from './Logo.jsx';
 import BrandLockup from './BrandLockup.jsx';
 import Copiloto from './Copiloto.jsx';
 
-// Sidebar de 7 itens — clone do protótipo Base44
+// Sidebar de 7 itens: clone do protótipo Base44
 const MENU = [
   { to: '/', label: 'Home', icon: '🏠' },
   { to: '/strategy', label: 'Strategy Core', icon: '🧠', badge: 'IA' },

@@ -34,12 +34,12 @@ const REF = {
   dieselKwhPorLitro: 3.4,           // energia elétrica equivalente de 1 L diesel em gerador
   // Alimentar
   kcalPessoaDia: 2100,              // necessidade de referência (FAO)
-  // Água (efeito relatado de retenção — selo CAMPO, conservador)
+  // Água (efeito relatado de retenção: selo CAMPO, conservador)
   aguaIrrigacaoM3HaAnoEvitadaConservador: 400,
 };
 
 /**
- * DIMENSÃO 1 — Produção e Segurança Alimentar
+ * DIMENSÃO 1: Produção e Segurança Alimentar
  * Ganho de produção a partir do uplift (cenário conservador por padrão).
  */
 export function impactoAlimentar({ culturaId, hectares, cenarioId = 'conservador' }) {
@@ -71,7 +71,7 @@ export function impactoAlimentar({ culturaId, hectares, cenarioId = 'conservador
 }
 
 /**
- * DIMENSÃO 2 — Transição Energética Verde Justa
+ * DIMENSÃO 2: Transição Energética Verde Justa
  * A biomassa/resíduo extra vira biogás em biodigestores comunitários →
  * energia local, substituindo diesel/GLP (fontes sujas e caras na Amazônia).
  * Este é o elo que transforma agricultura em autonomia energética.
@@ -98,11 +98,11 @@ export function impactoEnergetico({ culturaId, hectares, cenarioId = 'conservado
   const fTermica = Math.min(1, Math.max(0, Number(fracaoTermica) ?? 0.5));
   const fEletrica = 1 - fTermica;
 
-  // Rota térmica — cocção comunitária, substitui botijão de GLP
+  // Rota térmica: cocção comunitária, substitui botijão de GLP
   const energiaTermicaKwh = energiaBrutaKwh * fTermica;
   const botijoesGlpEvitados = Math.round(energiaTermicaKwh / REF.glpKwhPorBotijao13);
 
-  // Rota elétrica — motor-gerador a biogás, substitui gerador a diesel
+  // Rota elétrica: motor-gerador a biogás, substitui gerador a diesel
   const energiaEletricaKwh = energiaBrutaKwh * fEletrica * REF.eficienciaEletricaGerador;
   const litrosDieselEvitados = Math.round(energiaEletricaKwh / REF.dieselKwhPorLitro);
 
@@ -130,13 +130,13 @@ export function impactoEnergetico({ culturaId, hectares, cenarioId = 'conservado
     litrosDieselEvitadosAno: litrosDieselEvitados,
     co2EvitadoTonAno: co2EvitadoTon,
     balanco: 'Balanço fechado: o biogás é dividido entre rota térmica e rota elétrica. A mesma energia nunca é contabilizada duas vezes.',
-    justica: 'Energia gerada e gerida localmente pela própria comunidade — autonomia energética sem dependência de combustível fóssil transportado por longas distâncias fluviais. Transição energética justa: quem regenera o território é dono da energia que produz.',
+    justica: 'Energia gerada e gerida localmente pela própria comunidade, autonomia energética sem dependência de combustível fóssil transportado por longas distâncias fluviais. Transição energética justa: quem regenera o território é dono da energia que produz.',
     selo: cen.selo === 'LAUDO' ? 'CAMPO' : cen.selo, // depende de biodigestor instalado → nunca acima de CAMPO sem planta real
   };
 }
 
 /**
- * DIMENSÃO 3 — Carbono e Ecossistemas
+ * DIMENSÃO 3: Carbono e Ecossistemas
  * Sequestro adicional pelo ganho de biomassa (área foliar) + serviços ambientais.
  * SEMPRE em modo ESTIMATIVA. Só vira crédito com MRV instrumentado + verificação.
  */
@@ -169,7 +169,7 @@ export function impactoCarbono({ culturaId, hectares, cenarioId = 'conservador' 
 }
 
 /**
- * DIMENSÃO 4 — Economia / Bioeconomia
+ * DIMENSÃO 4: Economia / Bioeconomia
  */
 export function impactoEconomico({ culturaId, hectares, cenarioId = 'conservador', ganhoProducaoTon = null, energiaKwh = 0, co2eSequestrado = 0 }) {
   const cultura = CULTURAS[culturaId];
@@ -181,7 +181,7 @@ export function impactoEconomico({ culturaId, hectares, cenarioId = 'conservador
   const receitaExtraAgricola = ganho * cultura.precoTon;
   // Energia (tarifa rural média de referência ~R$0,72/kWh)
   const economiaEnergia = n(energiaKwh) * 0.72;
-  // Carbono a preço conservador de crédito nature-based (R$ 89/tCO2e — só se virar crédito)
+  // Carbono a preço conservador de crédito nature-based (R$ 89/tCO2e: só se virar crédito)
   const potencialCarbono = n(co2eSequestrado) * 89;
 
   return {
@@ -191,13 +191,13 @@ export function impactoEconomico({ culturaId, hectares, cenarioId = 'conservador
     economiaEnergiaReais: Math.round(economiaEnergia),
     potencialCreditoCarbonoReais: Math.round(potencialCarbono),
     totalReais: Math.round(receitaExtraAgricola + economiaEnergia + potencialCarbono),
-    observacao: 'Receita agrícola e economia de energia são impacto direto. O potencial de crédito de carbono só se realiza após MRV e verificação — apresentado à parte, nunca somado como certo.',
+    observacao: 'Receita agrícola e economia de energia são impacto direto. O potencial de crédito de carbono só se realiza após MRV e verificação: apresentado à parte, nunca somado como certo.',
     selo: cen.selo,
   };
 }
 
 /**
- * DIMENSÃO 5 — ODS / Agenda 2030 da ONU
+ * DIMENSÃO 5: ODS / Agenda 2030 da ONU
  * Mapeia o impacto do cenário para os Objetivos de Desenvolvimento Sustentável.
  */
 const ODS = {
@@ -242,7 +242,7 @@ export function mapaODS({ alimentar, energetico, carbono, economico }) {
 }
 
 /**
- * SIMULAÇÃO 360° — orquestra as cinco dimensões em um só resultado.
+ * SIMULAÇÃO 360°: orquestra as cinco dimensões em um só resultado.
  */
 export function simular360({ culturaId, hectares, cenarioId = 'conservador', fracaoTermica = 0.5 }) {
   const alimentar = impactoAlimentar({ culturaId, hectares, cenarioId });

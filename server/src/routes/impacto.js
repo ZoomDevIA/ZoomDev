@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// ROTAS /api/impacto — Motor de Impacto Regenerativo 360° e ativo BIOGEN.
+// ROTAS /api/impacto: Motor de Impacto Regenerativo 360° e ativo BIOGEN.
 // Expõe apenas conhecimento técnico e níveis de confiança. O acervo documental
 // (science/corpus.js) permanece interno e não é servido por nenhuma rota.
 // ═══════════════════════════════════════════════════════════════════════════

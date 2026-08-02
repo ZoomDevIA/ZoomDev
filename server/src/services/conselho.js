@@ -49,7 +49,7 @@ const PARECER_SCHEMA = {
   additionalProperties: false,
 };
 
-// Pareceres determinísticos por especialidade — o modo demo entrega um conselho
+// Pareceres determinísticos por especialidade: o modo demo entrega um conselho
 // real, calculado do estado do projeto, não texto genérico.
 function parecerDemo(agente, ctx) {
   const { projeto, radar, melhorMatch, missoesPendentes } = ctx;
@@ -69,7 +69,7 @@ function parecerDemo(agente, ctx) {
     ceo: {
       veredito: missoesPendentes > 0 ? 'ajustar' : 'avancar',
       parecer: `Radar Unicórnio em ${radar.score}/100 (${radar.tier.label}). A dimensão mais fraca é ${radar.dimensoes.reduce((m, d) => (d.pontos / d.max < m.pontos / m.max ? d : m)).label}.`,
-      risco: missoesPendentes > 0 ? `${missoesPendentes} missão(ões) principal(is) em aberto — o projeto está parado na execução.` : 'Ritmo de execução sem foco pode dispersar recursos.',
+      risco: missoesPendentes > 0 ? `${missoesPendentes} missão(ões) principal(is) em aberto: o projeto está parado na execução.` : 'Ritmo de execução sem foco pode dispersar recursos.',
       recomendacao: missoesPendentes > 0 ? 'Concentre as próximas duas semanas em fechar as missões principais. Foco vence velocidade.' : 'Defina uma única métrica-norte para o próximo trimestre.',
       confianca: 78,
     },
@@ -144,7 +144,7 @@ function parecerDemo(agente, ctx) {
     },
     atlas: {
       veredito: 'ajustar',
-      parecer: 'A internacionalização deve ser desenhada antes de ser necessária — estrutura societária mal feita custa caro para desfazer.',
+      parecer: 'A internacionalização deve ser desenhada antes de ser necessária: estrutura societária mal feita custa caro para desfazer.',
       risco: 'Flip societário tardio gera passivo fiscal relevante.',
       recomendacao: 'Mapeie a jurisdição-alvo e o modelo de entrada antes da próxima rodada.',
       confianca: 71,
@@ -160,7 +160,7 @@ function parecerDemo(agente, ctx) {
       veredito: 'avancar',
       parecer: 'Há oportunidade concreta de transformar regeneração em ativo econômico neste projeto.',
       risco: 'Tratar impacto ambiental como custo, e não como fonte de receita, subaproveita a tese.',
-      recomendacao: 'Dimensione a área regenerável e o sequestro potencial — isso vira crédito e diferencial.',
+      recomendacao: 'Dimensione a área regenerável e o sequestro potencial: isso vira crédito e diferencial.',
       confianca: 78,
     },
     curupira: {
@@ -213,12 +213,12 @@ async function parecerAgente(agente, ctx) {
 PROJETO: ${ctx.projeto.nome} (${ctx.projeto.classificacao}, vertical ${ctx.projeto.vertical})
 DESCRIÇÃO: ${ctx.projeto.descricao}
 FASE: ${FASE_LABEL[ctx.projeto.fase] || ctx.projeto.fase}
-RADAR UNICÓRNIO: ${ctx.radar.score}/100 — ${ctx.radar.dimensoes.map(d => `${d.label} ${d.pontos}/${d.max}`).join(', ')}
+RADAR UNICÓRNIO: ${ctx.radar.score}/100, ${ctx.radar.dimensoes.map(d => `${d.label} ${d.pontos}/${d.max}`).join(', ')}
 MISSÕES PRINCIPAIS EM ABERTO: ${ctx.missoesPendentes}
 MELHOR EDITAL: ${ctx.melhorMatch ? `${ctx.melhorMatch.edital} (${ctx.melhorMatch.score}/100)` : 'nenhum relevante'}
 ${ctx.projeto.plano ? 'PLANO DE NEGÓCIOS: gerado' : 'PLANO DE NEGÓCIOS: ainda não gerado'}
 
-Dê seu parecer ESTRITAMENTE sob a sua especialidade — não invada a área dos outros conselheiros. Seja específico a este projeto, direto e honesto. Confiança de 0 a 100 no seu próprio parecer.`,
+Dê seu parecer ESTRITAMENTE sob a sua especialidade: não invada a área dos outros conselheiros. Seja específico a este projeto, direto e honesto. Confiança de 0 a 100 no seu próprio parecer.`,
       schema: PARECER_SCHEMA,
       effort: 'medium',
       maxTokens: 2000,

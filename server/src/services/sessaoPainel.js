@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// SESSÃO ELEVADA DO PAINEL — segunda porta para a área de administração.
+// SESSÃO ELEVADA DO PAINEL: segunda porta para a área de administração.
 //
 // Estar logado na plataforma não abre o painel. Para entrar, o administrador
 // confirma a senha de novo e recebe um token curto (30 min) que só vale para
@@ -7,9 +7,9 @@
 // janela já expirou.
 //
 // Três camadas:
-//   1. papel de administrador     — quem pode tentar
-//   2. reconfirmação de senha     — prova de que é a pessoa
-//   3. token com prazo + trilha   — toda ação fica registrada
+//   1. papel de administrador, quem pode tentar
+//   2. reconfirmação de senha: prova de que é a pessoa
+//   3. token com prazo + trilha: toda ação fica registrada
 // ═══════════════════════════════════════════════════════════════════════════
 import crypto from 'node:crypto';
 import { store, save, id } from '../store.js';
@@ -17,7 +17,7 @@ import { conferirSenha, pode } from '../auth.js';
 
 /**
  * Quem tem porta no painel: administrador e editor. O fundador constrói na
- * plataforma e não tem o que fazer aqui — a checagem é por capacidade, não
+ * plataforma e não tem o que fazer aqui: a checagem é por capacidade, não
  * por papel, para que um papel novo não precise mexer nesta função.
  */
 export function podeAbrirPainel(user) {

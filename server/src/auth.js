@@ -119,7 +119,7 @@ export function publicUser(u) {
 //
 // Instalação nova não tem administrador gravado. Nesse caso vale a regra de
 // bootstrap: ZOOMDEV_ADMIN_EMAIL, ou o primeiro usuário registrado. Assim que
-// alguém recebe papel 'admin' de verdade, a regra se aposenta — por isso
+// alguém recebe papel 'admin' de verdade, a regra se aposenta, por isso
 // consolidarBootstrap() grava o papel antes de qualquer mudança no quadro.
 // ═══════════════════════════════════════════════════════════════════════════
 function bootstrapAdminId() {
@@ -176,7 +176,7 @@ export function adminMiddleware(req, res, next) {
   next();
 }
 
-/** Fábrica de middleware por capacidade — o jeito preferido de proteger rotas. */
+/** Fábrica de middleware por capacidade: o jeito preferido de proteger rotas. */
 export function exigir(capacidade) {
   return (req, res, next) => {
     if (!pode(req.user, capacidade)) {

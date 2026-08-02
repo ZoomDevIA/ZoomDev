@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// NÚCLEO COGNITIVO INTERNACIONAL — os 8 agentes da expansão global
+// NÚCLEO COGNITIVO INTERNACIONAL: os 8 agentes da expansão global
 //
 // Nomes definidos na arquitetura cognitiva da ZoomDev. Papéis desenhados para
 // o eixo de internacionalização, sem perder a ancoragem amazônica.
@@ -11,7 +11,7 @@
 
 export const AGENTES_NUCLEO = [
   {
-    id: 'maia', nome: 'Maiá', papel: 'Inteligência Regenerativa — copiloto científico do fundador',
+    id: 'maia', nome: 'Maiá', papel: 'Inteligência Regenerativa: copiloto científico do fundador',
     emoji: '🌸', categoria: 'Núcleo', cor: '#00ff64', imagem: null, nucleo: true, copiloto: true,
   },
   {
@@ -63,7 +63,7 @@ export const CASTAS = {
   },
   AMAZONICO: {
     id: 'AMAZONICO', nome: 'Conselho Amazônico', emoji: '🌿',
-    descricao: 'Guardiões do território. Acionados na geração qualitativa de startups e biostartups — o diferencial que nenhum concorrente global copia.',
+    descricao: 'Guardiões do território. Acionados na geração qualitativa de startups e biostartups: o diferencial que nenhum concorrente global copia.',
     ativoPorPadrao: true,
   },
   STANDBY: {
@@ -73,7 +73,7 @@ export const CASTAS = {
   },
 };
 
-/** Os 10 melhores herdados — critério: internacionalização + fomento + carbono + captação. */
+/** Os 10 melhores herdados, critério: internacionalização + fomento + carbono + captação. */
 export const CORE_IDS = ['ceo', 'cfo', 'investidor', 'editais', 'carbono', 'esg', 'cto', 'growth', 'juridico', 'mercado'];
 
 /** Guardiões amazônicos (categoria própria, preservada). */

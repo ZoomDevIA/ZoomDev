@@ -1,4 +1,4 @@
-// Dados-semente clonados do protótipo Base44 — nomes, papéis, cores e IMAGENS ORIGINAIS
+// Dados-semente clonados do protótipo Base44: nomes, papéis, cores e IMAGENS ORIGINAIS
 // extraídos da entidade Agent do app real (ver docs/spec-prototipo-base44.md).
 // Imagens servidas localmente em web/public/assets/agents/.
 
@@ -71,7 +71,7 @@ export const EDITAIS_SEED = [
 
 // Marketplace CarbonPay (espelha os itens seed do protótipo)
 export const CARBONPAY_ITENS = [
-  { id: 'redd_amazonia_mkt', nome: 'REDD+ Amazônia — Floresta em Pé', categoria: 'Projetos de Carbono', tons: 12500, precoPorTon: 189, padrao: 'Verra VCS', bioma: 'Amazônia', tipo: 'REDD+', verificado: true, descricao: 'Conservação de floresta nativa com monitoramento por satélite e renda comunitária.' },
+  { id: 'redd_amazonia_mkt', nome: 'REDD+ Amazônia: Floresta em Pé', categoria: 'Projetos de Carbono', tons: 12500, precoPorTon: 189, padrao: 'Verra VCS', bioma: 'Amazônia', tipo: 'REDD+', verificado: true, descricao: 'Conservação de floresta nativa com monitoramento por satélite e renda comunitária.' },
   { id: 'saf_cacau', nome: 'SAF Cacau Bahia', categoria: 'Projetos de Carbono', tons: 4300, precoPorTon: 145, padrao: 'Gold Standard', bioma: 'Mata Atlântica', tipo: 'ARR/Agrofloresta', verificado: true, descricao: 'Sistemas agroflorestais de cacau-cabruca com remoção de carbono e renda familiar.' },
   { id: 'cerrado_vivo', nome: 'Cerrado Vivo', categoria: 'Projetos de Carbono', tons: 7800, precoPorTon: 112, padrao: 'Verra VCS', bioma: 'Cerrado', tipo: 'Conservação', verificado: true, descricao: 'Proteção de vegetação nativa do Cerrado com brigadas contra incêndio.' },
   { id: 'pantanal_regenera', nome: 'Pantanal Regenera', categoria: 'Projetos de Carbono', tons: 3200, precoPorTon: 128, padrao: 'Social Carbon', bioma: 'Pantanal', tipo: 'Restauração', verificado: true, descricao: 'Restauração de áreas degradadas com espécies nativas do Pantanal.' },
@@ -96,7 +96,7 @@ export const SEQUESTRO_TIPOS = {
 };
 
 export const NOTIFICACOES_SEED = [
-  { id: 'n1', titulo: 'Novo edital disponível', detalhe: 'FINEP Bioeconomia 2025 — R$ 200 milhões para projetos sustentáveis', tipo: 'edital' },
-  { id: 'n2', titulo: 'Chamada nexBio Amazônia 2026', detalhe: 'CONFAP · Amazônia+10 — R$ 107 milhões para bionegócios', tipo: 'edital' },
+  { id: 'n1', titulo: 'Novo edital disponível', detalhe: 'FINEP Bioeconomia 2025: R$ 200 milhões para projetos sustentáveis', tipo: 'edital' },
+  { id: 'n2', titulo: 'Chamada nexBio Amazônia 2026', detalhe: 'CONFAP · Amazônia+10: R$ 107 milhões para bionegócios', tipo: 'edital' },
   { id: 'n3', titulo: 'CarbonPay ativo', detalhe: 'Calcule seu passivo e compense com créditos verificados', tipo: 'info' },
 ];

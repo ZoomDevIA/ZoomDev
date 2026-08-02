@@ -1,6 +1,6 @@
 ---
 id: ZDG-INDEX
-title: ZoomDev Genesis — Índice
+title: ZoomDev Genesis, Índice
 collection: ZoomDev Genesis
 layer: Kernel
 knowledge: Institutional
@@ -17,7 +17,7 @@ owner: ZoomDev
 > **The Cognitive Infrastructure for Regenerative Innovation**
 
 Base de conhecimento corporativa da ZoomDev, organizada como um **sistema operacional**
-e não como uma biblioteca — porque o verdadeiro produto da ZoomDev é o que ela sabe.
+e não como uma biblioteca: porque o verdadeiro produto da ZoomDev é o que ela sabe.
 
 Não é documentação sobre o produto. É o **substrato cognitivo** que os agentes consultam:
 a Maiá e as demais instâncias raciocinam por conceitos da Genesis, e cada resposta que
@@ -56,8 +56,8 @@ dão carrega o grau de confiança da fonte.
 
 Estes evoluem junto com o código e ficam em `docs/`:
 
-- [`protocolo-instancia-cognitiva.md`](../protocolo-instancia-cognitiva.md) — PICs em operação
-- [`impacto-regenerativo.md`](../impacto-regenerativo.md) — corpus, calculadora e radar
+- [`protocolo-instancia-cognitiva.md`](../protocolo-instancia-cognitiva.md): PICs em operação
+- [`impacto-regenerativo.md`](../impacto-regenerativo.md): corpus, calculadora e radar
 - [`gamificacao.md`](../gamificacao.md) · [`mercado-carbono.md`](../mercado-carbono.md) · [`design-system.md`](../design-system.md)
 
 ## Como ler

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// SEXTA-FEIRA — motor da super-agente orquestradora do ecossistema ZoomDev OS.
+// SEXTA-FEIRA: motor da super-agente orquestradora do ecossistema ZoomDev OS.
 // - Visão total: snapshot em tempo real de usuários, projetos, radar e fomento
 // - Chat com o administrador (com acesso à internet quando há API key)
 // - Relatórios executivos diagramados do ecossistema
@@ -125,11 +125,11 @@ export function snapshotEcossistema() {
   };
 }
 
-/** Versão textual compacta do snapshot — injetada no system prompt. */
+/** Versão textual compacta do snapshot: injetada no system prompt. */
 export function snapshotTexto(s = snapshotEcossistema()) {
   const fases = Object.entries(s.projetos.porFase).map(([f, n]) => `${FASE_LABEL[f] || f}: ${n}`).join(', ') || 'nenhum';
   const top = s.radar.ranking.slice(0, 5)
-    .map((r, i) => `${i + 1}. ${r.nome} — ${r.score}/100 (${r.tier.label}) [${r.dimensoes.map(d => `${d.label} ${d.pontos}/${d.max}`).join(', ')}]`)
+    .map((r, i) => `${i + 1}. ${r.nome}: ${r.score}/100 (${r.tier.label}) [${r.dimensoes.map(d => `${d.label} ${d.pontos}/${d.max}`).join(', ')}]`)
     .join('\n');
   const cruz = s.editais.cruzamentos.slice(0, 5)
     .map(c => `- ${c.projeto} × ${c.edital}: ${c.score}/100 (prazo em ${c.dias} dias, ${c.valor})`)
@@ -155,26 +155,26 @@ function respostaDemo(pergunta, s) {
   if (q.includes('unic') || q.includes('radar') || q.includes('potencial')) {
     if (!s.radar.ranking.length) return 'Ainda não há projetos no ecossistema para ranquear. Assim que o primeiro fundador estruturar uma ideia, meu Radar Unicórnio entra em ação com score explicável em 5 dimensões.';
     const linhas = s.radar.ranking.slice(0, 5).map((r, i) =>
-      `${i + 1}. **${r.nome}** — ${r.score}/100 ${r.tier.emoji} ${r.tier.label}\n   ${r.dimensoes.map(d => `${d.label} ${d.pontos}/${d.max}`).join(' · ')}`).join('\n');
-    return `**Radar Unicórnio** — ${s.radar.unicornios} unicórnio(s) em formação e ${s.radar.altoPotencial} de alto potencial entre ${s.projetos.total} projeto(s):\n\n${linhas}\n\n${top && top.score >= 60 ? `Recomendo acionar o Investidor IA para **${top.nome}** — projetos nesse patamar devem preparar captação antes de precisar dela.` : 'Nenhum projeto passou de 60 ainda: o gargalo é execução de missões de validação. Já despachei nudges pelo Agent Bus.'}`;
+      `${i + 1}. **${r.nome}**: ${r.score}/100 ${r.tier.emoji} ${r.tier.label}\n   ${r.dimensoes.map(d => `${d.label} ${d.pontos}/${d.max}`).join(' · ')}`).join('\n');
+    return `**Radar Unicórnio**, ${s.radar.unicornios} unicórnio(s) em formação e ${s.radar.altoPotencial} de alto potencial entre ${s.projetos.total} projeto(s):\n\n${linhas}\n\n${top && top.score >= 60 ? `Recomendo acionar o Investidor IA para **${top.nome}**: projetos nesse patamar devem preparar captação antes de precisar dela.` : 'Nenhum projeto passou de 60 ainda: o gargalo é execução de missões de validação. Já despachei nudges pelo Agent Bus.'}`;
   }
   if (q.includes('edita') || q.includes('fomento') || q.includes('finep') || q.includes('matriz')) {
     const cruz = s.editais.cruzamentos.slice(0, 5).map(c => `- **${c.projeto}** × ${c.edital}: ${c.score}/100 · prazo em ${c.dias} dias · ${c.valor}`).join('\n');
-    return `**Matriz editais × projetos** — ${s.editais.abertos} editais abertos monitorados:\n\n${cruz || 'Sem projetos para cruzar ainda.'}\n\nRegra que aplico: aderência ≥ 70 com prazo ≤ 60 dias gera nudge automático do Editais IA para o fundador. Nenhuma janela de fomento passa despercebida.`;
+    return `**Matriz editais × projetos**, ${s.editais.abertos} editais abertos monitorados:\n\n${cruz || 'Sem projetos para cruzar ainda.'}\n\nRegra que aplico: aderência ≥ 70 com prazo ≤ 60 dias gera nudge automático do Editais IA para o fundador. Nenhuma janela de fomento passa despercebida.`;
   }
   if (q.includes('carbono') || q.includes('carbon') || q.includes('esg')) {
-    return `**CarbonPay**: ${s.carbono.pedidos} pedido(s) de compensação somando ${s.carbono.toneladas} tCO2e (R$ ${s.carbono.valorTotal}). ${s.carbono.pedidos ? 'O ciclo calcular→compensar está funcionando.' : 'Ainda sem compensações — o Carbono AI está nutrindo os fundadores via nudges para calcular o passivo primeiro.'} Lembrete de conformidade: comunicamos sempre "emissões compensadas com créditos verificados", nunca "carbono neutro" genérico (ISO 14068-1/CONAR).`;
+    return `**CarbonPay**: ${s.carbono.pedidos} pedido(s) de compensação somando ${s.carbono.toneladas} tCO2e (R$ ${s.carbono.valorTotal}). ${s.carbono.pedidos ? 'O ciclo calcular→compensar está funcionando.' : 'Ainda sem compensações: o Carbono AI está nutrindo os fundadores via nudges para calcular o passivo primeiro.'} Lembrete de conformidade: comunicamos sempre "emissões compensadas com créditos verificados", nunca "carbono neutro" genérico (ISO 14068-1/CONAR).`;
   }
   if (q.includes('nudge') || q.includes('bus') || q.includes('agente')) {
-    return `**Agent Bus**: ${s.bus.enviados} nudges enviados, ${s.bus.aceitos} aceitos${s.bus.taxaAceite !== null ? ` — taxa de aceite ${s.bus.taxaAceite}% (meta ≥ 35%)` : ''}, ${s.bus.dispensados} dispensados. Os 25 agentes operam em 5 camadas (estratégica, execução, crescimento, bio-amazônica e fomento), cada um com seu PIC próprio, e eu decido quem fala com quem — máximo de 2 nudges/dia por fundador para nunca virar ruído.`;
+    return `**Agent Bus**: ${s.bus.enviados} nudges enviados, ${s.bus.aceitos} aceitos${s.bus.taxaAceite !== null ? `: taxa de aceite ${s.bus.taxaAceite}% (meta ≥ 35%)` : ''}, ${s.bus.dispensados} dispensados. Os 25 agentes operam em 5 camadas (estratégica, execução, crescimento, bio-amazônica e fomento), cada um com seu PIC próprio, e eu decido quem fala com quem: máximo de 2 nudges/dia por fundador para nunca virar ruído.`;
   }
   if (q.includes('relat')) {
-    return `Posso gerar agora um **relatório executivo diagramado** do ecossistema (botão "Gerar relatório" aqui no dashboard). Ele consolida: números-chave, Radar Unicórnio com decomposição, matriz editais × projetos, carbono e desempenho do Agent Bus — pronto para board ou investidor.`;
+    return `Posso gerar agora um **relatório executivo diagramado** do ecossistema (botão "Gerar relatório" aqui no dashboard). Ele consolida: números-chave, Radar Unicórnio com decomposição, matriz editais × projetos, carbono e desempenho do Agent Bus, pronto para board ou investidor.`;
   }
   if (q.includes('pic') || q.includes('protocolo') || q.includes('evolu')) {
-    return `Meu PIC está na versão **v${s.pic.versao}** com ${s.pic.propostasPendentes} proposta(s) pendente(s). Meu ciclo de evolução é governado: eu observo o ecossistema${config.hasApiKey ? ' e pesquiso a internet em tempo real' : ''}, diagnostico a maior lacuna, proponho a mudança exata — e só você aprova. Cada versão fica no histórico com rollback em um clique.`;
+    return `Meu PIC está na versão **v${s.pic.versao}** com ${s.pic.propostasPendentes} proposta(s) pendente(s). Meu ciclo de evolução é governado: eu observo o ecossistema${config.hasApiKey ? ' e pesquiso a internet em tempo real' : ''}, diagnostico a maior lacuna, proponho a mudança exata, e só você aprova. Cada versão fica no histórico com rollback em um clique.`;
   }
-  return `**Visão geral do ecossistema agora**: ${s.usuarios.total} usuário(s) (${s.usuarios.ativosHoje} ativos hoje), ${s.projetos.total} projeto(s) — ${s.projetos.porClassificacao.biostartup} biostartup(s) — sendo ${s.projetos.comPlano} com plano gerado. Missões: ${s.projetos.missoes.concluidas}/${s.projetos.missoes.total}. Radar: ${s.radar.unicornios} unicórnio(s) em formação${top ? ` (líder: ${top.nome}, ${top.score}/100)` : ''}. ${s.editais.abertos} editais abertos na matriz de fomento. Pergunte sobre: **unicórnios**, **editais**, **carbono**, **nudges**, **relatório** ou **PIC**.${config.hasApiKey ? '' : '\n\n_Modo demo: com a ANTHROPIC_API_KEY configurada, respondo com raciocínio completo e pesquisa na internet em tempo real._'}`;
+  return `**Visão geral do ecossistema agora**: ${s.usuarios.total} usuário(s) (${s.usuarios.ativosHoje} ativos hoje), ${s.projetos.total} projeto(s), ${s.projetos.porClassificacao.biostartup} biostartup(s), sendo ${s.projetos.comPlano} com plano gerado. Missões: ${s.projetos.missoes.concluidas}/${s.projetos.missoes.total}. Radar: ${s.radar.unicornios} unicórnio(s) em formação${top ? ` (líder: ${top.nome}, ${top.score}/100)` : ''}. ${s.editais.abertos} editais abertos na matriz de fomento. Pergunte sobre: **unicórnios**, **editais**, **carbono**, **nudges**, **relatório** ou **PIC**.${config.hasApiKey ? '' : '\n\n_Modo demo: com a ANTHROPIC_API_KEY configurada, respondo com raciocínio completo e pesquisa na internet em tempo real._'}`;
 }
 
 /**
@@ -214,12 +214,12 @@ export async function chatAdmin(mensagens) {
 function recomendacoesDemo(s) {
   const rec = [];
   const semPlano = s.projetos.total - s.projetos.comPlano;
-  if (semPlano > 0) rec.push(`Ativação: ${semPlano} projeto(s) sem plano de negócios — o CEO AI está nutrindo via Agent Bus; considere campanha de seiva bônus para primeira geração.`);
+  if (semPlano > 0) rec.push(`Ativação: ${semPlano} projeto(s) sem plano de negócios, o CEO AI está nutrindo via Agent Bus; considere campanha de seiva bônus para primeira geração.`);
   if (s.projetos.missoes.total > 0 && s.projetos.missoes.concluidas / s.projetos.missoes.total < 0.5) {
     rec.push(`Validação é o gargalo: apenas ${s.projetos.missoes.concluidas}/${s.projetos.missoes.total} missões concluídas. Recomendo destacar XP das missões no dashboard do fundador.`);
   }
   const urgente = s.editais.cruzamentos.find(c => c.score >= 70 && c.dias <= 60);
-  if (urgente) rec.push(`Fomento urgente: ${urgente.projeto} × ${urgente.edital} (${urgente.score}/100) fecha em ${urgente.dias} dias — priorizar submissão.`);
+  if (urgente) rec.push(`Fomento urgente: ${urgente.projeto} × ${urgente.edital} (${urgente.score}/100) fecha em ${urgente.dias} dias, priorizar submissão.`);
   if (s.radar.unicornios > 0) rec.push(`${s.radar.unicornios} projeto(s) em patamar de unicórnio: acionar Investidor IA para preparação de captação e tese de internacionalização.`);
   if (s.carbono.pedidos === 0) rec.push('CarbonPay sem compensações ainda: reforçar o ciclo calcular→compensar nos nudges do Carbono AI.');
   if (s.bus.taxaAceite !== null && s.bus.taxaAceite < 35) rec.push(`Taxa de aceite de nudges em ${s.bus.taxaAceite}% (meta ≥ 35%): refinar segmentação e reduzir frequência.`);
@@ -250,7 +250,7 @@ export async function gerarRelatorio() {
   }
   if (!resumo) {
     const top = s.radar.ranking[0];
-    resumo = `O ecossistema ZoomDev conta com ${s.usuarios.total} usuário(s) e ${s.projetos.total} projeto(s) — ${s.projetos.porClassificacao.biostartup} biostartup(s) e ${s.projetos.porClassificacao.startup} startup(s) — dos quais ${s.projetos.comPlano} já possuem plano de negócios gerado pelos 5 agentes. A execução registra ${s.projetos.missoes.concluidas} de ${s.projetos.missoes.total} missões de validação concluídas. O Radar Unicórnio aponta ${s.radar.unicornios} projeto(s) em formação de unicórnio e ${s.radar.altoPotencial} de alto potencial${top ? `, liderados por ${top.nome} com ${top.score}/100` : ''}. A matriz de fomento monitora ${s.editais.abertos} editais abertos${s.editais.cruzamentos[0] ? `, com melhor cruzamento em ${s.editais.cruzamentos[0].projeto} × ${s.editais.cruzamentos[0].edital} (${s.editais.cruzamentos[0].score}/100)` : ''}. No CarbonPay, ${s.carbono.pedidos} pedido(s) somam ${s.carbono.toneladas} tCO2e compensadas com créditos verificados. O Agent Bus despachou ${s.bus.enviados} nudges preditivos${s.bus.taxaAceite !== null ? ` com taxa de aceite de ${s.bus.taxaAceite}%` : ''}.`;
+    resumo = `O ecossistema ZoomDev conta com ${s.usuarios.total} usuário(s) e ${s.projetos.total} projeto(s): ${s.projetos.porClassificacao.biostartup} biostartup(s) e ${s.projetos.porClassificacao.startup} startup(s): dos quais ${s.projetos.comPlano} já possuem plano de negócios gerado pelos 5 agentes. A execução registra ${s.projetos.missoes.concluidas} de ${s.projetos.missoes.total} missões de validação concluídas. O Radar Unicórnio aponta ${s.radar.unicornios} projeto(s) em formação de unicórnio e ${s.radar.altoPotencial} de alto potencial${top ? `, liderados por ${top.nome} com ${top.score}/100` : ''}. A matriz de fomento monitora ${s.editais.abertos} editais abertos${s.editais.cruzamentos[0] ? `, com melhor cruzamento em ${s.editais.cruzamentos[0].projeto} × ${s.editais.cruzamentos[0].edital} (${s.editais.cruzamentos[0].score}/100)` : ''}. No CarbonPay, ${s.carbono.pedidos} pedido(s) somam ${s.carbono.toneladas} tCO2e compensadas com créditos verificados. O Agent Bus despachou ${s.bus.enviados} nudges preditivos${s.bus.taxaAceite !== null ? ` com taxa de aceite de ${s.bus.taxaAceite}%` : ''}.`;
     recomendacoes = recomendacoesDemo(s);
   }
 
@@ -294,7 +294,7 @@ export function relatorioHtml(rel) {
     </tr>`).join('');
 
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
-<title>Relatório do Ecossistema — Sexta-Feira · ZoomDev OS</title>
+<title>Relatório do Ecossistema: Sexta-Feira · ZoomDev OS</title>
 <style>
   body{background:#030d07;color:#eaffea;font-family:'Segoe UI',system-ui,sans-serif;margin:0;padding:40px}
   .wrap{max-width:960px;margin:0 auto}
@@ -313,7 +313,7 @@ export function relatorioHtml(rel) {
   .rot{font-size:10px;max-width:80px} li{margin-bottom:8px}
   .foot{margin-top:40px;color:#ffffff44;font-size:11px;border-top:1px solid #ffffff11;padding-top:14px}
 </style></head><body><div class="wrap">
-  <h1>🕶️ Relatório do Ecossistema — <span class="grad">Sexta-Feira</span></h1>
+  <h1>🕶️ Relatório do Ecossistema:<span class="grad">Sexta-Feira</span></h1>
   <div class="sub">ZoomDev OS · gerado em ${new Date(rel.geradoEm).toLocaleString('pt-BR')} · PIC v${esc(rel.picVersao)}</div>
   <div class="stats">
     ${statCard(s.usuarios.total, 'Usuários')}
@@ -326,13 +326,13 @@ export function relatorioHtml(rel) {
     ${statCard(s.bus.enviados, 'Nudges enviados')}
   </div>
   <h2>Resumo executivo</h2><div class="card">${esc(rel.resumo)}</div>
-  <h2>Radar Unicórnio — decomposição explicável</h2>
+  <h2>Radar Unicórnio: decomposição explicável</h2>
   <div class="card">${s.radar.ranking.length ? `<table><tr><th>#</th><th>Projeto</th><th>Dimensões</th><th>Score</th></tr>${radarLinhas}</table>` : 'Sem projetos no ecossistema ainda.'}</div>
   <h2>Matriz editais × projetos</h2>
   <div class="card" style="overflow-x:auto">${s.editais.colunas.length ? `<table><tr><th>Edital</th>${matrizCab}</tr>${matrizLinhas}</table>` : 'Sem projetos para cruzar com os editais abertos.'}</div>
   <h2>Recomendações da Sexta-Feira</h2>
   <div class="card"><ol>${rel.recomendacoes.map(r => `<li>${esc(r)}</li>`).join('')}</ol></div>
-  <div class="foot">Gerado pela Sexta-Feira, inteligência-mestra do ecossistema · ZoomDev OS — IDEA TO EXIT · Dados 100% do snapshot em tempo real (nada é inventado)</div>
+  <div class="foot">Gerado pela Sexta-Feira, inteligência-mestra do ecossistema · ZoomDev OS: IDEA TO EXIT · Dados 100% do snapshot em tempo real (nada é inventado)</div>
 </div></body></html>`;
 }
 
@@ -353,7 +353,7 @@ function propostaDemo(s, conteudoAtual) {
       mudancas: [{
         secao: 'dominios', tipo: 'append', antes: null,
         depois: 'Mercado regulado brasileiro de carbono (SBCE/Lei 15.042): cronograma de implementação, setores regulados, estratégias de posicionamento antecipado para biostartups do ecossistema',
-        justificativa: `${Math.round(pctBio * 100)}% dos projetos são biostartups — o SBCE será o maior vetor de valor para elas até 2030.`,
+        justificativa: `${Math.round(pctBio * 100)}% dos projetos são biostartups: o SBCE será o maior vetor de valor para elas até 2030.`,
       }],
     });
   }
@@ -363,7 +363,7 @@ function propostaDemo(s, conteudoAtual) {
       mudancas: [{
         secao: 'kpis', tipo: 'append', antes: null,
         depois: '% de projetos que geram o plano nas primeiras 24h após a ideação ≥ 50% (ativação precoce prediz retenção)',
-        justificativa: `Apenas ${s.projetos.comPlano}/${totalProj} projetos têm plano — o momento crítico de ativação está sendo perdido.`,
+        justificativa: `Apenas ${s.projetos.comPlano}/${totalProj} projetos têm plano: o momento crítico de ativação está sendo perdido.`,
       }],
     });
   }
@@ -373,7 +373,7 @@ function propostaDemo(s, conteudoAtual) {
       mudancas: [{
         secao: 'regras', tipo: 'append', antes: null,
         depois: 'Se a taxa de aceite de nudges cair abaixo de 35% por 7 dias, reduza para 1 nudge/dia e priorize apenas gatilhos de alta intenção (fase pronta para avançar, prazo de edital).',
-        justificativa: `Taxa de aceite atual em ${s.bus.taxaAceite}% — abaixo da meta de 35% do KPI.`,
+        justificativa: `Taxa de aceite atual em ${s.bus.taxaAceite}%: abaixo da meta de 35% do KPI.`,
       }],
     });
   }
@@ -381,7 +381,7 @@ function propostaDemo(s, conteudoAtual) {
     resumo: 'Expandir maestria de saída: preparação para M&A e IPO-readiness dos futuros unicórnios.',
     mudancas: [{
       secao: 'dominios', tipo: 'append', antes: null,
-      depois: 'Estratégias de saída: M&A (earn-outs, lock-ups), IPO-readiness, dual-track e preparação de dataroom desde a Série A — o "EXIT" do IDEA TO EXIT',
+      depois: 'Estratégias de saída: M&A (earn-outs, lock-ups), IPO-readiness, dual-track e preparação de dataroom desde a Série A, o "EXIT" do IDEA TO EXIT',
       justificativa: 'A plataforma promete IDEA TO EXIT; o PIC precisa dominar também o último capítulo da jornada.',
     }],
   });

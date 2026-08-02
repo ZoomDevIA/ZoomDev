@@ -1,4 +1,4 @@
-# Spec do Protótipo Base44 (ZoomDev OS) — extração do app real
+# Spec do Protótipo Base44 (ZoomDev OS): extração do app real
 
 > Fonte: bundle de produção de `zoom-dev-os.base44.app` + schemas de entidades via conector
 > Base44 (ago/2026). Referência de fidelidade para as próximas fases de desenvolvimento.
@@ -34,7 +34,7 @@ Botão flutuante do Copiloto no canto inferior direito.
 - 6 stat-cards: Projetos Ativos, Ideias Criadas, MVPs, Investidores, Score de Impacto,
   Comunidade
 - Chat "Zoom Intelligence" embutido (persistência em ChatLog)
-- Banner: "Novo edital FINEP Bioeconomia aberto — R$ 200 milhões…"
+- Banner: "Novo edital FINEP Bioeconomia aberto: R$ 200 milhões…"
 
 ## Fluxo de ideação do protótipo
 
@@ -64,7 +64,7 @@ Botão flutuante do Copiloto no canto inferior direito.
   REDD+ Amazônia ($35/t), SAF Cacau Bahia, Cerrado, Pantanal
 - **Calculadora de sequestro:** área (ha) × duração × bioma (6 opções) × tipo de projeto →
   tCO₂/ano, receita estimada e "árvores equivalentes" (complementar à calculadora de
-  passivo já implementada — uma mede emissões, a outra mede potencial de geração de créditos)
+  passivo já implementada: uma mede emissões, a outra mede potencial de geração de créditos)
 - CarbonPurchaseModal: quantidade tCO₂ + pagamento PIX (função `carbonPay` → pix_code + QR)
   ou cartão (Stripe)
 - Entidade `CarbonTransaction`: buyer/seller, carbon_tons, price_per_ton, payment_method

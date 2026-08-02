@@ -1,4 +1,4 @@
-# ZoomDev OS — Design System (clone fiel do protótipo Base44)
+# ZoomDev OS: Design System (clone fiel do protótipo Base44)
 
 > Fonte: extração direta do CSS/JS de produção de `https://zoom-dev-os.base44.app/` (ago/2026),
 > screenshots das telas públicas e screenshots internos do Plano de Negócios.
@@ -7,7 +7,7 @@
 
 - **Nome:** ZoomDev OS
 - **Tagline:** "IDEA TO EXIT" / "Construa o futuro. Com IA. Com propósito."
-- **Logo:** "Z" estilizado em duas ondas — onda superior em gradiente verde, inferior em gradiente azul
+- **Logo:** "Z" estilizado em duas ondas: onda superior em gradiente verde, inferior em gradiente azul
 - **Tom:** futurista-orgânico ("floresta digital"): circuitos + folhas, glassmorphism escuro, neon verde
 - **Copy:** pt-BR, direto, com emojis pontuais ("Bem-vindo(a) de volta! 👋", "Crie sua conta 🚀")
 
@@ -15,8 +15,8 @@
 
 ```css
 :root {
-  --brand-green: #00ff64;   /* verde neon — cor primária */
-  --brand-blue:  #00c8ff;   /* ciano — cor secundária */
+  --brand-green: #00ff64;   /* verde neon, cor primária */
+  --brand-blue:  #00c8ff;   /* ciano, cor secundária */
   --brand-bg:    #030d07;   /* fundo global (verde-preto) */
 }
 ```
@@ -92,7 +92,7 @@ padrões shadcn (`accordion-up/down`, `enter/exit`, `ping`, `pulse`).
 
 ## 6. Padrões de tela (referência das capturas)
 
-- **Login/Registro:** split — hero à esquerda (headline com palavra destacada em verde + 3 mini-cards
+- **Login/Registro:** split, hero à esquerda (headline com palavra destacada em verde + 3 mini-cards
   de features + card de vídeo), card de auth à direita com tabs Entrar/Criar conta em pílula gradiente,
   social login (Google, GitHub, Microsoft, Apple, Biometria), microcopy de segurança no rodapé
 - **Dashboard:** saudação personalizada, 4 stat-cards (Projetos Ativos, Ideias Criadas, MVPs, Score de

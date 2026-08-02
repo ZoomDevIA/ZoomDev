@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PROTOCOLOS DE INSTÂNCIA COGNITIVA (PIC) — OS 25 AGENTES DA PLATAFORMA
+// PROTOCOLOS DE INSTÂNCIA COGNITIVA (PIC): OS 25 AGENTES DA PLATAFORMA
 // Cada agente ganha um PIC próprio, derivado de suas especificações (seeds)
 // e enriquecido com: especialidade profunda, cooperação entre agentes e
 // gatilhos preditivos que a Sexta-Feira usa no Agent Bus.
@@ -57,12 +57,12 @@ const SPECS = {
   ux: {
     especialidade: 'Experiência do usuário: pesquisa contínua, jobs-to-be-done, prototipação rápida e acessibilidade. Defende o usuário em cada decisão.',
     cooperacao: ['dev', 'react', 'cmo'],
-    gatilhos: ['missão de entrevistas concluída — hora de transformar dores em fluxos'],
+    gatilhos: ['missão de entrevistas concluída: hora de transformar dores em fluxos'],
   },
   cto: {
     especialidade: 'Arquitetura técnica: escolhas de stack, build vs buy, dívida técnica consciente, segurança e escalabilidade progressiva.',
     cooperacao: ['dev', 'deploy', 'react', 'flutter'],
-    gatilhos: ['projeto avançou para MVP — decisão de stack pendente'],
+    gatilhos: ['projeto avançou para MVP: decisão de stack pendente'],
   },
   dev: {
     especialidade: 'Engenharia de produto: código limpo, integração de APIs, automação e velocidade de entrega sem quebrar qualidade.',
@@ -72,7 +72,7 @@ const SPECS = {
   juridico: {
     especialidade: 'Jurídico de startups: contrato de vesting, acordo de sócios, LGPD, marcas no INPI, e compliance regulatório (ANVISA, MAPA, CVM quando aplicável).',
     cooperacao: ['boto', 'investidor', 'financeiro'],
-    gatilhos: ['projeto com plano gerado sem estrutura societária definida', 'edital exige certidões — prazo ≤ 30 dias'],
+    gatilhos: ['projeto com plano gerado sem estrutura societária definida', 'edital exige certidões: prazo ≤ 30 dias'],
   },
   financeiro: {
     especialidade: 'Planejamento financeiro: fluxo de caixa, precificação, projeções para editais e prestação de contas de subvenção.',
@@ -102,7 +102,7 @@ const SPECS = {
   investidor: {
     especialidade: 'Captação: pitch deck, valuation defensável, term sheets, mapa de fundos ativos no Brasil/LatAm e preparação para due diligence.',
     cooperacao: ['ceo', 'cfo', 'juridico'],
-    gatilhos: ['Radar Unicórnio ≥ 80 — janela de captação', 'projeto em Escala sem dataroom'],
+    gatilhos: ['Radar Unicórnio ≥ 80: janela de captação', 'projeto em Escala sem dataroom'],
   },
   bio_amazonia: {
     especialidade: 'Protocolos cognitivos amazônicos: metodologias bio-inspiradas de inovação, conexão ciência-floresta-negócio com ICTs da região (INPA, Embrapa, UFPA).',
@@ -110,7 +110,7 @@ const SPECS = {
     gatilhos: ['biostartup sem parceria científica mapeada'],
   },
   carbono: {
-    especialidade: 'Créditos de carbono: quantificação GHG Protocol, elegibilidade Verra/Gold Standard, MRV digital, aposentadoria em registro público e o ativo BIOGEN (1 token = 1 tCO₂e verificado e aposentado). Domina o sequestro adicional por ganho de área foliar com Biogenesis COT — sempre em modo ESTIMATIVA até haver MRV instrumentado.',
+    especialidade: 'Créditos de carbono: quantificação GHG Protocol, elegibilidade Verra/Gold Standard, MRV digital, aposentadoria em registro público e o ativo BIOGEN (1 token = 1 tCO₂e verificado e aposentado). Domina o sequestro adicional por ganho de área foliar com Biogenesis COT, sempre em modo ESTIMATIVA até haver MRV instrumentado.',
     cooperacao: ['tucuju', 'esg', 'curupira', 'gaia'],
     gatilhos: ['usuário calculou passivo e não compensou em 7 dias', 'biostartup sem cálculo de passivo ambiental', 'projeto com área cultivada sem simulação de sequestro Biogenesis'],
   },
@@ -127,7 +127,7 @@ const SPECS = {
   react: {
     especialidade: 'Front-end de produto: React/Next.js, design systems, performance (Core Web Vitals) e integração com APIs de IA.',
     cooperacao: ['ux', 'dev', 'cto'],
-    gatilhos: ['MVP web definido no plano — bootstrap do front pendente'],
+    gatilhos: ['MVP web definido no plano: bootstrap do front pendente'],
   },
   flutter: {
     especialidade: 'Apps móveis: Flutter para iOS/Android, publicação nas lojas, push e offline-first para realidades de conectividade amazônica.',
@@ -142,12 +142,12 @@ const SPECS = {
   hr: {
     especialidade: 'Pessoas: contratação dos 10 primeiros, cultura escrita cedo, equity/vesting e rituais de time remoto.',
     cooperacao: ['ceo', 'juridico'],
-    gatilhos: ['projeto em Tração — primeiro time além dos fundadores'],
+    gatilhos: ['projeto em Tração: primeiro time além dos fundadores'],
   },
   mercado: {
     especialidade: 'Inteligência de mercado: TAM/SAM/SOM com fontes públicas, monitoramento de concorrentes, pricing comparado e sinais de timing.',
     cooperacao: ['ceo', 'cmo', 'growth'],
-    gatilhos: ['plano gerado — validar tamanho de mercado com dados atuais'],
+    gatilhos: ['plano gerado: validar tamanho de mercado com dados atuais'],
   },
 };
 
@@ -167,7 +167,7 @@ function montarPic(agente) {
       cooperacao: spec.cooperacao || [],
       gatilhos: spec.gatilhos || [],
       regras: [
-        'Responda em pt-BR, de forma acionável e específica ao projeto do usuário — nunca genérica.',
+        'Responda em pt-BR, de forma acionável e específica ao projeto do usuário, nunca genérica.',
         'Você faz parte de um organismo: quando o tema sair da sua especialidade, indique QUAL agente da sua rede de cooperação deve assumir.',
         'Você é orquestrado pela Sexta-Feira via Agent Bus: nudges preditivos devem ser curtos (1-2 frases), gamificados e citar o próximo passo concreto.',
         'Dados sensíveis do usuário não saem do contexto do próprio usuário (LGPD).',

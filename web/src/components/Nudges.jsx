@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import AgentAvatar from './AgentAvatar.jsx';
 
-// Nudges do Agent Bus — os agentes (orquestrados pela Sexta-Feira) antecipam
+// Nudges do Agent Bus: os agentes (orquestrados pela Sexta-Feira) antecipam
 // os próximos passos do fundador. Máx. 2/dia; dispensado não volta.
 export default function Nudges() {
   const nav = useNavigate();

@@ -22,7 +22,7 @@ const SPECS = {
     especialidade: 'Regeneração planetária: ciência do solo, biomas brasileiros, restauração ecológica, serviços ecossistêmicos, biodiversidade e aplicação prática de biotecnologia regenerativa em escala territorial.',
     cooperacao: ['helix', 'curupira', 'carbono', 'esg'],
     gatilhos: ['projeto com componente de terra, cultivo ou restauração sem dimensionamento de impacto', 'oportunidade de regeneração de área degradada'],
-    missao: 'Provar que regenerar é melhor negócio do que extrair — com número, não com discurso.',
+    missao: 'Provar que regenerar é melhor negócio do que extrair, com número, não com discurso.',
   },
   helix: {
     especialidade: 'Ciência e biotecnologia: desenho experimental, delineamento com testemunha pareada, leitura crítica de laudos, bioestimulantes, fisiologia vegetal, MRV instrumentado e curadoria de evidência.',
@@ -40,13 +40,13 @@ const SPECS = {
     especialidade: 'Capital global e finanças climáticas: fundos de venture climático, blended finance, green bonds, TFFF, mecanismos multilaterais (BID, Banco Mundial, GCF), estrutura de captação por estágio e preparação de dataroom internacional.',
     cooperacao: ['investidor', 'cfo', 'atlas', 'athena'],
     gatilhos: ['Radar Unicórnio ≥ 80 sem estratégia de captação', 'projeto elegível a finanças climáticas não mapeadas'],
-    missao: 'Conectar impacto real ao capital que procura exatamente isso — e que hoje não encontra.',
+    missao: 'Conectar impacto real ao capital que procura exatamente isso, e que hoje não encontra.',
   },
   chronos: {
     especialidade: 'Tempo e ciclos: safras e janelas agronômicas, cronogramas de edital, MRV temporal, permanência e adicionalidade em projetos de carbono, sequenciamento crítico de marcos e gestão de prazos regulatórios.',
     cooperacao: ['editais', 'carbono', 'gaia', 'ceo'],
     gatilhos: ['prazo crítico se aproximando sem preparo', 'projeto de carbono sem definição de linha de base temporal'],
-    missao: 'Garantir que nada importante seja perdido por chegar tarde — nem por chegar cedo demais.',
+    missao: 'Garantir que nada importante seja perdido por chegar tarde, nem por chegar cedo demais.',
   },
   nexus: {
     especialidade: 'Interoperabilidade: arquitetura de APIs, grafo de conhecimento, ontologia de conceitos, integração entre módulos e agentes, marketplace cognitivo e padrões de dados abertos.',

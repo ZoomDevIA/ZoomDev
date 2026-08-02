@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // Lockup original do app: símbolo girando (zd-spin-logo, 4s) + wordmark
-// "ZoomDev / IDEA TO EXIT" ao lado — assets originais em /assets/site/.
+// "ZoomDev / IDEA TO EXIT" ao lado: assets originais em /assets/site/.
 export default function BrandLockup({ symbolSize = 40, wordmarkHeight = 34, spin = true, className = '' }) {
   const [erroSimbolo, setErroSimbolo] = useState(false);
   const [erroNome, setErroNome] = useState(false);
@@ -22,7 +22,7 @@ export default function BrandLockup({ symbolSize = 40, wordmarkHeight = 34, spin
       {!erroNome ? (
         <img
           src="/assets/site/wordmark.png"
-          alt="ZoomDev — Idea to Exit"
+          alt="ZoomDev: Idea to Exit"
           style={{ height: wordmarkHeight, width: 'auto', objectFit: 'contain' }}
           onError={() => setErroNome(true)}
         />

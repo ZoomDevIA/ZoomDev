@@ -5,14 +5,14 @@ import { useUser } from '../App.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PAINEL DE ADMINISTRAÇÃO — área com porta própria.
+// PAINEL DE ADMINISTRAÇÃO: área com porta própria.
 //
 // Estar logado na plataforma não basta: aqui o administrador confirma a senha
 // e abre uma janela de 30 minutos. Expirou, pede de novo. Toda ação escrita
 // nesta tela vai para a trilha de auditoria com autor, horário e IP.
 //
 // Dentro do painel, cada seção só existe se o papel tiver a capacidade
-// correspondente — o editor entra e vê menos que o administrador.
+// correspondente: o editor entra e vê menos que o administrador.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const ABAS = [
@@ -384,7 +384,7 @@ function Papeis({ contexto }) {
   return (
     <div className="space-y-3">
       <p className="text-white/50 text-sm max-w-2xl">
-        Cada nível é uma lista de capacidades. O sistema nunca pergunta "essa pessoa é admin?" —
+        Cada nível é uma lista de capacidades. O sistema nunca pergunta "essa pessoa é admin?"–
         pergunta "essa pessoa pode fazer isto?". É o que mantém o corte previsível.
       </p>
       <div className="grid md:grid-cols-3 gap-3">

@@ -33,7 +33,7 @@ Criamos um sistema econômico que gera um passivo ambiental para cada ativo que 
 Essa é a equação quebrada do nosso tempo.
 
 A ZoomDev existe para inverter essa equação: transformar a criação de empresas em um
-processo que **regenera** enquanto gera valor. Não por altruísmo — por constatação de
+processo que **regenera** enquanto gera valor. Não por altruísmo, por constatação de
 que a regeneração é a melhor oportunidade econômica do século.
 
 ---
@@ -44,14 +44,14 @@ A ZoomDev não é um software. É um **Sistema Operacional Cognitivo** para a cr
 negócios regenerativos. O software é apenas uma de suas aplicações; o produto real é
 a inteligência acumulada.
 
-**IDEA TO EXIT** — acompanhamos o fundador da primeira frase mal formulada até a saída.
+**IDEA TO EXIT**: acompanhamos o fundador da primeira frase mal formulada até a saída.
 
 ---
 
 ## III. Missão
 
-Ser a plataforma onde qualquer pessoa, de qualquer lugar — especialmente de onde o
-capital nunca chega — transforma uma ideia em um negócio de alto valor que deixa o
+Ser a plataforma onde qualquer pessoa, de qualquer lugar: especialmente de onde o
+capital nunca chega: transforma uma ideia em um negócio de alto valor que deixa o
 planeta melhor do que encontrou.
 
 ---
@@ -76,7 +76,7 @@ reduzir é greenwashing, e greenwashing é fraude com roupa de sustentabilidade.
 
 ### 3. O valor fica no território
 Transição energética justa significa que quem regenera é dono da energia e da renda que
-produz — não fornecedor de matéria-prima barata para outro lugar.
+produz: não fornecedor de matéria-prima barata para outro lugar.
 
 ### 4. A tecnologia serve a quem tem menos
 Nossa tecnologia central responde melhor onde o solo está pior. Isso não é acaso: é o
@@ -148,11 +148,11 @@ e base ética não se altera sozinha.
 
 ## X. Sociedade
 
-Nos comprometemos com a Agenda 2030 da ONU — mas com número, não com declaração. Cada
+Nos comprometemos com a Agenda 2030 da ONU, mas com número, não com declaração. Cada
 ODS que citamos precisa de um dado que o sustente.
 
 Prioridade: **ODS 2** (fome zero), **7** (energia limpa), **13** (ação climática) e
-**15** (vida terrestre) — sem perder de vista 1, 3, 4, 5, 6, 8, 9, 10, 11, 12, 14 e 17.
+**15** (vida terrestre), sem perder de vista 1, 3, 4, 5, 6, 8, 9, 10, 11, 12, 14 e 17.
 
 ---
 
@@ -173,7 +173,7 @@ Prioridade: **ODS 2** (fome zero), **7** (energia limpa), **13** (ação climát
 
 | Termo | Definição |
 |---|---|
-| **PIC** | Protocolo de Instância Cognitiva — a mente versionada de um agente |
+| **PIC** | Protocolo de Instância Cognitiva: a mente versionada de um agente |
 | **Selo de Evidência** | Grau de confiança de uma afirmação (100 → 10) |
 | **Corpus Regenerativo** | Camada interna de conhecimento técnico destilado |
 | **Radar Unicórnio** | Score explicável 0–100 do potencial de um projeto |

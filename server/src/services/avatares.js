@@ -2,8 +2,8 @@
 // AVATARES DOS AGENTES
 //
 // Dois formatos por agente, ambos opcionais:
-//   agents/<id>.png        retrato completo — cards grandes e corpo no vale 3D
-//   agents/faces/<id>.png  recorte quadrado do rosto — avatares pequenos,
+//   agents/<id>.png        retrato completo: cards grandes e corpo no vale 3D
+//   agents/faces/<id>.png  recorte quadrado do rosto: avatares pequenos,
 //                          chat e a face do personagem voxel
 //
 // Basta soltar o arquivo no diretório: a detecção é por leitura de diretório

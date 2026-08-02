@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// ELENCO DE AGENTES — fusão, castas e ativação governada
+// ELENCO DE AGENTES: fusão, castas e ativação governada
 //
 // 35 agentes em 4 castas. Núcleo, Core e Conselho Amazônico entram ativos;
 // a Reserva Estratégica fica pronta e o administrador liga quando precisar.
@@ -62,7 +62,7 @@ export function elencoCompleto() {
   };
 }
 
-/** Só os agentes ativos — é o que o resto da plataforma consome. */
+/** Só os agentes ativos: é o que o resto da plataforma consome. */
 export function agentesAtivos() {
   const e = estadoElenco();
   return CATALOGO.filter(a => e.ativacao[a.id]);

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// ROTAS /api/admin — super dashboard do ecossistema (Sexta-Feira).
+// ROTAS /api/admin: super dashboard do ecossistema (Sexta-Feira).
 // Todas exigem papel de administrador (adminMiddleware aplicado no index).
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';

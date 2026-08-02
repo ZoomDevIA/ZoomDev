@@ -1,4 +1,4 @@
-// ZoomDev OS — API
+// ZoomDev OS: API
 import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
@@ -25,7 +25,7 @@ import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gam
 
 const app = express();
 app.use(cors());
-// Webhook do Stripe exige o corpo BRUTO para validar a assinatura — por isso
+// Webhook do Stripe exige o corpo BRUTO para validar a assinatura, por isso
 // vem antes do parser JSON.
 app.post('/api/pagamentos/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
@@ -46,7 +46,7 @@ app.get('/api/health', (_req, res) => res.json({
 
 app.use('/api', diagnosticoRouter);
 // Home pública: a caixa de ideação, os módulos e a vitrine da comunidade
-// carregam antes de qualquer login — é a porta de entrada do site.
+// carregam antes de qualquer login: é a porta de entrada do site.
 app.use('/api', homeRouter);
 
 app.get('/api/planos', (_req, res) => res.json(config.plans));
@@ -116,5 +116,5 @@ agendarPulso();
 process.on('SIGINT', () => { save(); process.exit(0); });
 
 app.listen(config.port, () => {
-  console.log(`ZoomDev OS API na porta ${config.port} — modo ${config.hasApiKey ? 'IA (' + config.model + ')' : 'DEMO'}`);
+  console.log(`ZoomDev OS API na porta ${config.port}: modo ${config.hasApiKey ? 'IA (' + config.model + ')' : 'DEMO'}`);
 });

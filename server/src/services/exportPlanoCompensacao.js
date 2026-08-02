@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// EXPORTAÇÃO DO PLANO DE COMPENSAÇÃO — HTML diagramado e DOCX
+// EXPORTAÇÃO DO PLANO DE COMPENSAÇÃO: HTML diagramado e DOCX
 // Documento pronto para board, investidor, edital e relatório ESG.
 // ═══════════════════════════════════════════════════════════════════════════
 import { Document, Packer, Paragraph, HeadingLevel, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
@@ -34,7 +34,7 @@ export function planoCompensacaoHtml(registro, user) {
       <td>${barra(r.percentualReduzido, '#00ff64')}<span class="dim">${r.percentualReduzido}% reduzido</span></td>
       <td class="r">${num(r.reducaoAcumuladaTon)} t</td>
       <td class="r">${num(r.emissaoResidualTon)} t</td>
-      <td class="dim">${r.acoesFoco.map(esc).join(' · ') || '—'}</td>
+      <td class="dim">${r.acoesFoco.map(esc).join(' · ') || '–'}</td>
     </tr>`).join('');
 
   const linhasCredito = comp.rotaCredito.opcoes.map(o => `
@@ -42,7 +42,7 @@ export function planoCompensacaoHtml(registro, user) {
     <td class="r">${brl(o.precoPorTon)}/t</td><td class="r"><b>${brl(o.custoTotal)}</b>/ano</td></tr>`).join('');
 
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
-<title>Plano de Compensação — ZoomDev OS</title>
+<title>Plano de Compensação: ZoomDev OS</title>
 <style>
   body{background:#030d07;color:#eaffea;font-family:'Segoe UI',system-ui,sans-serif;margin:0;padding:40px;line-height:1.6}
   .wrap{max-width:920px;margin:0 auto}
@@ -75,7 +75,7 @@ export function planoCompensacaoHtml(registro, user) {
     <div class="step"><div class="n">ETAPA 3</div><div class="t">COMPENSAR</div><div class="v">${num(comp.aCompensarTonAno)} t</div><div class="dim">residual + margem</div></div>
   </div>
 
-  <h2>1. Medir — inventário de emissões</h2>
+  <h2>1. Medir: inventário de emissões</h2>
   <div class="card">
     <p>Total estimado: <b style="color:#00ff64;font-size:18px">${num(m.totalTco2eAno)} tCO₂e/ano</b>
     <span class="dim">(faixa de ${num(m.incerteza.minimo)} a ${num(m.incerteza.maximo)} t · incerteza ±${m.incerteza.percentual}%)</span></p>
@@ -91,7 +91,7 @@ export function planoCompensacaoHtml(registro, user) {
     <p class="dim" style="margin-top:12px">Metodologia: ${esc(m.metodologia)}</p>
   </div>
 
-  <h2>2. Reduzir — antes de compensar</h2>
+  <h2>2. Reduzir: antes de compensar</h2>
   <div class="card">
     <p>Meta: <b style="color:#00ff64">reduzir ${red.metaPercentual}%</b> (${num(red.metaTonAno)} tCO₂e/ano) em ${plano.horizonteAnos} anos.
     Potencial técnico identificado: ${num(red.potencialTotalTon)} t.</p>
@@ -101,17 +101,17 @@ export function planoCompensacaoHtml(registro, user) {
     <table><tr><th>Período</th><th>Progresso</th><th class="r">Reduzido</th><th class="r">Residual</th><th>Foco</th></tr>${linhasRoadmap}</table>
   </div>
 
-  <h2>3. Compensar — apenas o residual</h2>
+  <h2>3. Compensar: apenas o residual</h2>
   <div class="card">
     <p>Emissão residual após as reduções: <b>${num(comp.residualTonAno)} tCO₂e/ano</b>.
     Com margem de segurança de ${comp.margemSeguranca}%: <b style="color:#00c8ff">${num(comp.aCompensarTonAno)} tCO₂e/ano a compensar</b>.</p>
     ${comp.rotaPropria ? `
-    <h3>Rota A — ${esc(comp.rotaPropria.rota)}</h3>
+    <h3>Rota A: ${esc(comp.rotaPropria.rota)}</h3>
     <p>${esc(comp.rotaPropria.cultura)} em ${num(comp.rotaPropria.hectares, 0)} ha · mitigação estimada de
     <b style="color:#00ff64">${num(comp.rotaPropria.mitigacaoTonAno)} tCO₂e/ano</b> (${comp.rotaPropria.coberturaPercentual}% do necessário).</p>
     <p class="dim">${esc(comp.rotaPropria.vantagem)}</p>
     <p class="dim">Requisitos: ${comp.rotaPropria.requisitos.map(esc).join(' · ')}</p>` : ''}
-    <h3>Rota B — ${esc(comp.rotaCredito.rota)}</h3>
+    <h3>Rota B: ${esc(comp.rotaCredito.rota)}</h3>
     <table><tr><th>Projeto</th><th class="r">Preço</th><th class="r">Custo anual</th></tr>${linhasCredito}</table>
     <p class="dim">${esc(comp.rotaCredito.vantagem)}</p>
   </div>
@@ -126,7 +126,7 @@ export function planoCompensacaoHtml(registro, user) {
   </div>
 
   <h2>5. Alinhamento ODS</h2>
-  <div class="card"><ul>${plano.ods.map(o => `<li><b>ODS ${o.ods} — ${esc(o.nome)}:</b> ${esc(o.motivo)}</li>`).join('')}</ul></div>
+  <div class="card"><ul>${plano.ods.map(o => `<li><b>ODS ${o.ods}, ${esc(o.nome)}:</b> ${esc(o.motivo)}</li>`).join('')}</ul></div>
 
   <div class="foot">Gerado pela ZoomDev OS · Hierarquia de mitigação: medir → reduzir → compensar.
   Estimativa de triagem; a emissão de créditos exige MRV instrumentado, verificação por terceira parte e aposentadoria em registro público.</div>
@@ -163,14 +163,14 @@ export async function planoCompensacaoDocx(registro, user) {
     }),
     P('Hierarquia de mitigação: MEDIR → REDUZIR → COMPENSAR. Compensar antes de reduzir não constitui ação climática legítima.', { italics: true }),
 
-    H('1. Medir — inventário de emissões'),
+    H('1. Medir: inventário de emissões'),
     P(`Total estimado: ${num(m.totalTco2eAno)} tCO₂e por ano (faixa de ${num(m.incerteza.minimo)} a ${num(m.incerteza.maximo)}; incerteza de ±${m.incerteza.percentual}%).`, { bold: true }),
     P(m.incerteza.nota),
     H('Emissões por escopo', HeadingLevel.HEADING_2),
     tabela(['Escopo', 'tCO₂e/ano', 'Descrição'], [
-      ['1 — Direto', num(m.escopos.escopo1.tco2e), m.escopos.escopo1.descricao],
-      ['2 — Energia', num(m.escopos.escopo2.tco2e), m.escopos.escopo2.descricao],
-      ['3 — Cadeia de valor', num(m.escopos.escopo3.tco2e), m.escopos.escopo3.descricao],
+      ['1: Direto', num(m.escopos.escopo1.tco2e), m.escopos.escopo1.descricao],
+      ['2: Energia', num(m.escopos.escopo2.tco2e), m.escopos.escopo2.descricao],
+      ['3: Cadeia de valor', num(m.escopos.escopo3.tco2e), m.escopos.escopo3.descricao],
     ]),
     H('Maiores fontes', HeadingLevel.HEADING_2),
     tabela(['Fonte', 'Escopo', 'tCO₂e/ano', 'Fator'],
@@ -185,7 +185,7 @@ export async function planoCompensacaoDocx(registro, user) {
     ...red.acoes.slice(0, 5).flatMap(a => [P(`${a.titulo}`, { bold: true }), P(a.como, { size: 19 })]),
     H('Roadmap plurianual', HeadingLevel.HEADING_2),
     tabela(['Ano', 'Reduzido (t)', 'Residual (t)', '% reduzido', 'Foco'],
-      red.roadmap.map(r => [`Ano ${r.ano}`, num(r.reducaoAcumuladaTon), num(r.emissaoResidualTon), `${r.percentualReduzido}%`, r.acoesFoco.join('; ') || '—'])),
+      red.roadmap.map(r => [`Ano ${r.ano}`, num(r.reducaoAcumuladaTon), num(r.emissaoResidualTon), `${r.percentualReduzido}%`, r.acoesFoco.join('; ') || '–'])),
 
     H('3. Compensar'),
     P(`Emissão residual após reduções: ${num(comp.residualTonAno)} tCO₂e/ano. Com margem de segurança de ${comp.margemSeguranca}%, o volume a compensar é de ${num(comp.aCompensarTonAno)} tCO₂e/ano.`, { bold: true }),
@@ -193,14 +193,14 @@ export async function planoCompensacaoDocx(registro, user) {
 
   if (comp.rotaPropria) {
     filhos.push(
-      H(`Rota A — ${comp.rotaPropria.rota}`, HeadingLevel.HEADING_2),
-      P(`${comp.rotaPropria.cultura} em ${num(comp.rotaPropria.hectares, 0)} ha, com mitigação estimada de ${num(comp.rotaPropria.mitigacaoTonAno)} tCO₂e/ano — cobre ${comp.rotaPropria.coberturaPercentual}% do necessário.`),
+      H(`Rota A: ${comp.rotaPropria.rota}`, HeadingLevel.HEADING_2),
+      P(`${comp.rotaPropria.cultura} em ${num(comp.rotaPropria.hectares, 0)} ha, com mitigação estimada de ${num(comp.rotaPropria.mitigacaoTonAno)} tCO₂e/ano: cobre ${comp.rotaPropria.coberturaPercentual}% do necessário.`),
       P(comp.rotaPropria.vantagem, { italics: true }),
       P(`Requisitos: ${comp.rotaPropria.requisitos.join(' · ')}`, { size: 18 }),
     );
   }
   filhos.push(
-    H(`Rota B — ${comp.rotaCredito.rota}`, HeadingLevel.HEADING_2),
+    H(`Rota B: ${comp.rotaCredito.rota}`, HeadingLevel.HEADING_2),
     tabela(['Projeto', 'Padrão', 'R$/t', 'Custo anual'],
       comp.rotaCredito.opcoes.map(o => [o.nome, o.padrao, brl(o.precoPorTon), brl(o.custoTotal)])),
     P(comp.rotaCredito.vantagem, { italics: true }),
@@ -213,7 +213,7 @@ export async function planoCompensacaoDocx(registro, user) {
     P(`Referência normativa: ${plano.conformidade.norma}`, { italics: true, size: 18 }),
 
     H('5. Alinhamento com os ODS'),
-    ...plano.ods.map(o => P(`ODS ${o.ods} — ${o.nome}: ${o.motivo}`)),
+    ...plano.ods.map(o => P(`ODS ${o.ods}, ${o.nome}: ${o.motivo}`)),
 
     P('Documento gerado pela ZoomDev OS. Estimativa de triagem; a emissão de créditos de carbono exige MRV instrumentado, verificação por terceira parte acreditada e aposentadoria em registro público.', { italics: true, size: 17 }),
   );

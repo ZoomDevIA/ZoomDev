@@ -81,7 +81,7 @@ platformRouter.post('/analyze', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-// Zoom Intelligence — chat do copiloto (histórico vem do cliente; persiste últimas 50 msgs)
+// Zoom Intelligence: chat do copiloto (histórico vem do cliente; persiste últimas 50 msgs)
 platformRouter.post('/chat', async (req, res, next) => {
   try {
     const { mensagens = [] } = req.body || {};
@@ -98,14 +98,14 @@ platformRouter.post('/chat', async (req, res, next) => {
     const system = `${picMaia ? renderSystemPromptAgente(picMaia) : 'Você é a Maiá, Inteligência Regenerativa da ZoomDev OS.'}
 
 Responda de forma objetiva, acionável e use markdown quando útil. Responda sempre em pt-BR.
-Contexto do usuário: ${projetos.length} projeto(s)${projetos[0] ? ` — mais recente: "${projetos[0].nome}" (${projetos[0].classificacao}, fase ${projetos[0].fase})` : ''}. Créditos (seiva): ${req.user.creditos}.
+Contexto do usuário: ${projetos.length} projeto(s)${projetos[0] ? `, mais recente: "${projetos[0].nome}" (${projetos[0].classificacao}, fase ${projetos[0].fase})` : ''}. Créditos (seiva): ${req.user.creditos}.
 A plataforma tem: geração de plano de negócios pelos 5 agentes, jornada gamificada (Ideação→Validação→MVP→Tração→Escala), calculadora de passivo ambiental (GHG Protocol) e CarbonPay para compensação com créditos verificados.`;
 
     let resposta;
     if (!config.hasApiKey) {
       const ultima = historico[historico.length - 1].content.toLowerCase();
       resposta = ultima.includes('edital')
-        ? 'No modo demo respondo de forma limitada 😉 — mas veja a aba **Editais**: FINEP Bioeconomia 2025 (R$ 200 mi) e nexBio Amazônia 2026 (R$ 107 mi) estão abertos, e o botão "IA Calcular Aderência" mostra o encaixe do seu projeto.'
+        ? 'No modo demo respondo de forma limitada 😉, mas veja a aba **Editais**: FINEP Bioeconomia 2025 (R$ 200 mi) e nexBio Amazônia 2026 (R$ 107 mi) estão abertos, e o botão "IA Calcular Aderência" mostra o encaixe do seu projeto.'
         : ultima.includes('carbono') || ultima.includes('carbon')
           ? 'Use a **Calculadora de Passivo Ambiental** (CarbonPay) para estimar sua pegada pelos escopos 1, 2 e 3 do GHG Protocol e compensar com créditos verificados. Calcular dá XP e a conquista Guardião da Floresta 🌳'
           : 'Estou em modo demo (sem API key), mas o caminho é esse: descreva sua ideia em **Nova Ideia**, gere o plano com os 5 agentes e siga as missões de validação que o próprio plano cria. Configure a ANTHROPIC_API_KEY para conversas completas comigo. 🚀';

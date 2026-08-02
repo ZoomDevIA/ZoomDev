@@ -39,7 +39,7 @@ O acervo entra no sistema como **parâmetro**, nunca como citação.
 
 Ao ser questionado sobre a origem de um número, o agente responde pelo **nível de
 evidência** ("baseado em laudo técnico"), nunca pelo documento. Isso é suficiente
-para qualquer decisão de negócio — e protege o patrimônio intelectual.
+para qualquer decisão de negócio, e protege o patrimônio intelectual.
 
 ---
 
@@ -54,7 +54,7 @@ A resposta da tecnologia é **inversamente proporcional à qualidade inicial do 
 | Corrigido e manejado | +30% | 🌱 Laudo | 15–45% |
 
 Isso inverte a lógica do agro convencional, que entrega mais a quem já tem mais.
-Aqui, o maior ganho está onde a agricultura familiar mais sofre — e é por isso que
+Aqui, o maior ganho está onde a agricultura familiar mais sofre, e é por isso que
 a tecnologia é instrumento de justiça social, não de otimização marginal.
 
 ---
@@ -67,7 +67,7 @@ pesquisa, jamais como base de alegação.
 
 Isso não enfraquece nada: **os resultados de campo são válidos independentemente
 da explicação**, e são amplamente compatíveis com a ação conhecida de
-bioestimulantes — matéria orgânica, micronutrientes, sinalização hormonal e
+bioestimulantes: matéria orgânica, micronutrientes, sinalização hormonal e
 recuperação da biota do solo.
 
 > Confundir mecanismo com resultado é o erro que derruba uma certificação inteira
@@ -84,7 +84,7 @@ Todos os fatores usados na plataforma declaram fonte e incerteza:
 | Rede elétrica brasileira | MCTI/SIRENE | 7% |
 | N₂O de fertilizante | IPCC 2019 Refinement | 10% |
 | Transporte e logística | DEFRA / ICAO | 30% |
-| Produtividade por cultura | IBGE / Embrapa | — |
+| Produtividade por cultura | IBGE / Embrapa |: |
 
 A propagação de incerteza é feita em quadratura. **Número único é falsa precisão.**
 

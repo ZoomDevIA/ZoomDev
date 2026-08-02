@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// MÓDULO SWITCH — botão liga/desliga que se arrasta para os lados.
+// MÓDULO SWITCH: botão liga/desliga que se arrasta para os lados.
 //
 // Três formas de acionar, todas equivalentes:
-//   · arrastar a alavanca (mouse ou dedo) — passou da metade, troca
+//   · arrastar a alavanca (mouse ou dedo): passou da metade, troca
 //   · clicar em qualquer lugar do trilho
 //   · teclado: Espaço/Enter alternam, ← → escolhem o lado
 //
@@ -145,7 +145,7 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
         <p className="text-[11px] text-white/50 leading-snug">{modulo.chamada}</p>
       </div>
 
-      {/* Caixa de contexto — aparece antes de acionar, explicando a ativação */}
+      {/* Caixa de contexto: aparece antes de acionar, explicando a ativação */}
       {contexto && (
         <div
           id={`ctx-${modulo.id}`}

@@ -28,14 +28,14 @@ export function mockPlano(projeto) {
       modeloDeNegocio: 'SaaS por assinatura mensal com plano freemium e upsell para planos pagos.',
       mercado: {
         tam: 'R$ 8,5 bilhões', sam: 'R$ 900 milhões', som: 'R$ 45 milhões',
-        contexto: `Mercado ${bio ? 'de bioeconomia brasileiro em expansão, impulsionado por COP30 e editais públicos' : 'digital brasileiro em crescimento de dois dígitos ao ano'}. (Estimativas demo — gere com IA para valores fundamentados.)`,
+        contexto: `Mercado ${bio ? 'de bioeconomia brasileiro em expansão, impulsionado por COP30 e editais públicos' : 'digital brasileiro em crescimento de dois dígitos ao ano'}. (Estimativas demo: gere com IA para valores fundamentados.)`,
       },
       concorrentes: [
         { nome: 'Concorrente A', forca: 'Marca estabelecida', fraqueza: 'Preço alto e onboarding lento' },
         { nome: 'Concorrente B', forca: 'Muitas integrações', fraqueza: 'UX complexa para PMEs' },
         { nome: 'Planilhas/processo manual', forca: 'Custo zero aparente', fraqueza: 'Erros, retrabalho e zero visibilidade' },
       ],
-      pricing: ['Free — funcionalidades essenciais', 'PRO R$ 149/mês — operação completa', 'BUSINESS R$ 199/mês — equipe + suporte prioritário'],
+      pricing: ['Free: funcionalidades essenciais', 'PRO R$ 149/mês: operação completa', 'BUSINESS R$ 199/mês: equipe + suporte prioritário'],
       goToMarket: ['Conteúdo orgânico no nicho', 'Parcerias com associações do setor', 'Programa de indicação gamificado', 'Presença em eventos do ecossistema', bio ? 'Submissão a editais de bioeconomia (FINEP/BNDES)' : 'Mídia paga segmentada'],
       projecao12Meses: projecao,
       swot: {
@@ -49,9 +49,9 @@ export function mockPlano(projeto) {
       stack: ['React + Vite (frontend)', 'Node.js + Express (API)', 'PostgreSQL/Supabase', 'IA: API Claude', 'Deploy: cloud gerenciada'],
       arquitetura: 'Monólito modular com API REST, autenticação JWT, filas para tarefas assíncronas e integração com IA via API. Preparado para extrair serviços conforme escala.',
       roadmapTecnico: [
-        { fase: 'Fase 1 — Núcleo', duracao: '6 semanas', entregas: ['Auth e onboarding', 'Fluxo principal', 'Painel básico'] },
-        { fase: 'Fase 2 — Tração', duracao: '6 semanas', entregas: ['Integrações', 'Relatórios', 'Billing'] },
-        { fase: 'Fase 3 — Escala', duracao: '8 semanas', entregas: ['API pública', 'Apps mobile', 'Observabilidade'] },
+        { fase: 'Fase 1: Núcleo', duracao: '6 semanas', entregas: ['Auth e onboarding', 'Fluxo principal', 'Painel básico'] },
+        { fase: 'Fase 2: Tração', duracao: '6 semanas', entregas: ['Integrações', 'Relatórios', 'Billing'] },
+        { fase: 'Fase 3: Escala', duracao: '8 semanas', entregas: ['API pública', 'Apps mobile', 'Observabilidade'] },
       ],
       riscosTecnicos: ['Dependência de APIs de terceiros', 'Custo de IA em escala', 'Dívida técnica no MVP'],
       custoInfraEstimado: 'R$ 800–1.500/mês nos primeiros 6 meses',

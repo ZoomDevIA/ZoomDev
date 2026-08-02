@@ -53,12 +53,12 @@ ser quem aconselha o governado.
 Cada agente é definido por um PIC versionado, não por um prompt solto.
 
 **Estrutura:**
-- `identidade` — quem é
-- `especialidade` — domínio profundo
-- `cooperacao` — a quem passar o bastão quando o tema sai da sua área
-- `gatilhos` — condições do ecossistema que o convocam automaticamente
-- `regras` — conduta específica
-- `doutrinas` — as três camadas universais (imutáveis por autoevolução)
+- `identidade`, quem é
+- `especialidade`: domínio profundo
+- `cooperacao`: a quem passar o bastão quando o tema sai da sua área
+- `gatilhos`: condições do ecossistema que o convocam automaticamente
+- `regras`: conduta específica
+- `doutrinas`: as três camadas universais (imutáveis por autoevolução)
 
 **Ciclo de vida governado:**
 
@@ -67,7 +67,7 @@ OBSERVAR → DIAGNOSTICAR → PROPOR → [aprovação humana] → VERSIONAR → 
 ```
 
 A Sexta-Feira pode propor mudanças no próprio protocolo. **Não pode aplicá-las.**
-E não pode tocar nas doutrinas — a base ética só muda por atualização de código.
+E não pode tocar nas doutrinas: a base ética só muda por atualização de código.
 
 ---
 
@@ -89,7 +89,7 @@ evidência**, nunca pelo documento, entidade ou pessoa.
 
 ---
 
-## 4. Agent Bus — antecipação
+## 4. Agent Bus: antecipação
 
 Os agentes não esperam ser chamados. O Agent Bus lê o estado real do fundador e despacha
 **nudges assinados pelo especialista**, com no máximo 2 por dia.
@@ -132,7 +132,7 @@ O vale voxel não é decoração. As falas e os diálogos entre agentes são **g
 estado real** do ecossistema: quando o Curupira menciona linha de base, é porque existe
 um projeto de bioeconomia sem ela.
 
-É interoperabilidade tornada visível — o fundador *vê* seus agentes pensando sobre o
+É interoperabilidade tornada visível: o fundador *vê* seus agentes pensando sobre o
 projeto dele.
 
 ---
@@ -143,4 +143,4 @@ A Genesis é consumida por **conceito**, não por arquivo. Cada documento declar
 dependências e relações, e o grafo se monta sozinho. Um agente que precisa falar de
 carbono não lê um manual: navega os conceitos e herda o grau de confiança de cada um.
 
-É a diferença entre uma IA que opina e uma IA que sabe — e sabe o quanto sabe.
+É a diferença entre uma IA que opina e uma IA que sabe, e sabe o quanto sabe.

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import AgentAvatar from '../components/AgentAvatar.jsx';
 
-// Explorer bio — clone do PlatformExplorer + BioModulePage do protótipo (10 módulos, imagens originais)
+// Explorer bio: clone do PlatformExplorer + BioModulePage do protótipo (10 módulos, imagens originais)
 const BIO_MODULOS = [
   { id: 'bioeconomia', nome: 'Bioeconomia', emoji: '🌿', desc: 'Cadeias produtivas da sociobiodiversidade', img: '/assets/modules/bioeconomia.png' },
   { id: 'comunidades', nome: 'Comunidades', emoji: '🏘️', desc: 'Povos tradicionais e etnociências', img: '/assets/modules/comunidades.png' },
@@ -33,7 +33,7 @@ export default function Bioeconomia() {
         <p className="text-white/55 text-sm mt-1.5">Duas especializações para acelerar sua startup: geral ou focada em bioeconomia sustentável.</p>
       </div>
 
-      {/* Duas jornadas — clone do PlatformExplorer */}
+      {/* Duas jornadas: clone do PlatformExplorer */}
       <div className="grid md:grid-cols-2 gap-5">
         <div className="zd-card-glow rounded-2xl p-6 flex flex-col">
           <div className="flex items-center justify-between">
@@ -74,10 +74,10 @@ export default function Bioeconomia() {
         </div>
       </div>
 
-      {/* Destaque de edital bio — copy do protótipo */}
+      {/* Destaque de edital bio: copy do protótipo */}
       <div className="zd-notification rounded-xl px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
         <div className="text-sm">
-          🌎 <b>CONFAP · Amazônia+10</b> — Chamada nexBio Amazônia 2026: <b className="zd-green">R$ 107 milhões</b> para bionegócios
+          🌎 <b>CONFAP · Amazônia+10</b>, Chamada nexBio Amazônia 2026: <b className="zd-green">R$ 107 milhões</b> para bionegócios
         </div>
         <Link to="/editais" className="zd-tag rounded-full px-3 py-1.5 hover:bg-[#00ff6430] transition-colors">Ver chamadas →</Link>
       </div>

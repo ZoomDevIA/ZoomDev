@@ -22,7 +22,7 @@ function BarrasProjecao({ projecao }) {
   const max = Math.max(...projecao.map(p => p.receita), 1);
   return (
     <div>
-      <div className="text-xs text-white/45 mb-2">Receita projetada (12 meses) — pico {fmtBRL(max)}</div>
+      <div className="text-xs text-white/45 mb-2">Receita projetada (12 meses): pico {fmtBRL(max)}</div>
       <div className="flex items-end gap-1.5 h-36">
         {projecao.map(p => (
           <div key={p.mes} className="flex-1 flex flex-col items-center gap-1 group" title={`M${p.mes}: ${fmtBRL(p.receita)} · ${p.clientes} clientes`}>
@@ -59,7 +59,7 @@ export default function PlanoView({ projeto }) {
   if (!p) return null;
   return (
     <div className="space-y-5">
-      <Secao emoji="🧩" titulo="Produto — Agente Produto">
+      <Secao emoji="🧩" titulo="Produto · Agente Produto">
         <p className="text-sm zd-green-dim font-semibold">{p.produto.propostaDeValor}</p>
         <Sub>Problema</Sub><p className="text-sm text-white/65">{p.produto.problema}</p>
         <Sub>Solução</Sub><p className="text-sm text-white/65">{p.produto.solucao}</p>
@@ -78,7 +78,7 @@ export default function PlanoView({ projeto }) {
         <Sub>Diferenciais</Sub><Lista itens={p.produto.diferenciais} />
       </Secao>
 
-      <Secao emoji="📊" titulo="Negócio — Agente Negócio">
+      <Secao emoji="📊" titulo="Negócio · Agente Negócio">
         <p className="text-sm text-white/65">{p.negocio.modeloDeNegocio}</p>
         <div className="grid grid-cols-3 gap-3 my-4">
           {[['TAM', p.negocio.mercado.tam], ['SAM', p.negocio.mercado.sam], ['SOM', p.negocio.mercado.som]].map(([l, v]) => (
@@ -112,7 +112,7 @@ export default function PlanoView({ projeto }) {
         <Sub>Análise SWOT</Sub><Swot swot={p.negocio.swot} />
       </Secao>
 
-      <Secao emoji="⚙️" titulo="Engenharia — Agente Engenharia">
+      <Secao emoji="⚙️" titulo="Engenharia · Agente Engenharia">
         <p className="text-sm text-white/65">{p.engenharia.arquitetura}</p>
         <Sub>Stack</Sub><Lista itens={p.engenharia.stack} />
         <Sub>Roadmap técnico</Sub>
@@ -128,9 +128,9 @@ export default function PlanoView({ projeto }) {
         <Sub>Custo de infraestrutura</Sub><p className="text-sm zd-green-dim font-semibold">{p.engenharia.custoInfraEstimado}</p>
       </Secao>
 
-      <Secao emoji="🌍" titulo="Impacto — Agente Impacto">
+      <Secao emoji="🌍" titulo="Impacto · Agente Impacto">
         {(p.impacto.ods || []).map((o, i) => (
-          <p key={i} className="text-sm text-white/65 mb-1"><b className="zd-blue">ODS {o.numero} — {o.nome}:</b> {o.contribuicao}</p>
+          <p key={i} className="text-sm text-white/65 mb-1"><b className="zd-blue">ODS {o.numero}, {o.nome}:</b> {o.contribuicao}</p>
         ))}
         <Sub>KPIs de impacto</Sub><Lista itens={p.impacto.kpisImpacto} />
         <Sub>Práticas ESG</Sub><Lista itens={p.impacto.praticasEsg} />
@@ -141,7 +141,7 @@ export default function PlanoView({ projeto }) {
         <div className="zd-notification rounded-xl p-3.5 mt-3 text-sm text-white/70">🍃 <b>Pegada de carbono:</b> {p.impacto.pegadaCarbono}</div>
       </Secao>
 
-      <Secao emoji="📋" titulo="Editais & Fomento — Agente Editais">
+      <Secao emoji="📋" titulo="Editais & Fomento · Agente Editais">
         <div className="space-y-3">
           {(p.editais.editaisRecomendados || []).map((e, i) => (
             <div key={i} className="rounded-xl bg-white/[.04] border border-white/10 p-4">

@@ -71,7 +71,7 @@ export default function CarbonPay() {
         </div>
       </div>
 
-      {/* Stats do marketplace — clone do protótipo */}
+      {/* Stats do marketplace: clone do protótipo */}
       {mkt && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
@@ -100,7 +100,7 @@ export default function CarbonPay() {
       {erro && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{erro}</div>}
       {pedido && (
         <div className="zd-notification rounded-xl p-4 text-sm space-y-2">
-          <div>✅ Pedido <b>{pedido.id}</b>: {pedido.toneladas} tCO₂ de "{pedido.item}" — <b className="zd-green">{fmtBRL(pedido.valorTotal)}</b> via {pedido.metodo.toUpperCase()}</div>
+          <div>✅ Pedido <b>{pedido.id}</b>: {pedido.toneladas} tCO₂ de "{pedido.item}"–<b className="zd-green">{fmtBRL(pedido.valorTotal)}</b> via {pedido.metodo.toUpperCase()}</div>
           {pedido.pixCode && (
             <div className="bg-black/40 rounded-lg p-3 font-mono text-[10px] break-all text-white/60">
               PIX copia-e-cola (demo): {pedido.pixCode}
@@ -116,7 +116,7 @@ export default function CarbonPay() {
         <div className="space-y-5">
           <form onSubmit={calcularSequestro} className="zd-card-glow rounded-2xl p-6">
             <h2 className="font-heading font-bold">Calculadora de Sequestro de Carbono</h2>
-            <p className="text-xs text-white/50 mt-1 mb-4">Quanto sua área pode GERAR de créditos — para produtores, cooperativas e projetos de restauração.</p>
+            <p className="text-xs text-white/50 mt-1 mb-4">Quanto sua área pode GERAR de créditos, para produtores, cooperativas e projetos de restauração.</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <div>
                 <label className="text-[11px] text-white/55 block mb-1">Área (hectares)</label>
@@ -169,7 +169,7 @@ export default function CarbonPay() {
                 {seqResultado.avisos.map((a, i) => <p key={i} className="text-[11px] text-white/35">ℹ️ {a}</p>)}
               </div>
               <div className="zd-notification rounded-xl p-3.5 mt-4 text-sm">
-                💡 Quer listar seus créditos no CarbonPay? Auditoria MRV integrada e certificação digital automática — fale com o Zoom Intelligence.
+                💡 Quer listar seus créditos no CarbonPay? Auditoria MRV integrada e certificação digital automática: fale com o Zoom Intelligence.
               </div>
             </div>
           )}
@@ -198,14 +198,14 @@ export default function CarbonPay() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-4 pt-3 border-t border-white/10 text-xs text-white/45">Serviço sob consulta — fale com o Zoom Intelligence</div>
+                <div className="mt-4 pt-3 border-t border-white/10 text-xs text-white/45">Serviço sob consulta: fale com o Zoom Intelligence</div>
               )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Modal de compra — clone do CarbonPurchaseModal */}
+      {/* Modal de compra: clone do CarbonPurchaseModal */}
       {compra && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setCompra(null)}>
           <div className="zd-card-glow rounded-2xl p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>

@@ -107,7 +107,7 @@ export function awardXP(user, evento, detalhe = {}) {
   return { xpGanho: xp, subiuNivel: depois > antes, nivel: nivelFundador(g.xp), novasConquistas, streak: g.streak };
 }
 
-// Missões padrão da fase de Validação — usadas como fallback quando a IA não gera
+// Missões padrão da fase de Validação: usadas como fallback quando a IA não gera
 export function missoesValidacaoPadrao(plano) {
   const publico = plano?.produto?.publicoAlvo || 'seu público-alvo';
   return [

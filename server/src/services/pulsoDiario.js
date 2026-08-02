@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PULSO DIÁRIO — o batimento cardíaco da plataforma
+// PULSO DIÁRIO: o batimento cardíaco da plataforma
 //
 // Uma vez por dia (e no boot, se atrasado), a Sexta-Feira: varre editais,
 // recalcula os matches de todos os projetos, atualiza o Radar Unicórnio,

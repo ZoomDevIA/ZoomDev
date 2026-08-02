@@ -35,7 +35,7 @@ const MAX_PALAVRAS = 7;
 
 /**
  * Nome de trabalho a partir da descrição, para quando o fundador não nomeia o
- * projeto e o classificador não sugere nada (modo demo). É um rascunho — a
+ * projeto e o classificador não sugere nada (modo demo). É um rascunho: a
  * ideia é o fundador renomear, não acertar um nome de marca.
  */
 export function tituloDeIdeia(descricao) {

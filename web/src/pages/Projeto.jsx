@@ -116,7 +116,7 @@ export default function Projeto() {
       {erro && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{erro}</div>}
       {avisoPdf && (
         <div className="zd-notification rounded-lg px-4 py-3 text-sm text-white/70">
-          O servidor está sem renderizador de PDF — abrimos a versão de impressão: use <b>Ctrl/Cmd+P → Salvar como PDF</b>.
+          O servidor está sem renderizador de PDF, abrimos a versão de impressão: use <b>Ctrl/Cmd+P → Salvar como PDF</b>.
           <button className="ml-2 text-white/40 hover:text-white" onClick={() => setAvisoPdf(false)}>fechar</button>
         </div>
       )}
@@ -126,7 +126,7 @@ export default function Projeto() {
           <h2 className="font-heading text-lg font-bold">📐 Gerar Plano de Negócios Qualificado</h2>
           <p className="text-sm text-white/55 mt-1">
             Os 5 agentes ZoomDev trabalham em paralelo: Produto, Negócio, Engenharia, Impacto e Editais.
-            Custo: <b className="zd-green">60 🌿</b> — com estorno automático se a geração falhar.
+            Custo: <b className="zd-green">60 🌿</b>, com estorno automático se a geração falhar.
           </p>
           {gerando && agentes.length > 0 && (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
@@ -184,7 +184,7 @@ export default function Projeto() {
           <section className="zd-card-glow rounded-2xl p-6">
             <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
               <h2 className="font-heading text-lg font-bold">
-                🎯 Fase atual: {proj.jornada.find(j => j.status === 'atual')?.label || '—'}
+                🎯 Fase atual: {proj.jornada.find(j => j.status === 'atual')?.label || '–'}
                 <span className="text-white/40 text-sm font-normal ml-2">missões derivadas do seu plano</span>
               </h2>
               {principaisOk && proj.fase !== 'escala' && (

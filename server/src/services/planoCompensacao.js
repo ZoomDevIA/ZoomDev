@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PLANO DE COMPENSAÇÃO — hierarquia de mitigação aplicada
+// PLANO DE COMPENSAÇÃO: hierarquia de mitigação aplicada
 //
 //        MEDIR  →  REDUZIR  →  COMPENSAR
 //
 // Compensar antes de reduzir é greenwashing. Este motor força a ordem correta:
 // primeiro identifica o que dá para cortar (com custo e retorno), depois trata
-// apenas o residual — por área própria regenerada ou por crédito verificado.
+// apenas o residual, por área própria regenerada ou por crédito verificado.
 // ═══════════════════════════════════════════════════════════════════════════
 import { simular360 } from './impactoRegenerativo.js';
 import { CULTURAS } from '../science/biogenesis.js';
@@ -154,7 +154,7 @@ export function montarPlano(inventario, opts = {}) {
   // Margem de segurança de 20% sobre o residual (incerteza da triagem)
   const aCompensar = r2(residualFinal * 1.2);
 
-  // Rota A — área própria regenerada
+  // Rota A: área própria regenerada
   let rotaPropria = null;
   if (opts.areaPropria?.culturaId && n(opts.areaPropria.hectares) > 0) {
     const sim = simular360({
@@ -175,7 +175,7 @@ export function montarPlano(inventario, opts = {}) {
     };
   }
 
-  // Rota B — compra de créditos verificados
+  // Rota B: compra de créditos verificados
   const rotaCredito = {
     rota: 'Compra de créditos verificados',
     opcoes: PROJETOS_CARBONPAY.map(p => ({
@@ -190,7 +190,7 @@ export function montarPlano(inventario, opts = {}) {
   return {
     geradoEm: new Date().toISOString(),
     horizonteAnos: horizonte,
-    // ETAPA 1 — MEDIR
+    // ETAPA 1: MEDIR
     medir: {
       totalTco2eAno: total,
       incerteza: inventario.incerteza,
@@ -198,7 +198,7 @@ export function montarPlano(inventario, opts = {}) {
       maioresFontes: inventario.maioresFontes,
       metodologia: inventario.metodologia,
     },
-    // ETAPA 2 — REDUZIR
+    // ETAPA 2: REDUZIR
     reduzir: {
       metaPercentual: metaPct,
       metaTonAno: metaReducaoTon,
@@ -207,7 +207,7 @@ export function montarPlano(inventario, opts = {}) {
       ganhosRapidos: acoes.filter(a => a.custoRelativo === 'baixo' && a.economiaFinanceira).slice(0, 3),
       roadmap,
     },
-    // ETAPA 3 — COMPENSAR
+    // ETAPA 3: COMPENSAR
     compensar: {
       residualTonAno: residualFinal,
       margemSeguranca: 20,
@@ -224,7 +224,7 @@ export function montarPlano(inventario, opts = {}) {
       ],
       naoPodeAfirmar: [
         '"Empresa carbono neutro" de forma genérica, sem verificação independente do inventário.',
-        '"Emissão zero" — compensação não é ausência de emissão.',
+        '"Emissão zero": compensação não é ausência de emissão.',
         'Qualquer alegação de compensação antes da aposentadoria efetiva dos créditos em registro público.',
       ],
       norma: 'ISO 14068-1 (neutralidade de carbono) e recomendações do CONAR sobre publicidade ambiental.',

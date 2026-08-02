@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PAGAMENTOS — Stripe (assinaturas) e PIX (avulso)
+// PAGAMENTOS: Stripe (assinaturas) e PIX (avulso)
 //
 // Integração real: com as chaves configuradas, cobra de verdade.
-// Sem chaves, roda em modo simulado com o MESMO fluxo e os mesmos estados —
+// Sem chaves, roda em modo simulado com o MESMO fluxo e os mesmos estados:
 // o que muda é só quem processa. Nada de código morto esperando produção.
 //
 // PIX: payload EMV gerado conforme o padrão do Banco Central (BR Code), com
@@ -33,7 +33,7 @@ async function stripe() {
 
 // ── PIX: BR Code (EMV) ────────────────────────────────────────────────────
 
-/** CRC16-CCITT (polinômio 0x1021, inicial 0xFFFF) — exigido pelo BR Code. */
+/** CRC16-CCITT (polinômio 0x1021, inicial 0xFFFF): exigido pelo BR Code. */
 function crc16(payload) {
   let crc = 0xFFFF;
   for (let i = 0; i < payload.length; i++) {

@@ -3,7 +3,7 @@ import { api, construirMvpSSE, baixarMvpZip, mvpPreviewUrl } from '../lib/api.js
 import { useUser } from '../App.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// MVP BUILDER — do plano ao produto navegável.
+// MVP BUILDER, do plano ao produto navegável.
 // Não é mockup: são arquivos que abrem no navegador e podem ir para produção.
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -37,7 +37,7 @@ export default function MvpBuilder({ projetoId }) {
           setMvp(m);
           setArquivoAtivo('index.html');
         },
-        erro: (d) => setErro(`${d.error}${d.estornado ? ' — a seiva foi estornada.' : ''}`),
+        erro: (d) => setErro(`${d.error}${d.estornado ? ': a seiva foi estornada.' : ''}`),
       });
     } catch (e) { setErro(e.message); }
     finally { setConstruindo(false); }
@@ -171,7 +171,7 @@ export default function MvpBuilder({ projetoId }) {
           <div className="rounded-xl bg-[#00ff640d] border border-[#00ff6426] p-3.5">
             <div className="text-xs font-bold zd-green mb-1">Próximo passo</div>
             <p className="text-[11px] text-white/65 leading-relaxed">
-              Baixe o ZIP e publique no Netlify, Vercel ou GitHub Pages — o README tem o passo a passo.
+              Baixe o ZIP e publique no Netlify, Vercel ou GitHub Pages: o README tem o passo a passo.
               Depois mande o link para 10 pessoas do seu público e conte quantas se cadastram.
               É essa a missão de validação que destrava a próxima fase.
             </p>
@@ -182,7 +182,7 @@ export default function MvpBuilder({ projetoId }) {
   );
 }
 
-/** Monta o preview com CSS e JS embutidos — o iframe é isolado, sem rede. */
+/** Monta o preview com CSS e JS embutidos: o iframe é isolado, sem rede. */
 function montarPreview(mvp, nomeArquivo) {
   const html = mvp.arquivos.find(a => a.arquivo === nomeArquivo)?.conteudo || '';
   const css = mvp.arquivos.find(a => a.arquivo.endsWith('.css'))?.conteudo || '';

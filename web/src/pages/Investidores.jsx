@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 
-// Investidores — pipeline de captação (base do módulo do protótipo)
+// Investidores: pipeline de captação (base do módulo do protótipo)
 export default function Investidores() {
   const [projetos, setProjetos] = useState([]);
 

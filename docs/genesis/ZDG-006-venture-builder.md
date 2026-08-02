@@ -33,7 +33,7 @@ IDEAÇÃO → VALIDAÇÃO → MVP → TRAÇÃO → ESCALA
 ```
 
 Cada fase tem missões derivadas do **plano real do projeto**, não de um checklist
-genérico. Avançar exige concluir as missões principais — a plataforma não deixa
+genérico. Avançar exige concluir as missões principais: a plataforma não deixa
 pular etapa.
 
 ---
@@ -43,8 +43,8 @@ O fundador descreve a ideia. O classificador decide entre **startup** e
 **biostartup** (ou o fundador escolhe), e a jornada correspondente é montada.
 
 ## 2. Plano de negócios
-Cinco agentes trabalham em paralelo — Produto, Negócio, Engenharia, Impacto e
-Editais — e um QA-gate valida a coerência do conjunto antes de entregar.
+Cinco agentes trabalham em paralelo: Produto, Negócio, Engenharia, Impacto e
+Editais, e um QA-gate valida a coerência do conjunto antes de entregar.
 
 **Estorno automático:** se a geração falhar, a seiva volta. É o diferencial que
 nenhum concorrente oferece.

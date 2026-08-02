@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// MUNDO VIVO — o roteiro do vale voxel
+// MUNDO VIVO: o roteiro do vale voxel
 //
 // Gera as falas e os movimentos dos agentes a partir do ESTADO REAL do
 // ecossistema do usuário. Não é decoração: quando Curupira fala de área
@@ -12,7 +12,7 @@ import { radarProjeto } from './unicornio.js';
 import { matchesDoProjeto } from './radarEditais.js';
 import { FASE_LABEL } from './gamification.js';
 
-/** Estações do vale — cada uma com posição no grid voxel. */
+/** Estações do vale: cada uma com posição no grid voxel. */
 export const ESTACOES = [
   { id: 'laboratorio', nome: 'Laboratório Bio', emoji: '🧪', x: -14, z: -10, cor: '#00ff64', agentes: ['helix', 'gaia', 'curupira', 'seringueiro'] },
   { id: 'conselho', nome: 'Sala do Conselho', emoji: '⚖️', x: 0, z: -16, cor: '#ffd700', agentes: ['maia', 'ceo', 'athena'] },
@@ -55,14 +55,14 @@ export function cena(user) {
       : 'Sua pegada ainda é uma incógnita. Vamos medir?',
     esg: 'Impacto sem indicador auditável não passa em due diligence.',
     helix: bio ? 'Delineamento com testemunha pareada é o que separa alegação de evidência.' : 'Todo dado precisa de um selo de confiança.',
-    gaia: bio ? 'Regenerar é melhor negócio que extrair — e dá para provar com número.' : 'Existe impacto positivo escondido nesse projeto.',
+    gaia: bio ? 'Regenerar é melhor negócio que extrair, e dá para provar com número.' : 'Existe impacto positivo escondido nesse projeto.',
     curupira: bio ? 'Antes de intervir, registre a linha de base da biodiversidade.' : 'A floresta guarda o que ninguém copia.',
     seringueiro: 'A cadeia produtiva precisa agregar valor onde a matéria-prima nasce.',
     iara: 'A água conta a história do território antes de qualquer relatório.',
     boto: 'Nenhuma cadeia da sociobiodiversidade se sustenta sem repartição justa de benefícios.',
     tucuju: 'O Artigo 6 abre portas que o mercado voluntário sozinho não abre.',
     orion: radar && radar.score >= 70 ? 'Esse patamar já conversa com capital climático internacional.' : 'Fomento não-diluitivo primeiro. Equity depois.',
-    investidor: radar && radar.score >= 80 ? 'Hora de preparar dataroom — antes de precisar do dinheiro.' : 'Tração fala mais alto que projeção.',
+    investidor: radar && radar.score >= 80 ? 'Hora de preparar dataroom: antes de precisar do dinheiro.' : 'Tração fala mais alto que projeção.',
     cfo: 'Unit economics clara antes de escalar. Sempre.',
     atlas: 'Estrutura societária internacional se desenha antes de precisar dela.',
     athena: 'Governança é o que faz o projeto sobreviver à auditoria mais dura.',
@@ -96,7 +96,7 @@ export function cena(user) {
     });
   }
 
-  // Diálogos entre agentes — a interoperabilidade ganhando forma visível
+  // Diálogos entre agentes: a interoperabilidade ganhando forma visível
   const dialogos = [];
   if (principal) {
     if (bio) dialogos.push({ de: 'curupira', para: 'carbono', texto: 'Área mapeada. Quanto isso vira em crédito?' });

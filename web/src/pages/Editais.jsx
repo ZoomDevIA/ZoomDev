@@ -4,11 +4,11 @@ import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// RADAR DE EDITAIS — busca sistêmica diária e match automático com os projetos.
+// RADAR DE EDITAIS: busca sistêmica diária e match automático com os projetos.
 // A plataforma trabalha enquanto o fundador dorme: varre, cruza e alerta.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const dataBr = (d) => d ? new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+const dataBr = (d) => d ? new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '–';
 const corTier = { forte: '#00ff64', boa: '#00c8ff', parcial: '#ffd700', baixa: 'rgba(255,255,255,.35)' };
 
 function ScoreAnel({ score, tier }) {
@@ -94,7 +94,7 @@ export default function Editais() {
         <div>
           <h1 className="font-heading text-2xl font-bold">Radar de <span className="zd-gradient-text">Editais</span></h1>
           <p className="text-white/55 text-sm mt-1.5">
-            Varredura sistêmica diária cruzando cada chamada aberta com os seus projetos — automaticamente.
+            Varredura sistêmica diária cruzando cada chamada aberta com os seus projetos: automaticamente.
           </p>
         </div>
         {user?.isAdmin && (

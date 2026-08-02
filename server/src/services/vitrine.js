@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// VITRINE DA COMUNIDADE — o que a home mostra abaixo da caixa de ideação.
+// VITRINE DA COMUNIDADE: o que a home mostra abaixo da caixa de ideação.
 //
 // Publicar é ato do fundador, projeto por projeto. Nada aparece aqui sem que
 // alguém tenha clicado em publicar.
@@ -54,7 +54,7 @@ export function projetarProjeto(proj, autor) {
     autor: (autor?.nome || 'Fundador').split(' ')[0],
     publicadoEm: proj.publicadoEm || proj.criadoEm,
     destaque: v.destaques.includes(proj.id),
-    // Sinais de maturidade — é o que faz a vitrine ser interessante de olhar
+    // Sinais de maturidade: é o que faz a vitrine ser interessante de olhar
     temPlano: Boolean(proj.plano),
     temMvp: proj.mvp?.status === 'pronto',
     modulos: { carbono: Boolean(modulos.carbono), bio: proj.classificacao === 'biostartup' || Boolean(modulos.bio) },
@@ -78,7 +78,7 @@ export function listarVitrine({ limite = 24, filtro = 'todos' } = {}) {
   return itens;
 }
 
-/** Números reais do ecossistema — sem inventar nada e sem identificar ninguém. */
+/** Números reais do ecossistema, sem inventar nada e sem identificar ninguém. */
 export function estatisticasPublicas() {
   const projetos = Object.values(store.projects);
   const publicados = projetos.filter(p => p.publicado);

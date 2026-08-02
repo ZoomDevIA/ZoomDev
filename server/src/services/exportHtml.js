@@ -1,4 +1,4 @@
-// Relatório HTML diagramado do Plano de Negócios — usado na visualização e na geração do PDF.
+// Relatório HTML diagramado do Plano de Negócios: usado na visualização e na geração do PDF.
 // Gráficos em SVG inline (barras de projeção, quadrantes SWOT, score de aderência).
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -20,7 +20,7 @@ function barrasProjecao(projecao) {
     <defs><linearGradient id="gz" x1="0" y1="1" x2="0" y2="0">
       <stop offset="0%" stop-color="#00c8ff"/><stop offset="100%" stop-color="#00e05a"/>
     </linearGradient></defs>
-    <text x="${pad}" y="18" font-size="12" fill="#345" font-weight="700">Receita projetada (12 meses) — pico ${fmtBRL(max)}</text>
+    <text x="${pad}" y="18" font-size="12" fill="#345" font-weight="700">Receita projetada (12 meses): pico ${fmtBRL(max)}</text>
     ${bars}
   </svg>`;
 }
@@ -67,24 +67,24 @@ export function planoParaHtml(projeto) {
     <div style="font-size:11px;letter-spacing:.22em;color:#00e05a;font-weight:700">ZOOMDEV OS · PLANO DE NEGÓCIOS QUALIFICADO</div>
     <h1 style="margin:10px 0 4px;font-size:30px">${esc(projeto.nome)}</h1>
     <div style="color:#9fd8b4;font-size:13px">
-      ${bio ? '🌿 BioStartup — trilha bioeconomia amazônica' : '🚀 Startup'} · Vertical: ${esc(projeto.vertical || '—')} · Gerado em ${new Date(p.geradoEm).toLocaleDateString('pt-BR')} pelos 5 agentes ZoomDev
+      ${bio ? '🌿 BioStartup: trilha bioeconomia amazônica' : '🚀 Startup'} · Vertical: ${esc(projeto.vertical || '–')} · Gerado em ${new Date(p.geradoEm).toLocaleDateString('pt-BR')} pelos 5 agentes ZoomDev
     </div>
     <p style="margin:14px 0 0;font-size:14.5px;line-height:1.6;color:#e6f5ea">${esc(p.produto?.propostaDeValor)}</p>
   </header>
 
-  ${section('🧩', 'Produto — Agente Produto', `
+  ${section('🧩', 'Produto: Agente Produto', `
     ${kv([
       ['Problema', esc(p.produto.problema)],
       ['Solução', esc(p.produto.solucao)],
       ['Público-alvo', esc(p.produto.publicoAlvo)],
     ])}
     <h3 style="font-size:14px;margin:14px 0 6px">Personas</h3>
-    ${(p.produto.personas || []).map(pe => `<p style="margin:4px 0;font-size:13px"><b>${esc(pe.nome)}</b> — ${esc(pe.descricao)}. <i>Dor: ${esc(pe.dor)}</i></p>`).join('')}
+    ${(p.produto.personas || []).map(pe => `<p style="margin:4px 0;font-size:13px"><b>${esc(pe.nome)}</b>: ${esc(pe.descricao)}. <i>Dor: ${esc(pe.dor)}</i></p>`).join('')}
     <h3 style="font-size:14px;margin:14px 0 6px">Funcionalidades do MVP</h3>${lista(p.produto.funcionalidadesMvp)}
     <h3 style="font-size:14px;margin:14px 0 6px">Diferenciais</h3>${lista(p.produto.diferenciais)}
   `)}
 
-  ${section('📊', 'Negócio — Agente Negócio', `
+  ${section('📊', 'Negócio: Agente Negócio', `
     <p style="font-size:13.5px">${esc(p.negocio.modeloDeNegocio)}</p>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0">
       ${[['TAM', p.negocio.mercado.tam], ['SAM', p.negocio.mercado.sam], ['SOM', p.negocio.mercado.som]].map(([l, v]) => `
@@ -106,7 +106,7 @@ export function planoParaHtml(projeto) {
     ${quadranteSwot(p.negocio.swot)}
   `)}
 
-  ${section('⚙️', 'Engenharia — Agente Engenharia', `
+  ${section('⚙️', 'Engenharia: Agente Engenharia', `
     ${kv([
       ['Arquitetura', esc(p.engenharia.arquitetura)],
       ['Custo de infra', esc(p.engenharia.custoInfraEstimado)],
@@ -121,9 +121,9 @@ export function planoParaHtml(projeto) {
     <h3 style="font-size:14px;margin:14px 0 6px">Riscos técnicos</h3>${lista(p.engenharia.riscosTecnicos)}
   `)}
 
-  ${section('🌍', 'Impacto — Agente Impacto', `
+  ${section('🌍', 'Impacto: Agente Impacto', `
     <h3 style="font-size:14px;margin:4px 0 6px">ODS da ONU</h3>
-    ${(p.impacto.ods || []).map(o => `<p style="margin:4px 0;font-size:13px"><b style="color:#0a7ab0">ODS ${o.numero} — ${esc(o.nome)}:</b> ${esc(o.contribuicao)}</p>`).join('')}
+    ${(p.impacto.ods || []).map(o => `<p style="margin:4px 0;font-size:13px"><b style="color:#0a7ab0">ODS ${o.numero}, ${esc(o.nome)}:</b> ${esc(o.contribuicao)}</p>`).join('')}
     <h3 style="font-size:14px;margin:14px 0 6px">KPIs de impacto</h3>${lista(p.impacto.kpisImpacto)}
     <h3 style="font-size:14px;margin:14px 0 6px">Práticas ESG</h3>${lista(p.impacto.praticasEsg)}
     <h3 style="font-size:14px;margin:14px 0 6px">Riscos e mitigação</h3>
@@ -131,7 +131,7 @@ export function planoParaHtml(projeto) {
     <p style="font-size:13px;background:#f0f9f2;border:1px solid #cde8d5;border-radius:8px;padding:10px">🍃 <b>Pegada de carbono:</b> ${esc(p.impacto.pegadaCarbono)}</p>
   `)}
 
-  ${section('📋', 'Editais & Fomento — Agente Editais', `
+  ${section('📋', 'Editais & Fomento: Agente Editais', `
     ${(p.editais.editaisRecomendados || []).map(e => `
       <div style="border:1px solid #dde7de;border-radius:10px;padding:12px 14px;margin:8px 0">
         <b>${esc(e.nome)}</b> <span style="color:#567;font-size:12px">· ${esc(e.orgao)}</span><br/>
@@ -150,7 +150,7 @@ export function planoParaHtml(projeto) {
 
 export function paginaHtml(projeto) {
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
-<title>Plano de Negócios — ${esc(projeto.nome)}</title>
+<title>Plano de Negócios: ${esc(projeto.nome)}</title>
 <style>@page{margin:18mm 14mm} body{margin:0;background:#fff}</style>
 </head><body>${planoParaHtml(projeto)}</body></html>`;
 }

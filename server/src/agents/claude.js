@@ -1,4 +1,4 @@
-// Cliente Claude (claude-fable-5) — geração estruturada com fallbacks e tratamento de recusa.
+// Cliente Claude (claude-fable-5): geração estruturada com fallbacks e tratamento de recusa.
 // Sem ANTHROPIC_API_KEY, cai em modo demo (o chamador fornece o mock).
 import { config } from '../config.js';
 
@@ -19,7 +19,7 @@ async function client() {
  */
 export async function structured({ system, user, schema, effort = 'high', maxTokens = 16000 }) {
   if (!config.hasApiKey) {
-    throw Object.assign(new Error('Sem ANTHROPIC_API_KEY — use o modo demo.'), { code: 'NO_API_KEY' });
+    throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }
   const anthropic = await client();
   const stream = anthropic.beta.messages.stream({
@@ -56,7 +56,7 @@ export async function structured({ system, user, schema, effort = 'high', maxTok
  */
 export async function conversar({ system, messages, effort = 'medium', maxTokens = 4000 }) {
   if (!config.hasApiKey) {
-    throw Object.assign(new Error('Sem ANTHROPIC_API_KEY — use o modo demo.'), { code: 'NO_API_KEY' });
+    throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }
   const anthropic = await client();
   const stream = anthropic.beta.messages.stream({
@@ -70,7 +70,7 @@ export async function conversar({ system, messages, effort = 'medium', maxTokens
   });
   const response = await stream.finalMessage();
   if (response.stop_reason === 'refusal') {
-    throw Object.assign(new Error('Não posso ajudar com esse pedido — reformule, por favor.'), { code: 'REFUSAL' });
+    throw Object.assign(new Error('Não posso ajudar com esse pedido: reformule, por favor.'), { code: 'REFUSAL' });
   }
   return response.content.filter(b => b.type === 'text').map(b => b.text).join('');
 }
@@ -79,11 +79,11 @@ export async function conversar({ system, messages, effort = 'medium', maxTokens
  * Conversa com acesso à internet em tempo real (Sexta-Feira).
  * Usa o server tool web_search; `pause_turn` é retomado re-enviando o conteúdo
  * do assistant como está (sem texto extra), até ~4 iterações.
- * Retorna { texto, buscas } — buscas = quantas pesquisas o modelo executou.
+ * Retorna { texto, buscas }: buscas = quantas pesquisas o modelo executou.
  */
 export async function conversarComInternet({ system, messages, effort = 'high', maxTokens = 8000, maxBuscas = 5 }) {
   if (!config.hasApiKey) {
-    throw Object.assign(new Error('Sem ANTHROPIC_API_KEY — use o modo demo.'), { code: 'NO_API_KEY' });
+    throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }
   const anthropic = await client();
   let msgs = [...messages];
@@ -104,7 +104,7 @@ export async function conversarComInternet({ system, messages, effort = 'high', 
     msgs = [...msgs, { role: 'assistant', content: response.content }];
   }
   if (response.stop_reason === 'refusal') {
-    throw Object.assign(new Error('Não posso ajudar com esse pedido — reformule, por favor.'), { code: 'REFUSAL' });
+    throw Object.assign(new Error('Não posso ajudar com esse pedido: reformule, por favor.'), { code: 'REFUSAL' });
   }
   const buscas = response.content.filter(b => b.type === 'server_tool_use').length;
   const texto = response.content.filter(b => b.type === 'text').map(b => b.text).join('');

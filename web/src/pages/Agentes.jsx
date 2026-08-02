@@ -4,7 +4,7 @@ import { useUser } from '../App.jsx';
 import AgentAvatar from '../components/AgentAvatar.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// ELENCO — 35 agentes em 4 castas.
+// ELENCO: 35 agentes em 4 castas.
 // Núcleo Internacional e Conselho Amazônico são a identidade da plataforma e
 // não podem ser desligados. A Reserva o administrador ativa quando precisa.
 // ═══════════════════════════════════════════════════════════════════════════

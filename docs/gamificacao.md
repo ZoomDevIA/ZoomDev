@@ -1,6 +1,6 @@
-# Filosofia Gamificada da ZoomDev — proposta
+# Filosofia Gamificada da ZoomDev: proposta
 
-> Nenhum dos três concorrentes (Base44, Lovable, Abacus) tem gamificação real no produto —
+> Nenhum dos três concorrentes (Base44, Lovable, Abacus) tem gamificação real no produto:
 > no máximo referral e créditos diários. A ZoomDev nasce gamificada: o "jogo" é construir
 > uma startup de verdade, e cada mecânica premia **progresso real do negócio**, nunca
 > métricas de vaidade.
@@ -27,12 +27,12 @@ Metáfora bio-amazônica para os níveis da startup (coerente com o branding flo
 - XP por ações de progresso: completar brainstorming, publicar deploy, submeter edital,
   responder entrevista de validação, convidar membro para o workspace.
 - Anti-farming: XP só em ações com resultado verificável (deploy que passa no QA, edital
-  realmente submetido) — princípio "sem XP de vaidade".
+  realmente submetido): princípio "sem XP de vaidade".
 
 ### Missões (quests)
-- **Missões da jornada** (main quest): guiam o próximo passo real da startup — "Valide sua ideia
+- **Missões da jornada** (main quest): guiam o próximo passo real da startup:"Valide sua ideia
   com 5 pessoas", "Publique sua landing", "Calcule sua aderência ao edital FINEP".
-- **Missões diárias/semanais** (side quests): leves, renovam o hábito — "Refine uma tela",
+- **Missões diárias/semanais** (side quests): leves, renovam o hábito:"Refine uma tela",
   "Analise um concorrente com o Agente Negócio".
 - **Editais como "boss battles"**: cada edital aberto vira um desafio com prazo, checklist de
   requisitos e score de aderência da IA; submeter = enfrentar o boss; aprovação = loot épico
@@ -40,18 +40,18 @@ Metáfora bio-amazônica para os níveis da startup (coerente com o branding flo
 
 ### Streaks com proteção
 - Streak diário de construção (estilo Duolingo) recompensado em créditos.
-- "Proteção de streak" comprável com créditos ganhos (nunca com dinheiro) — evita a frustração
+- "Proteção de streak" comprável com créditos ganhos (nunca com dinheiro): evita a frustração
   punitiva que gera churn.
 
 ### Conquistas (badges)
 - Por marcos reais: "Primeiro Deploy", "Primeira Venda", "Aprovado em Edital", "Guardião da
-  Floresta" (projeto bio com rastreabilidade), "Exit" (aquisição/investimento — o troféu máximo,
+  Floresta" (projeto bio com rastreabilidade), "Exit" (aquisição/investimento: o troféu máximo,
   eco da tagline IDEA TO EXIT).
 
 ### Economia de créditos gamificada (créditos = seiva 🌿)
 - Créditos ganhos por: missões, streaks, upvotes na arena de lançamentos, indicações,
   contribuições à comunidade (templates, agentes publicados).
-- **Estorno automático quando a geração falha no QA** — transforma a maior dor dos concorrentes
+- **Estorno automático quando a geração falha no QA**: transforma a maior dor dos concorrentes
   (créditos queimados em loops de erro) em mecânica de confiança.
 - Custo estimado exibido ANTES de cada ação da IA; medidor de seiva em tempo real na topbar.
 
@@ -74,13 +74,13 @@ Metáfora bio-amazônica para os níveis da startup (coerente com o branding flo
 
 ### Impacto como pontuação paralela (trilha Bio)
 - Score de Impacto (já no protótipo) vira "pontuação verde": ações ESG/ODS, rastreabilidade e
-  créditos de carbono (CarbonPay) alimentam um ranking de impacto separado — reforça o
+  créditos de carbono (CarbonPay) alimentam um ranking de impacto separado: reforça o
   posicionamento amazônico sem competir com o ranking geral.
 
 ## 3. Regras de ouro (para não virar gimmick)
 
 1. Toda recompensa aponta para progresso real do negócio do usuário.
 2. Gamificação nunca bloqueia função essencial (é camada de motivação, não paywall disfarçado).
-3. Créditos ganhos jogando são gastáveis em IA de verdade — o loop fecha.
+3. Créditos ganhos jogando são gastáveis em IA de verdade: o loop fecha.
 4. Perder streak/liga nunca destrói progresso permanente (níveis e badges são conquistas vitalícias).
 5. Opt-out disponível ("modo focado") para usuários corporativos/Enterprise.

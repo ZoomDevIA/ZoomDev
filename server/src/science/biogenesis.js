@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// BIOGENESIS COT BIOTECHNOLOGY — perfil técnico da tecnologia
+// BIOGENESIS COT BIOTECHNOLOGY: perfil técnico da tecnologia
 //
 // Base científica destilada do acervo interno (ver science/corpus.js).
-// Este módulo expõe apenas CONHECIMENTO TÉCNICO e níveis de confiança —
+// Este módulo expõe apenas CONHECIMENTO TÉCNICO e níveis de confiança:
 // nunca a origem documental, entidades, valores ou códigos de processo.
 // ═══════════════════════════════════════════════════════════════════════════
 import { PROTOCOLO, RESPOSTA_POR_SOLO, EFEITOS } from './corpus.js';
@@ -17,7 +17,7 @@ export const IDENTIDADE = {
 };
 
 /**
- * Efeitos técnicos comunicáveis — cada um com seu nível de confiança.
+ * Efeitos técnicos comunicáveis: cada um com seu nível de confiança.
  * Nenhuma referência a documento, laudo específico, localidade ou instituição.
  */
 export const EFEITOS_TECNICOS = [
@@ -29,7 +29,7 @@ export const EFEITOS_TECNICOS = [
   },
   {
     id: 'produtividade',
-    efeito: 'Ganho de produtividade que varia com a condição do solo — de cerca de 30% em áreas já corrigidas até o triplo da testemunha em solos ácidos não corrigidos.',
+    efeito: 'Ganho de produtividade que varia com a condição do solo, de cerca de 30% em áreas já corrigidas até o triplo da testemunha em solos ácidos não corrigidos.',
     selo: 'LAUDO',
     relevancia: 'O ganho máximo ocorre exatamente onde a agricultura familiar mais sofre: solo pobre e sem acesso a correção.',
   },
@@ -67,7 +67,7 @@ export const EFEITOS_TECNICOS = [
     id: 'mecanismo',
     efeito: 'O desenvolvedor propõe que partículas subatômicas catalisariam a dinâmica da água na planta, umedecendo o solo de dentro para fora.',
     selo: 'HIPOTESE',
-    relevancia: 'MECANISMO EM INVESTIGAÇÃO — não sustenta alegação comercial nem cálculo de crédito. Os efeitos medidos em campo são válidos independentemente desta explicação, e são amplamente compatíveis com a ação conhecida de bioestimulantes (matéria orgânica, micronutrientes, sinalização hormonal e recuperação da biota).',
+    relevancia: 'MECANISMO EM INVESTIGAÇÃO: não sustenta alegação comercial nem cálculo de crédito. Os efeitos medidos em campo são válidos independentemente desta explicação, e são amplamente compatíveis com a ação conhecida de bioestimulantes (matéria orgânica, micronutrientes, sinalização hormonal e recuperação da biota).',
   },
 ];
 
@@ -99,7 +99,7 @@ export const CENARIOS_UPLIFT = {
     upliftBiomassa: RESPOSTA_POR_SOLO.degradado.upliftBiomassa,
     selo: RESPOSTA_POR_SOLO.degradado.confianca,
     faixaIncerteza: RESPOSTA_POR_SOLO.degradado.faixaIncerteza,
-    base: 'Solo ácido não corrigido com estresse fitossanitário. É onde a tecnologia entrega o maior ganho — e onde a agricultura familiar mais precisa.',
+    base: 'Solo ácido não corrigido com estresse fitossanitário. É onde a tecnologia entrega o maior ganho, e onde a agricultura familiar mais precisa.',
   },
 };
 

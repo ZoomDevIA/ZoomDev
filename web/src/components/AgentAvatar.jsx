@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// AVATAR DE AGENTE — ponto único de verdade para exibir a arte de um agente.
+// AVATAR DE AGENTE: ponto único de verdade para exibir a arte de um agente.
 //
 // Cascata: recorte do rosto (agents/faces/) → retrato (agents/) → emoji.
 // Nunca renderiza <img> sem src: o navegador exibiria o texto do alt e o
@@ -52,7 +52,7 @@ export default function AgentAvatar({
     <div
       className={`${size} ${rounded} ${centralizar ? 'mx-auto' : ''} overflow-hidden border shrink-0 flex items-center justify-center ${emojiSize} ${className}`}
       style={{ borderColor: `${cor}33`, background: `${cor}12`, boxShadow: src ? `0 0 18px ${cor}30` : undefined }}
-      title={src ? a.nome : `${a.nome || 'Agente'} — avatar em produção`}
+      title={src ? a.nome : `${a.nome || 'Agente'}: avatar em produção`}
     >
       {src ? (
         <img

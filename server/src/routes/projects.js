@@ -43,7 +43,7 @@ projectsRouter.post('/ideacao', async (req, res, next) => {
     const tipoEfetivo = modulosAtivos.bio ? 'biostartup' : tipo;
 
     // O classificador também é quem batiza o projeto. Se o fundador escolheu o
-    // tipo mas não deu nome, ainda vale chamá-lo — só a sugestão de nome é
+    // tipo mas não deu nome, ainda vale chamá-lo: só a sugestão de nome é
     // aproveitada, a classificação continua sendo a escolha dele.
     const tipoExplicito = tipoEfetivo === 'startup' || tipoEfetivo === 'biostartup';
     const r = (!tipoExplicito || !nome) ? await classificarIdeia(String(descricao)) : null;
@@ -92,7 +92,7 @@ projectsRouter.post('/ideacao', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-// Geração do plano pelos 5 agentes — SSE com progresso por agente.
+// Geração do plano pelos 5 agentes: SSE com progresso por agente.
 projectsRouter.get('/:id/gerar-plano', async (req, res) => {
   const proj = store.projects[req.params.id];
   if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });
@@ -281,7 +281,7 @@ projectsRouter.get('/:id/plano.html', (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// MVP BUILDER — do plano ao produto navegável (SSE, preview e ZIP)
+// MVP BUILDER, do plano ao produto navegável (SSE, preview e ZIP)
 // ═══════════════════════════════════════════════════════════════════════════
 projectsRouter.get('/:id/mvp/construir', async (req, res) => {
   const proj = store.projects[req.params.id];

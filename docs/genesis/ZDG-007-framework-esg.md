@@ -40,7 +40,7 @@ Inventário GHG Protocol por escopo, com perfis setoriais e **faixa de incerteza
 
 ### Reduzir
 13 oportunidades catalogadas, priorizadas por `impacto ÷ custo`, com roadmap
-plurianual de curva acelerada — os ganhos rápidos primeiro.
+plurianual de curva acelerada: os ganhos rápidos primeiro.
 
 ### Compensar
 Apenas o residual, com margem de segurança de 20%. Duas rotas comparadas:
@@ -60,7 +60,7 @@ Todo plano gerado declara explicitamente:
 
 **Não pode afirmar**
 - "Empresa carbono neutro" de forma genérica, sem verificação independente
-- "Emissão zero" — compensação não é ausência de emissão
+- "Emissão zero": compensação não é ausência de emissão
 - Qualquer compensação antes da aposentadoria efetiva em registro público
 
 Referência: **ISO 14068-1** e recomendações do **CONAR** sobre publicidade ambiental.
@@ -70,7 +70,7 @@ Referência: **ISO 14068-1** e recomendações do **CONAR** sobre publicidade am
 ## 3. Transição energética justa
 
 Definição da OIT aplicada ao território: **quem regenera é dono da energia e da
-renda que produz** — não fornecedor de matéria-prima barata.
+renda que produz**: não fornecedor de matéria-prima barata.
 
 O ciclo que a plataforma modela:
 

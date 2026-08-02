@@ -1,4 +1,4 @@
-# Mapa de Funcionalidades — Protótipo × Pitch × Plano de Negócios
+# Mapa de Funcionalidades: Protótipo × Pitch × Plano de Negócios
 
 > Fontes: módulos lazy-loaded e strings extraídos do bundle JS de produção do protótipo,
 > screenshots internos do Plano de Negócios, pitch deck (15 slides).
@@ -35,7 +35,7 @@ Relatórios · Econ. Agentes · Coopetição
 - Verticais: Health Tech, Impacto Social, Agro & Food, Educação, Fintech
 - Stats do dashboard: Projetos Ativos, Ideias Criadas, MVPs, Score de Impacto
 - Análises de IA: Análise de Mercado, Análise Financeira, Análise Competitiva
-- CarbonPay: "Créditos de Carbono — gere renda certificando e vendendo créditos de carbono"
+- CarbonPay: "Créditos de Carbono: gere renda certificando e vendendo créditos de carbono"
   (exemplo de prompt: fintech de crédito de carbono com PIX + rastreabilidade blockchain)
 - Auth: e-mail/senha com verificação OTP por e-mail; social logins exibidos como "em breve"
 - Billing: checkout Stripe (screenshots do plano de negócios: PRO R$ 69/mês, BUSINESS R$ 149/mês)
@@ -55,18 +55,18 @@ Relatórios · Econ. Agentes · Coopetição
 | Biblioteca Bio-Tech (componentes bio-inspirados) | ⚠️ parcial (Biblioteca no menu) | |
 | Dashboard Analytics | ✅ (`ImpactDashboard`) | |
 | Sistema de créditos | ⚠️ visível nos screenshots do PDF ("500 créditos", "Uso de Créditos") | mecânica não presente no bundle público |
-| Planos Free/Pro/Premium/Enterprise | ⚠️ divergência de preço | pitch: Pro R$ 99, Premium R$ 199 · protótipo/Stripe: PRO R$ 69, BUSINESS R$ 149 — **decidir tabela única** |
+| Planos Free/Pro/Premium/Enterprise | ⚠️ divergência de preço | pitch: Pro R$ 99, Premium R$ 199 · protótipo/Stripe: PRO R$ 69, BUSINESS R$ 149, **decidir tabela única** |
 | Workspaces/colaboração | ⚠️ ("Equipe" no menu; workspaces nos screenshots) | |
 | Aceleradora digital (mentoria, submissão a editais) | ✅ (Editais + aderência IA + Investidores) | |
-| Gamificação | ❌ **ausente** (nenhuma string de XP/nível/conquista/missão no bundle) | objetivo central da nova plataforma — ver `gamificacao.md` |
+| Gamificação | ❌ **ausente** (nenhuma string de XP/nível/conquista/missão no bundle) | objetivo central da nova plataforma: ver `gamificacao.md` |
 
 ## 3. Lacunas e inconsistências a resolver
 
-1. **Pricing divergente** entre pitch (R$ 99/199) e protótipo (R$ 69/149) — definir tabela oficial.
-2. **Gamificação inexistente** no protótipo — será construída como filosofia central (não um add-on).
-3. **Deploy real, GitHub, Supabase, domínios** — apenas prometidos; núcleo técnico a implementar.
-4. **Sistema de créditos** — presente na UI, sem lógica visível; definir economia de créditos completa.
-5. **Muitos módulos "casca"** (Gêmeo Digital, Swarm, IoT, Coopetição, Governança...) — priorizar MVP:
+1. **Pricing divergente** entre pitch (R$ 99/199) e protótipo (R$ 69/149): definir tabela oficial.
+2. **Gamificação inexistente** no protótipo: será construída como filosofia central (não um add-on).
+3. **Deploy real, GitHub, Supabase, domínios**: apenas prometidos; núcleo técnico a implementar.
+4. **Sistema de créditos**: presente na UI, sem lógica visível; definir economia de créditos completa.
+5. **Muitos módulos "casca"** (Gêmeo Digital, Swarm, IoT, Coopetição, Governança...), priorizar MVP:
    núcleo Builder + 5 agentes + créditos + gamificação primeiro; módulos avançados por fases.
 6. Textos com erros de digitação no pitch/protótipo (ex.: "instânciação cognitva", "Comsuda estrutural")
-   — revisar copy na versão final.
+: revisar copy na versão final.

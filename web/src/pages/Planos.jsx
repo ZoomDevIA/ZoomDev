@@ -3,7 +3,7 @@ import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PLANOS E SEIVA — assinatura via Stripe, avulso via PIX.
+// PLANOS E SEIVA: assinatura via Stripe, avulso via PIX.
 // Quando as chaves não estão configuradas, o fluxo é o mesmo e a confirmação
 // é manual: nada de tela morta esperando produção.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -49,7 +49,7 @@ function ModalPix({ tx, onFechar, onConfirmar, confirmando }) {
         {tx.simulado ? (
           <>
             <button onClick={onConfirmar} disabled={confirmando} className="zd-gradient-btn w-full rounded-lg py-3 text-sm mt-4">
-              {confirmando ? 'Confirmando…' : 'Já paguei — liberar agora'}
+              {confirmando ? 'Confirmando…' : 'Já paguei: liberar agora'}
             </button>
             <p className="text-[10px] text-white/35 mt-2 text-center">
               Conciliação automática ainda não configurada: a confirmação é manual.
@@ -220,9 +220,9 @@ export default function Planos() {
         <div className="zd-card rounded-xl p-4 text-[11px] text-white/45 space-y-1">
           <div className="font-bold text-white/60 uppercase text-[10px] tracking-wider mb-1.5">Integração de pagamentos</div>
           <div>💳 Stripe: <b className={status.stripe.ativo ? 'zd-green' : 'text-white/50'}>{status.stripe.modo}</b>
-            {!status.stripe.ativo && ` — ${status.stripe.comoAtivar}`}</div>
+            {!status.stripe.ativo && `: ${status.stripe.comoAtivar}`}</div>
           <div>⚡ PIX: <b className={status.pix.ativo ? 'zd-green' : 'text-white/50'}>{status.pix.modo}</b>
-            {!status.pix.ativo && ` — ${status.pix.comoAtivar}`}</div>
+            {!status.pix.ativo && `: ${status.pix.comoAtivar}`}</div>
           <div className="text-white/30 pt-1">O BR Code do PIX já é gerado no padrão do Banco Central, com CRC16 válido.</div>
         </div>
       )}

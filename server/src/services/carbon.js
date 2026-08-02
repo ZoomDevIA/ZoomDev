@@ -1,28 +1,28 @@
-// Calculadora de Passivo Ambiental — metodologia GHG Protocol (escopos 1, 2 e 3)
+// Calculadora de Passivo Ambiental: metodologia GHG Protocol (escopos 1, 2 e 3)
 // Fatores de emissão com fontes documentadas em docs/mercado-carbono.md.
 // IMPORTANTE: fatores são estimativas para triagem de PMEs/startups; inventários
 // oficiais devem usar a ferramenta do Programa Brasileiro GHG Protocol (FGVces).
 
 export const FATORES = {
-  // Escopo 2 — eletricidade (fator médio anual do SIN, MCTI/SIRENE 2023)
+  // Escopo 2: eletricidade (fator médio anual do SIN, MCTI/SIRENE 2023)
   eletricidade_tco2_por_mwh: 0.0385,
-  // Escopo 1 — combustão direta (kgCO2e/litro, ajustado à mistura obrigatória BR)
+  // Escopo 1: combustão direta (kgCO2e/litro, ajustado à mistura obrigatória BR)
   gasolina_kg_por_litro: 2.2,
   diesel_kg_por_litro: 2.6,
   etanol_kg_por_litro: 0.4, // biogênico majoritário; residual fóssil da cadeia
   glp_kg_por_botijao13: 37.4,
-  // Escopo 3 — viagens e frete (aproximações DEFRA/ICAO)
+  // Escopo 3: viagens e frete (aproximações DEFRA/ICAO)
   voo_domestico_kg_por_hora: 110,
   voo_internacional_kg_por_hora: 90,
   carro_app_kg_por_km: 0.18,
   frete_rodoviario_kg_por_tkm: 0.11,
-  // Escopo 3 — operação digital/escritório (aproximações spend/atividade)
+  // Escopo 3: operação digital/escritório (aproximações spend/atividade)
   funcionario_escritorio_kg_por_mes: 65,   // energia comum, resíduos, commuting médio
   funcionario_remoto_kg_por_mes: 25,
   nuvem_kg_por_1000_reais_mes: 30,         // spend-based aproximado p/ cloud no BR
 };
 
-// Projetos de compensação disponíveis no CarbonPay (preços em R$/tCO2e — faixas
+// Projetos de compensação disponíveis no CarbonPay (preços em R$/tCO2e: faixas
 // de mercado 2025-26; ver docs/mercado-carbono.md). Marketplace demo: a venda real
 // exige aposentadoria em registro (Verra/Gold Standard) com certificado público.
 export const PROJETOS_CARBONPAY = [
@@ -30,7 +30,7 @@ export const PROJETOS_CARBONPAY = [
     id: 'redd_amazonia',
     nome: 'REDD+ Floresta Amazônica em Pé',
     tipo: 'REDD+ (conservação florestal)',
-    padrao: 'VCS (Verra) — alta qualidade',
+    padrao: 'VCS (Verra): alta qualidade',
     precoPorTon: 89,
     local: 'Amazônia, Brasil',
     descricao: 'Conservação de floresta nativa com renda para comunidades locais e monitoramento por satélite.',
@@ -66,17 +66,17 @@ export function calcularPassivoLegado(dados) {
   const n = (v) => Math.max(0, Number(v) || 0);
   const F = FATORES;
 
-  // Escopo 1 — combustão direta da frota/geradores
+  // Escopo 1: combustão direta da frota/geradores
   const escopo1kg =
     (n(dados.gasolinaLitrosMes) * F.gasolina_kg_por_litro +
       n(dados.dieselLitrosMes) * F.diesel_kg_por_litro +
       n(dados.etanolLitrosMes) * F.etanol_kg_por_litro +
       n(dados.glpBotijoesMes) * F.glp_kg_por_botijao13) * 12;
 
-  // Escopo 2 — eletricidade comprada (kWh → MWh × fator SIN)
+  // Escopo 2: eletricidade comprada (kWh → MWh × fator SIN)
   const escopo2kg = (n(dados.energiaKwhMes) / 1000) * F.eletricidade_tco2_por_mwh * 1000 * 12;
 
-  // Escopo 3 — viagens, frete, time e nuvem
+  // Escopo 3: viagens, frete, time e nuvem
   const escopo3kg =
     (n(dados.vooDomesticoHorasAno) * F.voo_domestico_kg_por_hora) +
     (n(dados.vooInternacionalHorasAno) * F.voo_internacional_kg_por_hora) +
@@ -92,7 +92,7 @@ export function calcularPassivoLegado(dados) {
   const tonCompensacao = Math.ceil(totalTon * 1.2 * 10) / 10;
 
   return {
-    metodologia: 'GHG Protocol (triagem simplificada) — fatores MCTI/SIRENE 2023 e DEFRA/ICAO',
+    metodologia: 'GHG Protocol (triagem simplificada): fatores MCTI/SIRENE 2023 e DEFRA/ICAO',
     escopos: {
       escopo1: { tco2e: round2(escopo1kg / 1000), descricao: 'Emissões diretas: combustíveis da frota e geradores' },
       escopo2: { tco2e: round2(escopo2kg / 1000), descricao: 'Energia elétrica comprada (fator SIN/MCTI 0,0385 tCO2/MWh)' },
@@ -110,7 +110,7 @@ export function calcularPassivoLegado(dados) {
       custoTotal: round2(tonCompensacao * p.precoPorTon),
     })),
     avisos: [
-      'Estimativa de triagem — para inventário oficial use a ferramenta do Programa Brasileiro GHG Protocol (FGVces).',
+      'Estimativa de triagem, para inventário oficial use a ferramenta do Programa Brasileiro GHG Protocol (FGVces).',
       'Compensação recomendada com 20% de margem sobre o total estimado.',
       'Conforme CONAR/ISO 14068-1: comunique como "emissões compensadas com créditos verificados", nunca "carbono neutro" genérico. Priorize reduzir antes de compensar.',
     ],
@@ -138,7 +138,7 @@ export const CENARIOS_BIOGENESIS = Object.values(CENARIOS_UPLIFT).map(c => ({
 
 /**
  * Calcula quanto do passivo (tCO2e/ano) pode ser compensado por uma área
- * cultivada com Biogenesis — apresentando as duas leituras separadas:
+ * cultivada com Biogenesis, apresentando as duas leituras separadas:
  * ESTIMATIVA (o que a área faz) e CRÉDITO VERIFICÁVEL (o que exige MRV).
  */
 export function sequestroBiogenesis({ culturaId, hectares, cenarioId = 'conservador', passivoTco2eAno = 0 }) {

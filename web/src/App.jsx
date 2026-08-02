@@ -57,12 +57,19 @@ export default function App() {
     const lista = Array.isArray(gam) ? gam : [gam];
     for (const g of lista) {
       if (!g) continue;
-      if (g.xpGanho) notify({ tipo: 'xp', titulo: `+${g.xpGanho} XP`, detalhe: g.subiuNivel ? `Subiu para o nível ${g.nivel.nivel} — ${g.nivel.nome}! 🎉` : null });
+      if (g.xpGanho) notify({ tipo: 'xp', titulo: `+${g.xpGanho} XP`, detalhe: g.subiuNivel ? `Subiu para o nível ${g.nivel.nivel}: ${g.nivel.nome}! 🎉` : null });
       for (const c of g.novasConquistas || []) {
         notify({ tipo: 'conquista', titulo: `${c.emoji} Conquista: ${c.nome}`, detalhe: c.descricao });
       }
     }
   }, [notify]);
+
+  // Área de administração: quem não tem porta lá nem vê a rota existir. O
+  // fundador que digita /painel na barra cai na home, como em /admin.
+  const podeAbrirPainel = Boolean(user) && (
+    (user.capacidades || []).includes('usuarios.ler')
+    || (user.capacidades || []).includes('comunidade.curar')
+  );
 
   if (carregando) {
     return <div className="min-h-screen zd-bg flex items-center justify-center">
@@ -74,7 +81,7 @@ export default function App() {
     <UserContext.Provider value={{ user, setUser, refreshUser, celebrar }}>
       <ToastContext.Provider value={{ toasts, notify }}>
         {!user ? (
-          /* Visitante: a home é pública — escreve a ideia primeiro, cria conta depois. */
+          /* Visitante: a home é pública, escreve a ideia primeiro, cria conta depois. */
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/entrar" element={<Login />} />
@@ -86,7 +93,7 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/entrar" element={<Navigate to="/" replace />} />
-              <Route path="/painel" element={<Painel />} />
+              {podeAbrirPainel && <Route path="/painel" element={<Painel />} />}
               <Route path="/strategy" element={<StrategyCore />} />
               <Route path="/ideacao" element={<Ideacao />} />
               <Route path="/agentes" element={<Agentes />} />

@@ -34,12 +34,12 @@ referenciável, nada consumível por agentes cognitivos.
 ## 1. Arquitetura: um sistema operacional, não uma biblioteca
 
 A Genesis não se organiza por "livros". Ela se organiza como um **sistema operacional
-do conhecimento** — porque o verdadeiro produto da ZoomDev é o que ela sabe.
+do conhecimento**: porque o verdadeiro produto da ZoomDev é o que ela sabe.
 
 ```
 ZoomDev Genesis
 │
-├── Kernel        norma, linguagem, ontologia — o que rege todo o resto
+├── Kernel        norma, linguagem, ontologia: o que rege todo o resto
 ├── Foundation    constituição, identidade, princípios
 ├── Science       corpus técnico, evidências, metodologias
 ├── Cognition     arquitetura cognitiva, protocolos de instância
@@ -53,12 +53,12 @@ ZoomDev Genesis
 └── References    fontes, glossário, bibliografia
 ```
 
-**Kernel** é a camada que nenhuma documentação costuma ter. A nossa tem — porque
+**Kernel** é a camada que nenhuma documentação costuma ter. A nossa tem: porque
 quando existirem 3.000 arquivos, é o Kernel que impede o caos.
 
 ---
 
-## 2. ZDL — ZoomDev Description Language
+## 2. ZDL: ZoomDev Description Language
 
 Todo documento da Genesis é Markdown enriquecido com **metadados cognitivos** em YAML.
 Não é enfeite: é o que permite a um agente raciocinar sobre o documento sem lê-lo inteiro.
@@ -89,7 +89,7 @@ related: [ZDG-002]       # documentos correlatos
 ## 3. Marcadores de evidência e grau de confiança
 
 Toda informação declara **de onde vem** e **quanto se pode confiar nela**. Este é o
-mesmo Selo de Evidência que governa os cálculos da plataforma — norma e produto
+mesmo Selo de Evidência que governa os cálculos da plataforma: norma e produto
 falam a mesma língua.
 
 | Marcador | Significado | Confiança |
@@ -103,10 +103,10 @@ falam a mesma língua.
 Escala de confiança dentro de `EVIDENCE`:
 
 ```
-100  🏛️  Verificado — documento oficial verificável por terceiro
- 90  🌱  Laudo — assinado por responsável técnico habilitado
- 80  🌾  Campo — observado e registrado, sem instrumentação completa
- 75  📄  Pesquisa — literatura científica ou dado estatístico oficial
+100  🏛️  Verificado: documento oficial verificável por terceiro
+ 90  🌱  Laudo: assinado por responsável técnico habilitado
+ 80  🌾  Campo: observado e registrado, sem instrumentação completa
+ 75  📄  Pesquisa: literatura científica ou dado estatístico oficial
 ```
 
 **Consequência prática, não decorativa:**
@@ -157,7 +157,7 @@ ao sucessor. **O histórico é patrimônio.**
 - **Arquivo**: `ZDG-NNN-slug-em-minusculas.md`
 - **Diagramas**: Mermaid como padrão
 - **Idioma**: pt-BR no corpo; identificadores técnicos em inglês
-- **Referências**: todo documento declara `dependencies` e `related` — o grafo se
+- **Referências**: todo documento declara `dependencies` e `related`: o grafo se
   monta sozinho
 - **Densidade**: escreva para quem decide. Sem enchimento, sem repetição, sem
   adjetivo que não carrega informação
@@ -170,4 +170,4 @@ Uma base de conhecimento bem normatizada não serve só a pessoas. Ela vira **su
 cognitivo**: a Maiá e os demais agentes consultam a Genesis por conceito, não por
 arquivo, e cada resposta que dão ao fundador carrega o grau de confiança da fonte.
 
-É a diferença entre uma IA que opina e uma IA que sabe — e sabe o quanto sabe.
+É a diferença entre uma IA que opina e uma IA que sabe, e sabe o quanto sabe.

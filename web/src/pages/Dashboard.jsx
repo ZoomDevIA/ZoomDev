@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-7">
-      {/* Hero — copy literal do protótipo, com o background original de floresta digital */}
+      {/* Hero: copy literal do protótipo, com o background original de floresta digital */}
       <div className="zd-card-glow rounded-2xl p-6 relative overflow-hidden">
         <img src="/assets/site/login-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover"
           onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -111,10 +111,10 @@ export default function Dashboard() {
       {/* Agent Bus: os agentes antecipam os próximos passos (Sexta-Feira) */}
       <Nudges />
 
-      {/* Banner edital — clone do protótipo */}
+      {/* Banner edital: clone do protótipo */}
       <div className="zd-notification rounded-xl px-5 py-3.5 flex items-center gap-3 justify-between flex-wrap">
         <div className="text-sm">
-          📋 <b>Novo edital FINEP Bioeconomia aberto</b> — R$ 200 milhões disponíveis para projetos sustentáveis
+          📋 <b>Novo edital FINEP Bioeconomia aberto</b>: R$ 200 milhões disponíveis para projetos sustentáveis
         </div>
         <Link to="/editais" className="zd-tag rounded-full px-3 py-1.5 hover:bg-[#00ff6430] transition-colors">Ver Edital →</Link>
       </div>
@@ -134,7 +134,7 @@ export default function Dashboard() {
       {/* Nível do fundador + conquistas */}
       <div className="zd-card rounded-xl p-5">
         <div className="flex items-center justify-between text-sm mb-2">
-          <div className="font-semibold">Nível {user.nivel.nivel} — {user.nivel.nome}</div>
+          <div className="font-semibold">Nível {user.nivel.nivel}: {user.nivel.nome}</div>
           <div className="text-white/45 text-xs">{proximoXp ? `${user.nivel.xp}/${proximoXp} XP para o próximo nível` : 'Nível máximo!'}</div>
         </div>
         <div className="h-2.5 bg-white/8 rounded-full overflow-hidden">

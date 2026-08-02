@@ -52,7 +52,7 @@ match de edital mostra os quatro sinais com o motivo escrito.
 
 ### Degradação graciosa
 O mundo 3D detecta a capacidade do dispositivo e escolhe entre três níveis de
-qualidade — com fallback textual quando não há WebGL.
+qualidade, com fallback textual quando não há WebGL.
 
 ---
 

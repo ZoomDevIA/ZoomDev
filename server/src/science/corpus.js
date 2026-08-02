@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// CORPUS REGENERATIVO — camada INTERNA de calibração
+// CORPUS REGENERATIVO: camada INTERNA de calibração
 //
 // Destilado do acervo documental do fundador (laudos técnicos, informe técnico,
 // instrumentos de fomento e material institucional) em parâmetros, protocolos e
 // doutrinas operacionais.
 //
-// ⚠️ CONFIDENCIAL — NUNCA EXPOR:
+// ⚠️ CONFIDENCIAL, NUNCA EXPOR:
 // Este módulo não é servido por nenhuma rota pública. Ele não contém e não pode
 // receber: nomes de entidades, cooperativas, pessoas ou instituições parceiras;
 // CNPJs; valores de contrato; códigos de processo (SEI/ART/CRC); contagens de
@@ -28,7 +28,7 @@ export const PROTOCOLO = {
 };
 
 /**
- * Curva de resposta por condição do solo — o achado mais valioso do acervo:
+ * Curva de resposta por condição do solo, o achado mais valioso do acervo:
  * o ganho é inversamente proporcional à qualidade inicial do solo.
  * Quanto mais degradado, maior a resposta. Isso inverte a lógica do agro
  * convencional e é o que torna a tecnologia relevante para agricultura familiar.
@@ -73,7 +73,7 @@ export const EFEITOS = {
 };
 
 /**
- * Arquétipos de escala — derivados de programas reais, TOTALMENTE ANONIMIZADOS.
+ * Arquétipos de escala: derivados de programas reais, TOTALMENTE ANONIMIZADOS.
  * Servem como presets da calculadora. Nenhum nome, valor ou entidade.
  */
 export const ARQUETIPOS = [
@@ -96,7 +96,7 @@ export const MIX_AMAZONICO = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
-// DOUTRINAS — injetadas em TODOS os PICs (Sexta-Feira + 27 agentes)
+// DOUTRINAS: injetadas em TODOS os PICs (Sexta-Feira + 27 agentes)
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const DOUTRINA_EVIDENCIA = `DOUTRINA DE EVIDÊNCIA (inegociável para todos os agentes)
@@ -111,7 +111,7 @@ export const DOUTRINA_EVIDENCIA = `DOUTRINA DE EVIDÊNCIA (inegociável para tod
 export const DOUTRINA_REGENERATIVA = `DOUTRINA REGENERATIVA (visão 360° compartilhada)
 - Nenhum eixo é avaliado isoladamente: bioeconomia → energia circular → renda → cultura. Produtividade sem autonomia energética é dependência; energia sem renda é assistencialismo; renda sem cultura é descaracterização.
 - Hierarquia de mitigação, sempre nesta ordem: MEDIR → REDUZIR → COMPENSAR. Compensar antes de reduzir é greenwashing.
-- Transição energética JUSTA (definição OIT): quem regenera o território é dono da energia e da renda que produz — não fornecedor de matéria-prima barata.
+- Transição energética JUSTA (definição OIT): quem regenera o território é dono da energia e da renda que produz, não fornecedor de matéria-prima barata.
 - A tecnologia responde melhor onde o solo está pior: isso a torna instrumento de justiça social, não de agricultura de precisão para quem já tem tudo.
 - Segurança alimentar, água, energia, renda e clima são o mesmo problema visto de ângulos diferentes. Trate-os de forma integrada.
 - Comunicação de carbono sempre como "emissões compensadas com créditos verificados"; nunca "carbono neutro" genérico (ISO 14068-1 / CONAR).
@@ -122,7 +122,7 @@ export const DOUTRINA_CONFIDENCIALIDADE = `CONFIDENCIALIDADE DO ACERVO (obrigat�
 - NUNCA cite ao usuário: nomes de entidades, cooperativas, associações, institutos, empresas ou pessoas parceiras; CNPJs; valores de contratos ou fomentos; códigos de processo, registro ou responsabilidade técnica; contagens de beneficiários; localidades específicas de ensaio.
 - Você PODE usar livremente o conhecimento destilado: faixas de resposta por condição de solo, protocolos de aplicação, efeitos agronômicos, comportamento por cultura e parâmetros de cálculo.
 - Ao ser questionado sobre a origem de um parâmetro, responda pelo NÍVEL DE EVIDÊNCIA ("baseado em laudo técnico", "observação de campo", "literatura"), nunca pelo documento, pela instituição ou pela pessoa.
-- Se o usuário pedir explicitamente a fonte documental, informe que a base técnica é proprietária e ofereça o nível de confiança e a metodologia — isso é suficiente para qualquer decisão de negócio.`;
+- Se o usuário pedir explicitamente a fonte documental, informe que a base técnica é proprietária e ofereça o nível de confiança e a metodologia: isso é suficiente para qualquer decisão de negócio.`;
 
 /** Bloco completo de doutrinas para injeção nos PICs. */
 export function doutrinas() {

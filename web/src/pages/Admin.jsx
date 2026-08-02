@@ -4,7 +4,7 @@ import { useToast } from '../components/GamificationToasts.jsx';
 import AgentAvatar from '../components/AgentAvatar.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SUPER DASHBOARD DO ECOSSISTEMA — comandado pela Sexta-Feira 🕶️
+// SUPER DASHBOARD DO ECOSSISTEMA: comandado pela Sexta-Feira 🕶️
 // Visão total: radar unicórnio, matriz editais × projetos, chat, relatórios
 // e o ciclo governado de evolução do Protocolo de Instância Cognitiva.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -35,7 +35,7 @@ function ChatSextaFeira() {
     api.adminChatHistorico().then(h => {
       setMensagens(h.length ? h : [{
         role: 'assistant',
-        content: 'Administrador. Sou a **Sexta-Feira** — enxergo o ecossistema inteiro em tempo real. Pergunte sobre **unicórnios**, **editais**, **carbono**, **nudges** ou peça um **relatório**. Nada aqui é inventado: cada número vem do snapshot vivo da plataforma.',
+        content: 'Administrador. Sou a **Sexta-Feira**, enxergo o ecossistema inteiro em tempo real. Pergunte sobre **unicórnios**, **editais**, **carbono**, **nudges** ou peça um **relatório**. Nada aqui é inventado: cada número vem do snapshot vivo da plataforma.',
       }]);
     }).catch(() => {});
   }, []);
@@ -101,7 +101,7 @@ function ChatSextaFeira() {
 // ── Radar Unicórnio ──────────────────────────────────────────────────────────
 function RadarUnicornio({ ranking }) {
   const [aberto, setAberto] = useState(null);
-  if (!ranking.length) return <div className="zd-card rounded-xl p-6 text-sm text-white/45">Sem projetos no ecossistema ainda — o radar acende com a primeira ideação.</div>;
+  if (!ranking.length) return <div className="zd-card rounded-xl p-6 text-sm text-white/45">Sem projetos no ecossistema ainda: o radar acende com a primeira ideação.</div>;
   return (
     <div className="space-y-2">
       {ranking.map((r, i) => (
@@ -167,7 +167,7 @@ function MatrizEditais({ editais }) {
           ))}
         </tbody>
       </table>
-      <div className="text-[10px] text-white/35 mt-3">Score de aderência 0-100 · <span style={{ color: '#00ff64' }}>≥80 forte</span> · <span style={{ color: '#00c8ff' }}>≥60 boa</span> · <span style={{ color: '#ffd700' }}>≥40 parcial</span> — aderência ≥70 com prazo ≤60 dias dispara nudge automático do Editais IA.</div>
+      <div className="text-[10px] text-white/35 mt-3">Score de aderência 0-100 · <span style={{ color: '#00ff64' }}>≥80 forte</span> · <span style={{ color: '#00c8ff' }}>≥60 boa</span> · <span style={{ color: '#ffd700' }}>≥40 parcial</span>: aderência ≥70 com prazo ≤60 dias dispara nudge automático do Editais IA.</div>
     </div>
   );
 }
@@ -199,7 +199,7 @@ function Relatorios({ notify }) {
       <div className="zd-card-glow rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <div className="font-heading font-bold">Relatório executivo do ecossistema</div>
-          <p className="text-xs text-white/50 mt-1">Resumo executivo, radar com decomposição, matriz de fomento, carbono e Agent Bus — diagramado e pronto para board.</p>
+          <p className="text-xs text-white/50 mt-1">Resumo executivo, radar com decomposição, matriz de fomento, carbono e Agent Bus: diagramado e pronto para board.</p>
         </div>
         <button onClick={gerar} disabled={gerando} className="zd-gradient-btn rounded-lg px-5 py-2.5 text-sm">
           {gerando ? 'Sexta-Feira consolidando…' : '📊 Gerar relatório agora'}
@@ -278,8 +278,8 @@ function PainelPic({ notify }) {
     <div className="space-y-5">
       <div className="zd-card-glow rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <div className="font-heading font-bold">Protocolo de Instância Cognitiva — <span className="zd-gradient-text">v{pic.versaoAtual}</span></div>
-          <p className="text-xs text-white/50 mt-1">A Sexta-Feira analisa o ecossistema{' '}— e a internet, quando conectada — e propõe evoluções cirúrgicas. Nada muda sem a sua aprovação.</p>
+          <div className="font-heading font-bold">Protocolo de Instância Cognitiva · <span className="zd-gradient-text">v{pic.versaoAtual}</span></div>
+          <p className="text-xs text-white/50 mt-1">A Sexta-Feira analisa o ecossistema (e a internet, quando conectada) e propõe evoluções cirúrgicas. Nada muda sem a sua aprovação.</p>
         </div>
         <button onClick={propor} disabled={propondo} className="zd-gradient-btn rounded-lg px-5 py-2.5 text-sm">
           {propondo ? 'Diagnosticando…' : '🧬 Pedir proposta de evolução'}
@@ -425,7 +425,7 @@ export default function Admin() {
           style={{ background: 'linear-gradient(135deg,#00ff6418,#00c8ff18)' }}>🕶️</div>
         <div className="flex-1">
           <h1 className="font-heading text-2xl font-bold"><span className="zd-gradient-text">Sexta-Feira</span> · Super Dashboard</h1>
-          <p className="text-white/50 text-sm mt-0.5">Visão total do ecossistema — orquestração dos 25 agentes, radar de unicórnios e fomento em tempo real.</p>
+          <p className="text-white/50 text-sm mt-0.5">Visão total do ecossistema: orquestração dos 25 agentes, radar de unicórnios e fomento em tempo real.</p>
         </div>
         {overview && <span className="zd-tag rounded-full px-3 py-1.5">PIC v{overview.pic.versao}</span>}
       </div>
@@ -457,7 +457,7 @@ export default function Admin() {
           {tab === 'ecossistema' && overview && (
             <>
               <section>
-                <h2 className="font-heading text-lg font-bold mb-3">🦄 Radar Unicórnio <span className="text-xs text-white/40 font-normal">· score explicável em 5 dimensões — clique para decompor</span></h2>
+                <h2 className="font-heading text-lg font-bold mb-3">🦄 Radar Unicórnio <span className="text-xs text-white/40 font-normal">· score explicável em 5 dimensões: clique para decompor</span></h2>
                 <RadarUnicornio ranking={overview.radar.ranking} />
               </section>
               <section>

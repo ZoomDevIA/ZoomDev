@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// ROTAS /api/pagamentos — assinaturas (Stripe) e cobranças avulsas (PIX).
+// ROTAS /api/pagamentos: assinaturas (Stripe) e cobranças avulsas (PIX).
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';
 import { store, save } from '../store.js';

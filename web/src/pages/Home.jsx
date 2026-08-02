@@ -6,11 +6,11 @@ import ModuloSwitch from '../components/ModuloSwitch.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// HOME — a porta de entrada da ZoomDev.
+// HOME: a porta de entrada da ZoomDev.
 //
 // Uma caixa de contexto no topo e a comunidade logo abaixo. Quem chega escreve
 // a ideia antes de qualquer outra coisa; quem ainda não tem conta escreve
-// mesmo assim — o rascunho viaja pelo cadastro e a ideação continua do outro
+// mesmo assim: o rascunho viaja pelo cadastro e a ideação continua do outro
 // lado, sem repetir digitação.
 //
 // Os dois seletores não são enfeite: o que estiver ligado aqui define a
@@ -116,7 +116,7 @@ export default function Home() {
             </h1>
             <p className="text-white/55 text-sm md:text-base mt-3 leading-relaxed">
               Descreva sua ideia em uma frase. Os agentes da ZoomDev estruturam o plano de negócios,
-              constroem o MVP, encontram os editais e medem o impacto — do primeiro rascunho ao primeiro contrato.
+              constroem o MVP, encontram os editais e medem o impacto, do primeiro rascunho ao primeiro contrato.
             </p>
           </div>
 
@@ -156,7 +156,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button type="submit" disabled={!pronto || enviando} className="zd-gradient-btn flex-1 rounded-xl py-3.5 text-sm">
-                {enviando ? 'Estruturando sua ideia…' : logado ? '✦ Construir agora →' : '✦ Construir agora — criar conta grátis →'}
+                {enviando ? 'Estruturando sua ideia…' : logado ? '✦ Construir agora →' : '✦ Construir agora: criar conta grátis →'}
               </button>
               <Link
                 to={logado ? '/carbonpay' : '/entrar'}
@@ -238,7 +238,7 @@ export default function Home() {
               <div className="font-heading font-bold">A vitrine ainda está vazia</div>
               <p className="text-white/45 text-sm mt-1.5 max-w-md mx-auto">
                 {filtro === 'todos'
-                  ? 'Nenhum projeto foi publicado ainda. Construa o seu, gere o plano e publique — o primeiro da vitrine pode ser você.'
+                  ? 'Nenhum projeto foi publicado ainda. Construa o seu, gere o plano e publique: o primeiro da vitrine pode ser você.'
                   : 'Nenhum projeto publicado nesse filtro por enquanto.'}
               </p>
             </div>

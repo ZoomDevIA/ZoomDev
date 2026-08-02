@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// MVP BUILDER — do plano de negócios ao produto navegável
+// MVP BUILDER, do plano de negócios ao produto navegável
 //
 // Pega o plano gerado pelos agentes e produz um MVP web REAL: arquivos que
 // abrem no navegador, funcionam offline e podem ser publicados em qualquer
-// hospedagem estática. Não é mockup — é código.
+// hospedagem estática. Não é mockup: é código.
 //
 // Com API key: os agentes escrevem o código. Sem chave: um gerador
 // determinístico monta o MVP a partir do conteúdo real do plano.
@@ -51,7 +51,7 @@ function contexto(projeto) {
 const lista = (arr, fallback) => (Array.isArray(arr) && arr.length ? arr : fallback)
   .map(x => (typeof x === 'string' ? x : x?.titulo || x?.nome || JSON.stringify(x)));
 
-// ── Gerador determinístico (modo demo — produz MVP real) ──────────────────
+// ── Gerador determinístico (modo demo: produz MVP real) ──────────────────
 function gerarDemo(ctx) {
   const cor = ctx.bio ? '#00ff64' : '#00c8ff';
   const cor2 = ctx.bio ? '#00c8ff' : '#a855f7';
@@ -66,7 +66,7 @@ function gerarDemo(ctx) {
       { nome: 'Escala', preco: 'Sob consulta', itens: ['Tudo do Profissional', 'API e integrações', 'Usuários ilimitados'] },
     ];
 
-  const styles = `/* ${ctx.nome} — sistema de design do MVP
+  const styles = `/* ${ctx.nome}: sistema de design do MVP
    Gerado pela ZoomDev OS a partir do plano de negócios. */
 :root{
   --brand:${cor}; --brand-2:${cor2};
@@ -171,7 +171,7 @@ footer{border-top:1px solid var(--border);padding:36px 0;color:var(--muted);font
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(ctx.nome)} — ${esc(ctx.proposta).slice(0, 90)}</title>
+<title>${esc(ctx.nome)}: ${esc(ctx.proposta).slice(0, 90)}</title>
 <meta name="description" content="${esc(ctx.proposta).slice(0, 155)}">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -199,7 +199,7 @@ ${nav}
 ${dores.map((d, i) => `        <div class="card">
           <div class="icon">${['⚠️', '⏳', '💸'][i] || '•'}</div>
           <h3>${esc(String(d).slice(0, 60))}</h3>
-          <p>Hoje isso custa tempo e dinheiro — e não precisa ser assim.</p>
+          <p>Hoje isso custa tempo e dinheiro, e não precisa ser assim.</p>
         </div>`).join('\n')}
       </div>
     </div>
@@ -234,7 +234,7 @@ ${ctx.impacto ? `
       <div class="grid grid-3">
 ${precos.map(p => `        <div class="price-card${p.destaque ? ' featured' : ''}">
           <h3>${esc(p.nome || p.plano || 'Plano')}</h3>
-          <div class="price">${esc(p.preco || p.valor || '—')}</div>
+          <div class="price">${esc(p.preco || p.valor || '–')}</div>
           <ul>${(p.itens || p.beneficios || ['Acesso completo']).map(i => `<li>${esc(i)}</li>`).join('')}</ul>
           <a href="#cadastro" class="btn ${p.destaque ? 'btn-primary' : 'btn-ghost'}">Escolher</a>
         </div>`).join('\n')}
@@ -259,7 +259,7 @@ ${precos.map(p => `        <div class="price-card${p.destaque ? ' featured' : ''
 
 <footer>
   <div class="wrap">
-    <p><strong>${esc(ctx.nome)}</strong> — ${esc(ctx.proposta).slice(0, 80)}</p>
+    <p><strong>${esc(ctx.nome)}</strong>: ${esc(ctx.proposta).slice(0, 80)}</p>
     <p style="margin-top:8px;opacity:.6">MVP gerado pela ZoomDev OS a partir do plano de negócios.</p>
   </div>
 </footer>
@@ -273,7 +273,7 @@ ${precos.map(p => `        <div class="price-card${p.destaque ? ' featured' : ''
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(ctx.nome)} — Painel</title>
+<title>${esc(ctx.nome)}: Painel</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -293,7 +293,7 @@ ${escopo.map((e, i) => `    <a href="#" data-view="v${i}">${['📋', '📊', '�
       <div class="stat"><div class="v" id="s1">0</div><div class="l">Registros</div></div>
       <div class="stat"><div class="v" id="s2">0</div><div class="l">Concluídos</div></div>
       <div class="stat"><div class="v" id="s3">0%</div><div class="l">Taxa de conclusão</div></div>
-      <div class="stat"><div class="v" id="s4">—</div><div class="l">Último registro</div></div>
+      <div class="stat"><div class="v" id="s4">–</div><div class="l">Último registro</div></div>
     </div>
 
     <div class="card" style="margin-bottom:22px">
@@ -322,7 +322,7 @@ ${escopo.map((e, i) => `    <a href="#" data-view="v${i}">${['📋', '📊', '�
 </body>
 </html>`;
 
-  const js = `/* ${ctx.nome} — lógica do MVP
+  const js = `/* ${ctx.nome}: lógica do MVP
    Estado em localStorage: funciona offline e sem backend.
    Para produção, troque as funções salvar/carregar por chamadas de API. */
 (function () {
@@ -382,7 +382,7 @@ ${escopo.map((e, i) => `    <a href="#" data-view="v${i}">${['📋', '📊', '�
     document.getElementById('s1').textContent = dados.length;
     document.getElementById('s2').textContent = concluidos;
     document.getElementById('s3').textContent = dados.length ? Math.round(concluidos / dados.length * 100) + '%' : '0%';
-    document.getElementById('s4').textContent = dados.length ? dataBr(dados[dados.length - 1].em) : '—';
+    document.getElementById('s4').textContent = dados.length ? dataBr(dados[dados.length - 1].em) : '–';
   }
 
   document.getElementById('novo').addEventListener('submit', function (e) {
@@ -430,7 +430,7 @@ python3 -m http.server 8000
 
 ## Como publicar
 
-Este MVP é 100% estático — publique em qualquer uma destas, de graça:
+Este MVP é 100% estático, publique em qualquer uma destas, de graça:
 
 - **Netlify**: arraste a pasta em app.netlify.com/drop
 - **Vercel**: \`npx vercel\`
@@ -448,7 +448,7 @@ app.js        lógica: estado em localStorage, sem backend
 
 ## Os dados
 
-Tudo é salvo em \`localStorage\` — funciona offline e sem servidor. É o
+Tudo é salvo em \`localStorage\`: funciona offline e sem servidor. É o
 suficiente para validar com usuários reais.
 
 **Quando precisar de backend**, troque as funções \`carregar()\` e \`salvar()\`
@@ -493,10 +493,10 @@ async function gerarPecaIA(peca, ctx, jaGerado) {
   const base = `PROJETO: ${ctx.nome} (${ctx.bio ? 'biostartup' : 'startup'}, ${ctx.vertical})
 PROPOSTA DE VALOR: ${ctx.proposta}
 PÚBLICO: ${ctx.publico}
-DORES: ${lista(ctx.dores, ['—']).join(' · ')}
-FUNCIONALIDADES: ${lista(ctx.funcionalidades, ['—']).join(' · ')}
+DORES: ${lista(ctx.dores, ['–']).join(' · ')}
+FUNCIONALIDADES: ${lista(ctx.funcionalidades, ['–']).join(' · ')}
 MODELO DE RECEITA: ${ctx.modelo}
-ESCOPO DO MVP: ${lista(ctx.mvpEscopo, ['—']).join(' · ')}
+ESCOPO DO MVP: ${lista(ctx.mvpEscopo, ['–']).join(' · ')}
 ${ctx.impacto ? `IMPACTO: ${ctx.impacto}` : ''}`;
 
   const instrucoes = {
@@ -515,7 +515,7 @@ Retorne APENAS o conteúdo do arquivo, sem cercas de markdown e sem explicação
 
 ARQUIVO A ESCREVER: ${peca.arquivo}
 ${instrucoes[peca.id]}
-${jaGerado.identidade ? `\nO styles.css já foi escrito e define estas classes — REUTILIZE-AS, não invente novas:\n${jaGerado.identidade.conteudo.match(/^\.[a-z-]+/gm)?.slice(0, 40).join(' ') || ''}` : ''}`,
+${jaGerado.identidade ? `\nO styles.css já foi escrito e define estas classes, REUTILIZE-AS, não invente novas:\n${jaGerado.identidade.conteudo.match(/^\.[a-z-]+/gm)?.slice(0, 40).join(' ') || ''}` : ''}`,
     schema: ARQUIVO_SCHEMA,
     effort: 'medium',
     maxTokens: 16000,

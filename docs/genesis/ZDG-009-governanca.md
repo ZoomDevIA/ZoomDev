@@ -40,13 +40,13 @@ atual e o que a plataforma precisa, e propõe **uma mudança cirúrgica** com
 justificativa baseada em dados.
 
 O administrador aprova, rejeita ou edita. Aprovação gera versão minor com notas.
-Rollback cria nova versão com o conteúdo restaurado — **o histórico nunca é apagado**.
+Rollback cria nova versão com o conteúdo restaurado: **o histórico nunca é apagado**.
 
 ---
 
 ## 3. O que a autoevolução não alcança
 
-As **três doutrinas** — Evidência, Regenerativa e Confidencialidade — ficam fora
+As **três doutrinas**: Evidência, Regenerativa e Confidencialidade: ficam fora
 das seções editáveis. São a base ética compartilhada pelos 36 protocolos e só
 mudam por atualização de código, com revisão humana no repositório.
 
@@ -68,13 +68,13 @@ Uma IA que pudesse reescrever a própria ética não teria ética.
 
 ## 5. Papéis
 
-**Administrador** — enxerga o ecossistema, aprova evolução de protocolos, gerencia
+**Administrador**: enxerga o ecossistema, aprova evolução de protocolos, gerencia
 o elenco, confirma transações, gera relatórios.
 
-**Fundador** — dono dos próprios projetos e dados. Não vê dados de outros usuários,
+**Fundador**: dono dos próprios projetos e dados. Não vê dados de outros usuários,
 nunca.
 
-**Agentes** — atuam dentro do PIC. Fora dele, passam o bastão.
+**Agentes**: atuam dentro do PIC. Fora dele, passam o bastão.
 
 ---
 

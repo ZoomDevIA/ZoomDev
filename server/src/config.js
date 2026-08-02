@@ -1,7 +1,7 @@
 // Configuração central do servidor ZoomDev OS
 export const config = {
   port: Number(process.env.PORT || 4000),
-  // Modelo principal dos agentes — o usuário definiu a API do Claude Fable
+  // Modelo principal dos agentes: o usuário definiu a API do Claude Fable
   model: process.env.ZOOMDEV_MODEL || 'claude-fable-5',
   // Sem ANTHROPIC_API_KEY o servidor roda em modo demo (planos de exemplo determinísticos)
   hasApiKey: Boolean(process.env.ANTHROPIC_API_KEY),

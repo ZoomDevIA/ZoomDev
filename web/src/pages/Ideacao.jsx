@@ -9,7 +9,7 @@ const TIPOS = [
   { id: 'biostartup', label: '🌿 BioStartup', desc: 'Bioeconomia, floresta, carbono e impacto' },
 ];
 
-// Exemplos do protótipo (imagens originais do app) — clique preenche a ideia
+// Exemplos do protótipo (imagens originais do app): clique preenche a ideia
 const EXEMPLOS = [
   { titulo: 'EditalBot', tag: 'AI SaaS', img: '/assets/site/exemplo-editalbot.png', ideia: 'Um assistente de IA que pesquisa editais de fomento e redige propostas completas para startups, com score de aderência e lembretes de prazo.' },
   { titulo: 'BioBazaar', tag: 'Marketplace Bio', img: '/assets/site/exemplo-biobazaar.png', ideia: 'Marketplace de ingredientes bioeconômicos da Amazônia com rastreabilidade blockchain da colheita à entrega, conectando cooperativas a indústrias.' },
@@ -44,7 +44,7 @@ export default function Ideacao() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="font-heading text-2xl font-bold">Você tem uma ideia? <span className="zd-gradient-text">Vamos desenvolvê-la AGORA.</span></h1>
-        <p className="text-white/55 text-sm mt-1.5">Esse é o seu espaço de co-criação — comece pelo começo: descreva a ideia com suas palavras.</p>
+        <p className="text-white/55 text-sm mt-1.5">Esse é o seu espaço de co-criação, comece pelo começo: descreva a ideia com suas palavras.</p>
       </div>
 
       <form onSubmit={enviar} className="zd-card-glow rounded-2xl p-6 space-y-5">
@@ -60,7 +60,7 @@ export default function Ideacao() {
         </div>
 
         <div>
-          <label className="text-xs text-white/60 block mb-1.5">Nome do projeto (opcional — a IA sugere um)</label>
+          <label className="text-xs text-white/60 block mb-1.5">Nome do projeto (opcional: a IA sugere um)</label>
           <input className="zd-input w-full rounded-lg px-4 py-2.5 text-sm" placeholder="Ex.: Açaí Trace" value={nome} onChange={e => setNome(e.target.value)} />
         </div>
 

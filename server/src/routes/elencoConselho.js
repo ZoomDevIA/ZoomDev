@@ -20,7 +20,7 @@ elencoRouter.get('/copiloto', (_req, res) => res.json(copiloto()));
 // PICs de todos os agentes (núcleo + herdados)
 elencoRouter.get('/elenco/pics', (_req, res) => res.json(TODOS_PICS));
 
-// Ativação/standby — só admin
+// Ativação/standby: só admin
 elencoRouter.post('/elenco/:id/ativacao', (req, res, next) => {
   try {
     if (!isAdmin(req.user)) return res.status(403).json({ error: 'Apenas o administrador gerencia o elenco.' });
@@ -28,7 +28,7 @@ elencoRouter.post('/elenco/:id/ativacao', (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-// Mundo Vivo — cena do vale voxel com falas do estado real
+// Mundo Vivo: cena do vale voxel com falas do estado real
 elencoRouter.get('/mundo', (req, res) => res.json(cena(req.user)));
 
 // ── Conselho dos Agentes ──────────────────────────────────────────────────

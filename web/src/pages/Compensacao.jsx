@@ -81,13 +81,13 @@ export default function Compensacao() {
           Plano de <span className="zd-gradient-text">Compensação de Carbono</span>
         </h1>
         <p className="text-white/55 text-sm mt-1.5">
-          Meça seu passivo, descubra o que dá para reduzir e compense só o residual — na ordem que a boa prática exige.
+          Meça seu passivo, descubra o que dá para reduzir e compense só o residual, na ordem que a boa prática exige.
         </p>
       </div>
 
       <Passos atual={etapaAtual} />
 
-      {/* ETAPA 1 — entrada */}
+      {/* ETAPA 1: entrada */}
       <div className="zd-card-glow rounded-2xl p-5 space-y-5">
         <div>
           <label className="text-xs text-white/60 block mb-2">Perfil da operação</label>
@@ -253,7 +253,7 @@ function Resultado({ r }) {
 
         {red.ganhosRapidos.length > 0 && (
           <div className="rounded-xl border border-[#00ff6433] bg-[#00ff640d] p-3.5 mt-3">
-            <div className="text-xs font-bold zd-green mb-1.5">⚡ Ganhos rápidos — baixo custo e economia financeira</div>
+            <div className="text-xs font-bold zd-green mb-1.5">⚡ Ganhos rápidos: baixo custo e economia financeira</div>
             <div className="flex flex-wrap gap-1.5">
               {red.ganhosRapidos.map(g => (
                 <span key={g.id} className="zd-tag rounded-full px-2.5 py-1">{g.titulo} · −{fmt(g.potencialReducaoTon)} t</span>
@@ -297,7 +297,7 @@ function Resultado({ r }) {
                 <div className="h-2 bg-white/8 rounded-full overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${x.percentualReduzido}%`, background: 'linear-gradient(90deg,#00ff64,#00c8ff)' }} />
                 </div>
-                <div className="text-[10px] text-white/40 mt-1 truncate">{x.acoesFoco.join(' · ') || '—'}</div>
+                <div className="text-[10px] text-white/40 mt-1 truncate">{x.acoesFoco.join(' · ') || '–'}</div>
               </div>
               <div className="text-right shrink-0 w-24">
                 <div className="text-xs font-bold zd-green">−{x.percentualReduzido}%</div>
@@ -322,7 +322,7 @@ function Resultado({ r }) {
         <div className="grid lg:grid-cols-2 gap-3 mt-4">
           {comp.rotaPropria && (
             <div className="rounded-xl border border-[#00ff6433] bg-[#00ff640d] p-4">
-              <div className="text-xs font-bold zd-green">🌱 Rota A — {comp.rotaPropria.rota}</div>
+              <div className="text-xs font-bold zd-green">🌱 Rota A: {comp.rotaPropria.rota}</div>
               <div className="font-heading text-2xl font-bold mt-2">{fmt(comp.rotaPropria.mitigacaoTonAno)} <span className="text-xs text-white/40">tCO₂e/ano</span></div>
               <div className="text-xs text-white/55 mt-1">
                 {comp.rotaPropria.cultura} em {fmt(comp.rotaPropria.hectares, 0)} ha · cobre <b className="zd-green">{comp.rotaPropria.coberturaPercentual}%</b> do necessário
@@ -332,7 +332,7 @@ function Resultado({ r }) {
             </div>
           )}
           <div className="rounded-xl border border-[#00c8ff33] bg-[#00c8ff0d] p-4">
-            <div className="text-xs font-bold zd-blue">🛒 Rota B — {comp.rotaCredito.rota}</div>
+            <div className="text-xs font-bold zd-blue">🛒 Rota B: {comp.rotaCredito.rota}</div>
             <div className="space-y-1.5 mt-2.5">
               {comp.rotaCredito.opcoes.map(o => (
                 <div key={o.id} className="flex items-center gap-2 justify-between rounded-lg bg-white/[.04] px-2.5 py-2">

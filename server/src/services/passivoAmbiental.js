@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// CALCULADORA DE PASSIVO AMBIENTAL — GHG Protocol, escopos 1, 2 e 3
+// CALCULADORA DE PASSIVO AMBIENTAL: GHG Protocol, escopos 1, 2 e 3
 //
 // Reconstruída com: perfis setoriais (pergunta só o que importa), módulo agro
 // completo (N₂O de fertilizante, máquinas, uso da terra), faixa de incerteza
@@ -15,14 +15,14 @@ const r2 = (v) => Math.round(v * 100) / 100;
 // Fontes: MCTI/SIRENE (rede elétrica BR), IPCC 2019 Refinement (N₂O agrícola),
 // DEFRA/ICAO (transporte). Incerteza típica por categoria entre colchetes.
 export const FATORES = {
-  // Escopo 1 — combustão direta (kgCO2e por unidade)
+  // Escopo 1: combustão direta (kgCO2e por unidade)
   gasolina_litro: 2.2,
   diesel_litro: 2.6,
   etanol_litro: 0.4,
   glp_botijao13: 37.4,
   lenha_ton: 1540,
 
-  // Escopo 1 — agrícola
+  // Escopo 1: agrícola
   // N₂O de fertilizante nitrogenado: 1% do N aplicado vira N₂O-N (IPCC),
   // × 44/28 (N₂O/N) × 273 (GWP100 AR6) ≈ 4,29 kgCO2e por kg de N
   n2o_kg_por_kg_nitrogenio: 4.29,
@@ -33,10 +33,10 @@ export const FATORES = {
   // Queima de resíduo agrícola em campo (prática a eliminar)
   queima_residuo_kg_por_ton: 1515,
 
-  // Escopo 2 — eletricidade (tCO2/MWh — fator médio do SIN)
+  // Escopo 2: eletricidade (tCO2/MWh: fator médio do SIN)
   eletricidade_tco2_mwh: 0.0385,
 
-  // Escopo 3 — logística e viagens
+  // Escopo 3: logística e viagens
   voo_domestico_hora: 110,
   voo_internacional_hora: 90,
   carro_km: 0.18,
@@ -44,13 +44,13 @@ export const FATORES = {
   frete_fluvial_tkm: 0.05,
   frete_aereo_tkm: 0.60,
 
-  // Escopo 3 — operação
+  // Escopo 3: operação
   funcionario_escritorio_mes: 65,
   funcionario_remoto_mes: 25,
   nuvem_por_1000_reais_mes: 30,
   residuo_aterro_ton: 460,
 
-  // Escopo 3 — insumos agrícolas (produção do fertilizante, "berço ao portão")
+  // Escopo 3: insumos agrícolas (produção do fertilizante, "berço ao portão")
   fertilizante_sintetico_kg: 1.4,
   defensivo_kg: 12.0,
 };
@@ -160,7 +160,7 @@ export function calcularPassivo(dados = {}) {
   fontes.sort((a, b) => b.tco2e - a.tco2e);
 
   return {
-    metodologia: 'GHG Protocol (triagem) — fatores MCTI/SIRENE, IPCC 2019 Refinement e DEFRA/ICAO',
+    metodologia: 'GHG Protocol (triagem): fatores MCTI/SIRENE, IPCC 2019 Refinement e DEFRA/ICAO',
     perfil: dados.perfil || 'digital',
     escopos: {
       escopo1: { tco2e: r2(porEscopo[1]), descricao: 'Emissões diretas: combustão, processos agrícolas e rebanho' },
@@ -173,13 +173,13 @@ export function calcularPassivo(dados = {}) {
       esperado: r2(total),
       maximo: r2(total + varTotal),
       percentual: total > 0 ? Math.round((varTotal / total) * 100) : 0,
-      nota: 'Faixa de incerteza da triagem. Um inventário honesto declara sua margem — número único é falsa precisão.',
+      nota: 'Faixa de incerteza da triagem. Um inventário honesto declara sua margem: número único é falsa precisão.',
     },
     fontes,
     maioresFontes: fontes.slice(0, 5),
     intensidade: n(dados.areaHectares) > 0 ? { valor: r2(total / n(dados.areaHectares)), unidade: 'tCO₂e/ha/ano' } : null,
     avisos: [
-      'Estimativa de triagem — inventário oficial requer a ferramenta do Programa Brasileiro GHG Protocol (FGVces).',
+      'Estimativa de triagem: inventário oficial requer a ferramenta do Programa Brasileiro GHG Protocol (FGVces).',
       'Reduza antes de compensar: a hierarquia de mitigação é o que separa ação climática de greenwashing.',
       'Comunique como "emissões compensadas com créditos verificados", nunca "carbono neutro" genérico (ISO 14068-1 / CONAR).',
     ],

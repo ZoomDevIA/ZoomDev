@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api.js';
 
-// Copiloto flutuante "Zoom Intelligence" — clone do botão + drawer do protótipo.
+// Copiloto flutuante "Zoom Intelligence": clone do botão + drawer do protótipo.
 export default function Copiloto() {
   const [aberto, setAberto] = useState(false);
   const [mensagens, setMensagens] = useState([]);
@@ -13,7 +13,7 @@ export default function Copiloto() {
     if (aberto && mensagens.length === 0) {
       api.chatHistorico().then(h => {
         if (h.length) setMensagens(h);
-        else setMensagens([{ role: 'assistant', content: 'Olá! Sou a **Maiá** 🌸, a Inteligência Regenerativa da ZoomDev. Acompanho você da primeira ideia ao primeiro contrato — ciência, bioeconomia, editais e carbono. Por onde começamos?' }]);
+        else setMensagens([{ role: 'assistant', content: 'Olá! Sou a **Maiá** 🌸, a Inteligência Regenerativa da ZoomDev. Acompanho você da primeira ideia ao primeiro contrato: ciência, bioeconomia, editais e carbono. Por onde começamos?' }]);
       }).catch(() => {});
     }
   }, [aberto]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -47,7 +47,7 @@ export default function Copiloto() {
       {!aberto && (
         <button onClick={() => setAberto(true)}
           className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full zd-glow-green zd-float overflow-hidden border-2 border-[#00ff64]"
-          title="Maiá — Inteligência Regenerativa">
+          title="Maiá: Inteligência Regenerativa">
           <img src="/assets/agents/faces/maia.png" alt="Maiá" className="w-full h-full object-cover object-center" />
         </button>
       )}

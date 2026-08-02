@@ -37,7 +37,7 @@ export default function Configuracoes() {
 
       <div className="zd-card rounded-2xl p-6">
         <h2 className="font-heading font-bold mb-3">Gamificação</h2>
-        <div className="text-sm text-white/60">Nível {user.nivel.nivel} — {user.nivel.nome} · {user.gamification.xp} XP · {user.gamification.conquistas.length} conquistas · streak {user.gamification.streak?.dias || 0}d</div>
+        <div className="text-sm text-white/60">Nível {user.nivel.nivel}: {user.nivel.nome} · {user.gamification.xp} XP · {user.gamification.conquistas.length} conquistas · streak {user.gamification.streak?.dias || 0}d</div>
         <p className="text-[11px] text-white/35 mt-2">Modo focado (desativar gamificação) disponível no plano BUSINESS.</p>
       </div>
 

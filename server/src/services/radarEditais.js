@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// RADAR DE EDITAIS — busca sistêmica diária + match automático com projetos
+// RADAR DE EDITAIS: busca sistêmica diária + match automático com projetos
 //
 // Com ANTHROPIC_API_KEY: a Sexta-Feira varre a internet em tempo real atrás de
 // chamadas abertas de fomento e as incorpora ao radar.
@@ -55,7 +55,7 @@ const FASE_PARA_ESTAGIO = {
 
 /**
  * Score de aderência 0-100, decomposto em sinais explicáveis.
- * Determinístico — a mesma entrada sempre produz o mesmo resultado.
+ * Determinístico: a mesma entrada sempre produz o mesmo resultado.
  */
 export function calcularMatch(edital, projeto) {
   const sinais = [];
@@ -67,7 +67,7 @@ export function calcularMatch(edital, projeto) {
   const editalBio = tags.some(t => TERMOS_BIO.includes(t)) || TERMOS_BIO.some(t => texto.includes(t));
   let tematico = 15;
   let motivoTema = 'Alinhamento temático genérico.';
-  if (ehBio && editalBio) { tematico = 35; motivoTema = 'Projeto de bioeconomia em chamada com foco socioambiental — encaixe direto.'; }
+  if (ehBio && editalBio) { tematico = 35; motivoTema = 'Projeto de bioeconomia em chamada com foco socioambiental: encaixe direto.'; }
   else if (!ehBio && !editalBio) { tematico = 27; motivoTema = 'Startup de tecnologia em chamada de inovação geral.'; }
   else if (ehBio && !editalBio) { tematico = 20; motivoTema = 'Chamada generalista: o componente bio é diferencial, não requisito.'; }
   else { tematico = 10; motivoTema = 'Chamada com foco socioambiental e projeto sem componente bio declarado.'; }
@@ -84,7 +84,7 @@ export function calcularMatch(edital, projeto) {
       : `Fase ${projeto.fase}: verifique no edital se o estágio é elegível.`,
   });
 
-  // 3. Maturidade documental (0-20) — plano pronto vale muito em submissão
+  // 3. Maturidade documental (0-20): plano pronto vale muito em submissão
   const temPlano = Boolean(projeto.plano);
   const missoes = projeto.missoes || [];
   const feitas = missoes.filter(m => m.concluida).length;
@@ -94,17 +94,17 @@ export function calcularMatch(edital, projeto) {
   sinais.push({
     sinal: 'Maturidade', pontos: Math.min(20, doc), max: 20,
     motivo: temPlano
-      ? `Plano de negócios pronto${feitas ? ` e ${feitas} missão(ões) de validação concluída(s)` : ''} — base sólida para o formulário.`
+      ? `Plano de negócios pronto${feitas ? ` e ${feitas} missão(ões) de validação concluída(s)` : ''}: base sólida para o formulário.`
       : 'Sem plano de negócios: gere o plano antes de submeter.',
   });
 
-  // 4. Janela de prazo (0-20) — nem cedo demais, nem tarde demais
+  // 4. Janela de prazo (0-20), nem cedo demais, nem tarde demais
   const dias = diasParaPrazo(edital);
-  let prazoPts = 10, motivoPrazo = 'Prazo não informado — confirme na fonte.';
+  let prazoPts = 10, motivoPrazo = 'Prazo não informado: confirme na fonte.';
   if (dias !== null) {
     if (dias < 0) { prazoPts = 0; motivoPrazo = 'Prazo encerrado.'; }
     else if (dias <= 7) { prazoPts = 8; motivoPrazo = `Fecha em ${dias} dia(s): submissão de alto risco sem documentação pronta.`; }
-    else if (dias <= 30) { prazoPts = 20; motivoPrazo = `Fecha em ${dias} dias — janela ideal para submeter com preparo.`; }
+    else if (dias <= 30) { prazoPts = 20; motivoPrazo = `Fecha em ${dias} dias: janela ideal para submeter com preparo.`; }
     else if (dias <= 90) { prazoPts = 17; motivoPrazo = `${dias} dias de prazo: tempo confortável para preparar.`; }
     else { prazoPts = 12; motivoPrazo = `${dias} dias de prazo: acompanhe, ainda distante.`; }
   }
@@ -122,7 +122,7 @@ export function calcularMatch(edital, projeto) {
 
 function proximosPassos(score, temPlano, dias) {
   const passos = [];
-  if (!temPlano) passos.push('Gere o plano de negócios — ele vira a base do formulário de submissão.');
+  if (!temPlano) passos.push('Gere o plano de negócios: ele vira a base do formulário de submissão.');
   if (score >= 60) {
     passos.push('Leia o edital completo e confirme os critérios de elegibilidade.');
     passos.push('Prepare certidões e documentação societária com antecedência.');

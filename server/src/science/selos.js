@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // SELO DE EVIDÊNCIA ZOOMDEV
 // Toda afirmação da plataforma carrega a origem e o grau de confiança da
-// informação. É o que separa dado auditável de narrativa — e o que permite
+// informação. É o que separa dado auditável de narrativa, e o que permite
 // vender crédito de carbono e reportar ESG sem risco de greenwashing.
 // (ISO 14068-1 · CONAR · ICVCM/VCMI · Padrão Documental ZoomDev Genesis)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -34,7 +34,7 @@ export const SELOS = {
   ESTRATEGIA: {
     id: 'ESTRATEGIA', emoji: '🎯', nome: 'Estratégia',
     confianca: 60, tipo: 'STRATEGY', cor: '#ffd700',
-    descricao: 'Modelo de negócio ou plano institucional — projeção, não resultado medido.',
+    descricao: 'Modelo de negócio ou plano institucional: projeção, não resultado medido.',
     usoComercial: true, usoCredito: false,
   },
   HIPOTESE: {

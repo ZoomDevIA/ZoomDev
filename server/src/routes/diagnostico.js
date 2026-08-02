@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// DIAGNÓSTICO DE IMPLANTAÇÃO — /api/status
+// DIAGNÓSTICO DE IMPLANTAÇÃO: /api/status
 //
 // Endpoint público que responde "está tudo certo?" depois de um deploy.
 // NUNCA expõe segredo: só informa se a variável está definida, o formato
@@ -20,11 +20,11 @@ export const diagnosticoRouter = Router();
 const COMPRIMENTO_MINIMO_CHAVE = 40;
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TESTE REAL DA CHAVE — /api/status?testar=ia
+// TESTE REAL DA CHAVE: /api/status?testar=ia
 //
 // Formato certo não é o mesmo que chave válida: só uma chamada de verdade
 // distingue "colei errado" de "a conta está sem crédito". O teste gasta um
-// punhado de tokens, então o resultado fica em cache por 5 minutos — a rota é
+// punhado de tokens, então o resultado fica em cache por 5 minutos: a rota é
 // pública e não pode virar torneira de custo.
 // ═══════════════════════════════════════════════════════════════════════════
 const CACHE_TESTE_MS = 5 * 60 * 1000;
@@ -116,28 +116,28 @@ diagnosticoRouter.get('/status', async (req, res) => {
   add('servidor', 'Servidor no ar', true, `Porta ${config.port}`);
   const distOk = fs.existsSync(new URL('../../../web/dist/index.html', import.meta.url).pathname);
   add('frontend', 'Frontend compilado', distOk,
-    distOk ? 'web/dist encontrado e sendo servido' : 'web/dist ausente — o build não rodou', true);
+    distOk ? 'web/dist encontrado e sendo servido' : 'web/dist ausente: o build não rodou', true);
 
   // ── IA ──
   // Duas checagens antes de qualquer chamada: o prefixo e o comprimento.
   // Chave real da Anthropic passa de 100 caracteres; algo com 10 é um valor
-  // truncado na hora de colar — e o prefixo sozinho não pega esse caso.
+  // truncado na hora de colar, e o prefixo sozinho não pega esse caso.
   const prefixoOk = chaveIA.startsWith('sk-ant-');
   const tamanhoOk = chaveIA.length >= COMPRIMENTO_MINIMO_CHAVE;
   add('ia', 'Inteligência artificial', config.hasApiKey && prefixoOk && tamanhoOk,
     !config.hasApiKey
-      ? 'ANTHROPIC_API_KEY não definida — a plataforma roda em modo demo (tudo funciona, com geradores determinísticos)'
+      ? 'ANTHROPIC_API_KEY não definida: a plataforma roda em modo demo (tudo funciona, com geradores determinísticos)'
       : !prefixoOk
-        ? 'ANTHROPIC_API_KEY definida, mas não começa com "sk-ant-" — confira se colou a chave certa'
+        ? 'ANTHROPIC_API_KEY definida, mas não começa com "sk-ant-": confira se colou a chave certa'
         : !tamanhoOk
-          ? `ANTHROPIC_API_KEY tem só ${chaveIA.length} caracteres. Uma chave real da Anthropic passa de 100 — o valor foi cortado na hora de colar. Copie de novo pelo botão de copiar do console.anthropic.com e cole inteiro, sem aspas e sem espaço no fim.`
+          ? `ANTHROPIC_API_KEY tem só ${chaveIA.length} caracteres. Uma chave real da Anthropic passa de 100: o valor foi cortado na hora de colar. Copie de novo pelo botão de copiar do console.anthropic.com e cole inteiro, sem aspas e sem espaço no fim.`
           : `Ativa · modelo ${config.model} · chave ${pista(chaveIA, { inicio: 12 })} (${chaveIA.length} caracteres). Confirme com /api/status?testar=ia`);
 
   // ── Persistência ──
   add('disco', 'Persistência dos dados',
     disco.gravavel && disco.persistente !== false,
     !disco.gravavel
-      ? `Não consigo gravar em ${disco.caminho} — verifique as permissões`
+      ? `Não consigo gravar em ${disco.caminho}: verifique as permissões`
       : disco.persistente === false
         ? `ATENÇÃO: ${disco.caminho} não está dentro do volume montado (${process.env.RAILWAY_VOLUME_MOUNT_PATH}). Os dados serão perdidos no próximo deploy.`
         : disco.persistente === true
@@ -153,15 +153,15 @@ diagnosticoRouter.get('/status', async (req, res) => {
         ? `Definido por ZOOMDEV_ADMIN_EMAIL: ${pista(adminDefinido, { inicio: 2, fim: 12 })} (conta já registrada)`
         : `ZOOMDEV_ADMIN_EMAIL aponta para ${pista(adminDefinido, { inicio: 2, fim: 12 })}, que ainda NÃO tem conta. Registre-se com esse e-mail para receber o painel.`)
       : usuarios.length > 0
-        ? 'Sem ZOOMDEV_ADMIN_EMAIL — o primeiro usuário registrado é o administrador'
-        : 'Sem ZOOMDEV_ADMIN_EMAIL e sem usuários — o primeiro a se registrar vira administrador');
+        ? 'Sem ZOOMDEV_ADMIN_EMAIL: o primeiro usuário registrado é o administrador'
+        : 'Sem ZOOMDEV_ADMIN_EMAIL e sem usuários: o primeiro a se registrar vira administrador');
 
   // ── Pagamentos ──
   const stripeKey = process.env.STRIPE_SECRET_KEY || '';
   const stripeFormato = /^sk_(test|live)_/.test(stripeKey);
   add('stripe', 'Stripe (assinaturas)', pagamentosConfig.stripeAtivo && stripeFormato,
     !pagamentosConfig.stripeAtivo
-      ? 'Não configurado — assinatura roda em modo simulado'
+      ? 'Não configurado: assinatura roda em modo simulado'
       : !stripeFormato
         ? 'STRIPE_SECRET_KEY definida, mas não começa com "sk_test_" ou "sk_live_"'
         : `Ativo em modo ${stripeKey.startsWith('sk_live_') ? 'PRODUÇÃO' : 'teste'}${process.env.STRIPE_WEBHOOK_SECRET ? ' · webhook configurado' : ' · SEM webhook: a confirmação automática não vai funcionar'}`);
@@ -169,12 +169,12 @@ diagnosticoRouter.get('/status', async (req, res) => {
   add('pix', 'PIX', pagamentosConfig.pixAtivo,
     pagamentosConfig.pixAtivo
       ? `Chave ${pista(pagamentosConfig.pixChave, { inicio: 3 })} · beneficiário ${pagamentosConfig.pixNome} · ${pagamentosConfig.pixCidade}`
-      : 'PIX_CHAVE não definida — o BR Code é gerado com chave de exemplo, válido para teste mas não recebe de verdade');
+      : 'PIX_CHAVE não definida: o BR Code é gerado com chave de exemplo, válido para teste mas não recebe de verdade');
 
   add('url', 'URL pública', Boolean(process.env.ZOOMDEV_URL),
     process.env.ZOOMDEV_URL
       ? `Definida: ${process.env.ZOOMDEV_URL}`
-      : 'ZOOMDEV_URL não definida — o retorno do checkout do Stripe vai apontar para localhost. Defina com a URL do seu domínio.');
+      : 'ZOOMDEV_URL não definida: o retorno do checkout do Stripe vai apontar para localhost. Defina com a URL do seu domínio.');
 
   const erros = checagens.filter(c => c.status === 'erro');
   const atencoes = checagens.filter(c => c.status === 'atencao');
@@ -196,8 +196,8 @@ diagnosticoRouter.get('/status', async (req, res) => {
       agentes: `${CATALOGO.length} no elenco`,
     },
     proximosPassos: [
-      ...(erros.length ? erros.map(e => `Corrigir: ${e.nome} — ${e.detalhe}`) : []),
-      ...atencoes.map(a => `Opcional: ${a.nome} — ${a.detalhe}`),
+      ...(erros.length ? erros.map(e => `Corrigir: ${e.nome}, ${e.detalhe}`) : []),
+      ...atencoes.map(a => `Opcional: ${a.nome}, ${a.detalhe}`),
       ...(erros.length + atencoes.length === 0 ? ['Nada pendente. Crie sua conta e comece.'] : []),
     ],
   });

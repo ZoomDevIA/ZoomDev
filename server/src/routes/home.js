@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// ROTAS PÚBLICAS DA HOME — servem a porta de entrada da plataforma.
+// ROTAS PÚBLICAS DA HOME: servem a porta de entrada da plataforma.
 //
 // Ficam antes do authMiddleware de propósito: quem chega sem conta vê a caixa
 // de ideação, os módulos e a vitrine da comunidade, e só é levado ao cadastro
@@ -32,7 +32,7 @@ export const MODULOS = [
     },
     aoDesligar: {
       titulo: 'O que você perde ao desligar',
-      corpo: 'O projeto segue normalmente, mas sem inventário de emissões, sem plano de compensação e sem acesso ao CarbonPay a partir deste projeto. Você pode religar quando quiser — nada do que já foi calculado é apagado.',
+      corpo: 'O projeto segue normalmente, mas sem inventário de emissões, sem plano de compensação e sem acesso ao CarbonPay a partir deste projeto. Você pode religar quando quiser: nada do que já foi calculado é apagado.',
     },
   },
   {

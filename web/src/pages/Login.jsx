@@ -8,7 +8,7 @@ export default function Login() {
   const { refreshUser } = useUser();
   const [params] = useSearchParams();
   // Quem veio da caixa de ideação da home chega em "criar conta" e com a
-  // ideia guardada — depois de entrar, a Home retoma o rascunho sozinha.
+  // ideia guardada: depois de entrar, a Home retoma o rascunho sozinha.
   const veioDaIdeacao = params.get('proximo') === 'construir';
   const [tab, setTab] = useState(
     params.get('modo') === 'cadastro' || veioDaIdeacao ? 'criar' : 'entrar');
@@ -72,7 +72,7 @@ export default function Login() {
             <div className="rounded-xl border border-[#00ff6433] bg-[#00ff640d] px-3.5 py-2.5 mb-5">
               <div className="text-xs zd-green font-semibold">✦ Sua ideia está guardada</div>
               <p className="text-[11px] text-white/55 mt-0.5 leading-snug">
-                Crie a conta e voltamos exatamente de onde você parou — sem digitar de novo.
+                Crie a conta e voltamos exatamente de onde você parou, sem digitar de novo.
               </p>
             </div>
           )}

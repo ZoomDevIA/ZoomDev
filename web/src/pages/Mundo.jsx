@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { api } from '../lib/api.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// VALE ZOOMDEV — mundo voxel 3D onde os agentes vivem e conversam
+// VALE ZOOMDEV: mundo voxel 3D onde os agentes vivem e conversam
 //
 // Não é decoração: cada fala vem do estado real do ecossistema do fundador.
 // Quando o Curupira fala de linha de base, é porque existe um projeto de
@@ -88,7 +88,7 @@ function texturaNome(nome, cor) {
 }
 
 /**
- * Boneco voxel com o AVATAR OFICIAL do agente aplicado à frente da cabeça —
+ * Boneco voxel com o AVATAR OFICIAL do agente aplicado à frente da cabeça:
  * a mesma arte que aparece nos cards, agora em 3D. Sem avatar, o emoji assume
  * o rosto e o PNG é adotado sozinho assim que o arquivo existir.
  */
@@ -104,7 +104,7 @@ function criarAgenteVoxel(cor, { avatar, face, emoji, nome } = {}) {
   corpo.castShadow = true;
   g.add(corpo);
 
-  // Cabeça: 6 materiais — o índice 4 é a face frontal (+Z), onde vai o rosto.
+  // Cabeça: 6 materiais, o índice 4 é a face frontal (+Z), onde vai o rosto.
   const lateral = () => new THREE.MeshLambertMaterial({ color: corBase.clone().multiplyScalar(0.42) });
   const rosto = new THREE.MeshLambertMaterial({ map: texturaEmoji(emoji || '•', cor) });
   const materiais = [lateral(), lateral(), lateral(), lateral(), rosto, lateral()];
@@ -183,7 +183,7 @@ function criarArvore(x, z, escala = 1) {
   tronco.position.y = 0.8 * escala;
   tronco.castShadow = true;
   g.add(tronco);
-  // copa em três camadas de blocos — silhueta voxel clássica
+  // copa em três camadas de blocos: silhueta voxel clássica
   const copaMat = new THREE.MeshLambertMaterial({ color: 0x1e7a3a });
   const camadas = [[1.9, 1.7], [1.5, 2.5], [0.9, 3.1]];
   for (const [larg, alt] of camadas) {
@@ -503,7 +503,7 @@ export default function Mundo() {
             Vale <span className="zd-gradient-text">ZoomDev</span>
           </h1>
           <p className="text-white/55 text-sm mt-1.5">
-            Seus agentes vivem aqui. Cada fala vem do estado real do seu ecossistema — clique em um deles.
+            Seus agentes vivem aqui. Cada fala vem do estado real do seu ecossistema: clique em um deles.
           </p>
         </div>
         <div className="flex gap-2 items-center text-[11px] text-white/45">
@@ -583,7 +583,7 @@ export default function Mundo() {
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {n.map(h => (
                         <span key={h.id} className="flex items-center gap-1 text-[9px] rounded-full pl-0.5 pr-2 py-0.5 border"
-                          style={{ borderColor: `${h.cor}44`, color: h.cor }} title={h.avatar ? h.nome : `${h.nome} — avatar em produção`}>
+                          style={{ borderColor: `${h.cor}44`, color: h.cor }} title={h.avatar ? h.nome : `${h.nome}: avatar em produção`}>
                           {h.avatar ? (
                             <img src={h.avatar} alt="" className={`w-4 h-4 rounded-full object-cover ${h.rosto ? 'object-center' : 'object-top'}`} />
                           ) : (

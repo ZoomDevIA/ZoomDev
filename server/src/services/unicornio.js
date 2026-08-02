@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// RADAR UNICÓRNIO — score explicável (0-100) de potencial de cada projeto.
+// RADAR UNICÓRNIO: score explicável (0-100) de potencial de cada projeto.
 // Dimensões: Plano (25) + Execução (25) + Validação (20) + Fomento (15) +
-// Impacto/ESG (15). Cada ponto tem motivo — a Sexta-Feira nunca "acha", ela mostra.
+// Impacto/ESG (15). Cada ponto tem motivo: a Sexta-Feira nunca "acha", ela mostra.
 // ═══════════════════════════════════════════════════════════════════════════
 import { EDITAIS_SEED } from '../data/seeds.js';
 
@@ -46,7 +46,7 @@ export function radarProjeto(projeto, user) {
     planoMotivo = `Plano gerado pelos 5 agentes com ${secoes}/5 seções completas${projeto.geracao?.status === 'concluida' ? ', aprovado no QA-gate' : ''}.`;
   } else {
     plano = Math.min(6, Math.round(projeto.descricao.length / 60));
-    planoMotivo = 'Ainda sem plano de negócios — apenas a ideia estruturada.';
+    planoMotivo = 'Ainda sem plano de negócios: apenas a ideia estruturada.';
   }
   dims.push({ id: 'plano', label: 'Plano', pontos: Math.min(25, plano), max: 25, motivo: planoMotivo });
 

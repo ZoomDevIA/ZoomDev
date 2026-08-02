@@ -52,13 +52,13 @@ carbonRouter.post('/sequestro', (req, res) => {
     receitaTotalEstimada: Math.round(receitaAnual * anos * 100) / 100,
     arvoresEquivalentes: Math.round(tco2PorAno * 7),
     avisos: [
-      'Estimativa simplificada por bioma/tipo — a certificação real exige metodologia aprovada (VCS/Gold Standard), linha de base e verificação por auditor (VVB).',
+      'Estimativa simplificada por bioma/tipo: a certificação real exige metodologia aprovada (VCS/Gold Standard), linha de base e verificação por auditor (VVB).',
       'Receita bruta antes de custos de certificação (tipicamente 20-40% do valor no primeiro ciclo).',
     ],
   });
 });
 
-// Compra no CarbonPay com PIX (mock demo) ou cartão — espelho do CarbonPurchaseModal
+// Compra no CarbonPay com PIX (mock demo) ou cartão: espelho do CarbonPurchaseModal
 carbonRouter.post('/comprar', (req, res) => {
   const { itemId, toneladas, metodo = 'pix', projetoZoomDevId } = req.body || {};
   const item = CARBONPAY_ITENS.find(i => i.id === itemId && i.tons);
@@ -100,7 +100,7 @@ carbonRouter.get('/fatores', (_req, res) => {
   res.json({ fatores: FATORES, projetos: PROJETOS_CARBONPAY });
 });
 
-// Sequestro adicional com Biogenesis COT — modo ESTIMATIVA vs CRÉDITO VERIFICÁVEL
+// Sequestro adicional com Biogenesis COT: modo ESTIMATIVA vs CRÉDITO VERIFICÁVEL
 carbonRouter.get('/biogenesis/opcoes', (_req, res) => {
   res.json({ culturas: CULTURAS_BIOGENESIS, cenarios: CENARIOS_BIOGENESIS });
 });
@@ -154,7 +154,7 @@ carbonRouter.get('/plano-compensacao', (req, res) => {
     .map(p => ({ id: p.id, criadoEm: p.criadoEm, total: p.inventario.totalTco2eAno, meta: p.plano.reduzir.metaPercentual })));
 });
 
-// As rotas de download vêm ANTES da rota genérica :id — senão "abc.docx" é
+// As rotas de download vêm ANTES da rota genérica :id, senão "abc.docx" é
 // interpretado como um id e nunca chega aqui.
 carbonRouter.get('/plano-compensacao/:id.html', (req, res) => {
   const p = store.planosCompensacao[req.params.id];
@@ -181,7 +181,7 @@ carbonRouter.get('/plano-compensacao/:id', (req, res) => {
 });
 
 // Pedido de compensação (demo: registra a intenção; produção integraria API de
-// retirement — Patch/Cloverly/conta em registro — e emitiria certificado público)
+// retirement: Patch/Cloverly/conta em registro, e emitiria certificado público)
 carbonRouter.post('/compensar', (req, res) => {
   const { projetoId, toneladas, projetoZoomDevId } = req.body || {};
   const projeto = PROJETOS_CARBONPAY.find(p => p.id === projetoId);

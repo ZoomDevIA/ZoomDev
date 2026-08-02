@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// AGENT BUS — canal de orquestração da Sexta-Feira para os 25 agentes.
+// AGENT BUS: canal de orquestração da Sexta-Feira para os 25 agentes.
 // Análise preditiva do estado de cada fundador → nudges gamificados, com o
 // agente certo assinando cada mensagem. Máximo 2 nudges/dia por usuário;
 // nudge dispensado (por chave) nunca volta a incomodar.
@@ -45,17 +45,17 @@ function candidatos(user) {
     const principais = p.missoes.filter(m => m.tipo === 'principal');
     const pendentes = principais.filter(m => !m.concluida);
 
-    // 1) Fase pronta para avançar — a maior vitória disponível
+    // 1) Fase pronta para avançar: a maior vitória disponível
     if (principais.length > 0 && pendentes.length === 0 && p.fase !== 'escala') {
       lista.push({
         chave: `avancar:${p.id}:${p.fase}`, ...assinatura('ceo'),
         titulo: `${p.nome} está pronto para subir de nível!`,
-        mensagem: `Todas as missões principais foram concluídas. Avance de fase agora e ganhe +120 XP — sua startup evolui na jornada Semente→Floresta. 🌳`,
+        mensagem: `Todas as missões principais foram concluídas. Avance de fase agora e ganhe +120 XP: sua startup evolui na jornada Semente→Floresta. 🌳`,
         acao: { label: 'Avançar fase →', rota: `/projetos/${p.id}` },
       });
     }
 
-    // 2) Ideia estruturada sem plano — o próximo passo óbvio que muitos adiam
+    // 2) Ideia estruturada sem plano: o próximo passo óbvio que muitos adiam
     if (!p.plano && p.fase === 'ideacao') {
       lista.push({
         chave: `plano:${p.id}`, ...assinatura('ceo'),
@@ -65,7 +65,7 @@ function candidatos(user) {
       });
     }
 
-    // 3) Janela de fomento fechando — dinheiro não-diluitivo tem prazo.
+    // 3) Janela de fomento fechando: dinheiro não-diluitivo tem prazo.
     // Varre TODAS as janelas urgentes (score ≥ 70 e prazo ≤ 60 dias), não só a de maior score.
     const urgente = EDITAIS_SEED
       .map(e => ({ edital: e, score: aderenciaHeuristica(e, p), dias: diasParaPrazo(e) }))
@@ -80,7 +80,7 @@ function candidatos(user) {
       });
     }
 
-    // 4) Missão principal parada — empurrão do agente especialista
+    // 4) Missão principal parada: empurrão do agente especialista
     if (p.plano && pendentes.length > 0) {
       const m = pendentes[0];
       lista.push({
@@ -91,7 +91,7 @@ function candidatos(user) {
       });
     }
 
-    // 5) Radar alto sem captação — hora de pensar como unicórnio
+    // 5) Radar alto sem captação: hora de pensar como unicórnio
     const radar = radarProjeto(p, user);
     if (radar.score >= 80) {
       lista.push({
@@ -103,7 +103,7 @@ function candidatos(user) {
     }
   }
 
-  // 6) Passivo ambiental nunca calculado — diferencial ESG dormindo
+  // 6) Passivo ambiental nunca calculado: diferencial ESG dormindo
   if (projetos.length > 0 && !conquistas.includes('guardiao_floresta')) {
     lista.push({
       chave: 'carbono:calcular', ...assinatura('carbono'),
@@ -113,7 +113,7 @@ function candidatos(user) {
     });
   }
 
-  // 7) Calculou e não compensou — fechar o ciclo
+  // 7) Calculou e não compensou: fechar o ciclo
   if (conquistas.includes('guardiao_floresta') && !conquistas.includes('carbono_neutro')) {
     lista.push({
       chave: 'carbono:compensar', ...assinatura('carbono'),

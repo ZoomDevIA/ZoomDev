@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// ROTAS /api/painel — área de administração com porta própria.
+// ROTAS /api/painel: área de administração com porta própria.
 //
 // Fluxo: o usuário já está logado na plataforma → confirma a senha em
 // POST /sessao → recebe um token de 30 min que vai no header x-zd-painel.
@@ -7,8 +7,8 @@
 // grava uma linha na trilha de auditoria.
 //
 // Autorização em duas dimensões:
-//   · elevação  — provou que é você, agora, nesta janela
-//   · capacidade — o seu papel permite esta ação específica
+//   · elevação: provou que é você, agora, nesta janela
+//   · capacidade: o seu papel permite esta ação específica
 // As duas precisam passar. Elevação sem capacidade não faz nada.
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';

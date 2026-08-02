@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PERMISSÕES — três papéis, uma matriz de capacidades.
+// PERMISSÕES: três papéis, uma matriz de capacidades.
 //
 // A regra é sempre a mesma: o código nunca pergunta "esse usuário é admin?".
 // Pergunta "esse usuário pode fazer X?". Assim um papel novo é uma linha na

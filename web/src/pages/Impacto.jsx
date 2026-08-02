@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// IMPACTO REGENERATIVO 360° — Biogenesis COT BioTechnology
+// IMPACTO REGENERATIVO 360°: Biogenesis COT BioTechnology
 // Simulador que traduz a aplicação prática da biotecnologia em impacto real:
 // segurança alimentar, transição energética justa, carbono, economia e ODS.
 // Cada número carrega o Selo de Evidência que o sustenta.
@@ -123,7 +123,7 @@ function Simulador({ dossie }) {
             <Metrica emoji="🇺🇳" valor={r.resumo.odsAtendidos} unidade="ODS" label="Objetivos de Desenvolvimento Sustentável" cor="#a855f7" />
           </div>
 
-          {/* Transição energética justa — o elo entre agricultura e energia */}
+          {/* Transição energética justa: o elo entre agricultura e energia */}
           <div className="zd-card-glow rounded-2xl p-5">
             <div className="flex items-center justify-between gap-3 flex-wrap mb-1">
               <h3 className="font-heading font-bold">⚡ Transição Energética Verde Justa</h3>
@@ -176,7 +176,7 @@ function Simulador({ dossie }) {
           {/* ODS */}
           <div className="zd-card rounded-2xl p-5">
             <h3 className="font-heading font-bold mb-1">🇺🇳 Alinhamento com a Agenda 2030 da ONU</h3>
-            <p className="text-xs text-white/50 mb-4">Cada ODS abaixo é justificado por um número da simulação — não por declaração.</p>
+            <p className="text-xs text-white/50 mb-4">Cada ODS abaixo é justificado por um número da simulação: não por declaração.</p>
             <div className="grid sm:grid-cols-2 gap-2.5">
               {r.ods.map(o => (
                 <div key={o.ods} className="rounded-lg bg-white/[.04] border border-white/8 p-3 flex gap-3">
@@ -211,7 +211,7 @@ function Simulador({ dossie }) {
               <p className="text-xs text-white/60 mt-2 leading-relaxed">{r.conformidade}</p>
               <div className="text-[11px] text-white/40 mt-3 leading-relaxed">
                 Modo <b className="text-white/70">{r.dimensoes.carbono.modo}</b>. Comunicação sempre como
-                "emissões compensadas com créditos verificados" — nunca "carbono neutro" genérico (ISO 14068-1 / CONAR).
+                "emissões compensadas com créditos verificados": nunca "carbono neutro" genérico (ISO 14068-1 / CONAR).
               </div>
             </div>
           </div>
@@ -254,7 +254,7 @@ function Dossie({ dossie }) {
         </div>
         <div className="text-[11px] text-white/40 mt-3 leading-relaxed">
           Identidade histórica nos laudos: <b className="text-white/60">{dossie.identidade.nomeHistorico}</b>.
-          Em contexto técnico e regulatório citamos sempre o registro legal — marca não sobrescreve registro.
+          Em contexto técnico e regulatório citamos sempre o registro legal: marca não sobrescreve registro.
         </div>
       </div>
 
@@ -413,7 +413,7 @@ export default function Impacto() {
         </h1>
         <p className="text-white/55 text-sm mt-1.5">
           Biogenesis COT BioTechnology aplicada a segurança alimentar, transição energética justa,
-          carbono e bioeconomia — com cada número ancorado em evidência rastreável.
+          carbono e bioeconomia, com cada número ancorado em evidência rastreável.
         </p>
       </div>
 

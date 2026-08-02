@@ -4,7 +4,7 @@ import { useUser } from '../App.jsx';
 import AgentAvatar from './AgentAvatar.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CONSELHO DOS AGENTES — órgão colegiado, não um chat com personagens.
+// CONSELHO DOS AGENTES: órgão colegiado, não um chat com personagens.
 // A Sexta-Feira convoca, cada conselheiro fala sob seu PIC, e o veredito sai
 // por maioria ponderada pela confiança de cada parecer.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -43,7 +43,7 @@ export default function Conselho({ projetoId }) {
         <div>
           <h2 className="font-heading font-bold flex items-center gap-2">⚖️ Conselho dos Agentes</h2>
           <p className="text-xs text-white/50 mt-1 max-w-lg">
-            A Sexta-Feira convoca os especialistas certos para a sua fase. Cada um fala só do que domina —
+            A Sexta-Feira convoca os especialistas certos para a sua fase. Cada um fala só do que domina:
             e o veredito sai por maioria ponderada pela confiança.
           </p>
         </div>

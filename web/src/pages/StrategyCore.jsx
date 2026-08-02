@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 
-// Strategy Core — hub de inteligência estratégica (análises IA sobre o projeto)
+// Strategy Core: hub de inteligência estratégica (análises IA sobre o projeto)
 const ANALISES = [
   { tipo: 'market', titulo: 'Análise de Mercado', icon: '🔎', desc: 'Tamanho, tendências, timing e barreiras' },
   { tipo: 'financial', titulo: 'Análise Financeira', icon: '💰', desc: 'Unit economics, break-even e capital' },

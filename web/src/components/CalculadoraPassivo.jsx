@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 
-// Calculadora de passivo ambiental (GHG Protocol) — extraída da antiga página Carbono
+// Calculadora de passivo ambiental (GHG Protocol): extraída da antiga página Carbono
 const CAMPOS = [
   { grupo: 'Energia e combustíveis (Escopos 1 e 2)', itens: [
     ['energiaKwhMes', 'Energia elétrica (kWh/mês)', 'Ex.: 350'],
@@ -84,7 +84,7 @@ export default function CalculadoraPassivo() {
         <button type="submit" disabled={calculando} className="zd-gradient-btn rounded-xl px-6 py-3 text-sm">
           {calculando ? 'Calculando…' : '⚡ Calcular passivo ambiental'}
         </button>
-        <p className="text-[11px] text-white/35">Deixe em branco o que não se aplica — comece só com conta de luz + combustível. Você refina depois.</p>
+        <p className="text-[11px] text-white/35">Deixe em branco o que não se aplica: comece só com conta de luz + combustível. Você refina depois.</p>
       </form>
 
       {resultado && (
@@ -130,7 +130,7 @@ export default function CalculadoraPassivo() {
             </p>
             {pedido && (
               <div className="zd-notification rounded-xl p-4 mb-4 text-sm">
-                ✅ Pedido <b>{pedido.id}</b> registrado: {pedido.toneladas} tCO2e em "{pedido.projeto}" — {fmtBRL(pedido.valorTotal)}.
+                ✅ Pedido <b>{pedido.id}</b> registrado: {pedido.toneladas} tCO2e em "{pedido.projeto}": {fmtBRL(pedido.valorTotal)}.
                 <span className="text-white/50"> Após o pagamento, os créditos são aposentados e você recebe o certificado público.</span>
               </div>
             )}

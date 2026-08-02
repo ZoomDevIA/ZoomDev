@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// ROTAS /api/editais — radar interativo com match automático e alertas.
+// ROTAS /api/editais: radar interativo com match automático e alertas.
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';
 import { store } from '../store.js';
@@ -50,7 +50,7 @@ editaisRouter.post('/alertas/:id/lido', (req, res) => {
   res.json({ ok: true });
 });
 
-// Varredura sob demanda (admin) — força busca imediata
+// Varredura sob demanda (admin): força busca imediata
 editaisRouter.post('/varrer', async (req, res, next) => {
   try {
     if (!isAdmin(req.user)) return res.status(403).json({ error: 'Apenas o administrador pode forçar uma varredura.' });

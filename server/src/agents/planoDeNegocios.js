@@ -1,4 +1,4 @@
-// Orquestrador dos 5 agentes ZoomDev — geram juntos o Plano de Negócios qualificado.
+// Orquestrador dos 5 agentes ZoomDev: geram juntos o Plano de Negócios qualificado.
 // Agentes: Produto, Negócio, Engenharia, Impacto, Editais (definidos no plano de negócios da ZoomDev).
 // Cada agente roda em paralelo com prompt e schema próprios; o resultado é mesclado no plano.
 import { structured } from './claude.js';
@@ -137,10 +137,10 @@ const MISSOES_SCHEMA = {
 function systemBase(projeto) {
   const bio = projeto.classificacao === 'biostartup';
   return `Você é um dos 5 agentes especialistas da ZoomDev OS, plataforma brasileira que transforma ideias em startups ("IDEA TO EXIT").
-Projeto: "${projeto.nome}" — ${projeto.classificacao === 'biostartup' ? 'BioStartup (bioeconomia/impacto ambiental, trilha amazônica)' : 'Startup'}${projeto.vertical ? `, vertical ${projeto.vertical}` : ''}.
+Projeto: "${projeto.nome}": ${projeto.classificacao === 'biostartup' ? 'BioStartup (bioeconomia/impacto ambiental, trilha amazônica)' : 'Startup'}${projeto.vertical ? `, vertical ${projeto.vertical}` : ''}.
 Ideia do fundador: ${projeto.descricao}
 ${bio ? 'Considere o contexto amazônico/bioeconomia: cadeias da sociobiodiversidade, rastreabilidade, créditos de carbono e editais de sustentabilidade (FINEP, BNDES, MCTI).' : ''}
-Escreva em pt-BR, específico e prático — nada genérico. Valores monetários em R$.`;
+Escreva em pt-BR, específico e prático: nada genérico. Valores monetários em R$.`;
 }
 
 /**
@@ -164,7 +164,7 @@ export async function gerarPlano(projeto, onProgress = () => {}) {
     onProgress(agente.id, 'executando');
     try {
       resultados[agente.id] = await structured({
-        system: `${system}\nSeu papel: ${agente.nome} — ${agente.papel}.`,
+        system: `${system}\nSeu papel: ${agente.nome}, ${agente.papel}.`,
         user: agente.prompt,
         schema: agente.schema,
         effort: 'high',
@@ -197,7 +197,7 @@ Crie 4 missões de VALIDAÇÃO acionáveis e específicas para este projeto (2 p
     onProgress('missoes', 'concluido');
   } catch {
     onProgress('missoes', 'erro');
-    // Falha nas missões não bloqueia o plano — fallback fica a cargo do chamador
+    // Falha nas missões não bloqueia o plano: fallback fica a cargo do chamador
   }
 
   const plano = {

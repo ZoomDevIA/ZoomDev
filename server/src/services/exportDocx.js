@@ -1,4 +1,4 @@
-// Exportação do Plano de Negócios em DOCX (lib docx — puro JS).
+// Exportação do Plano de Negócios em DOCX (lib docx: puro JS).
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell,
   WidthType, BorderStyle, AlignmentType, ShadingType,
@@ -92,7 +92,7 @@ export async function planoParaDocx(projeto) {
     new Paragraph({
       alignment: AlignmentType.CENTER, spacing: { after: 300 },
       children: [new TextRun({
-        text: `${bio ? 'BioStartup — trilha bioeconomia amazônica' : 'Startup'} · ${projeto.vertical || ''} · Gerado em ${new Date(pl.geradoEm).toLocaleDateString('pt-BR')} pelos 5 agentes ZoomDev`,
+        text: `${bio ? 'BioStartup: trilha bioeconomia amazônica' : 'Startup'} · ${projeto.vertical || ''} · Gerado em ${new Date(pl.geradoEm).toLocaleDateString('pt-BR')} pelos 5 agentes ZoomDev`,
         size: 20, color: '556655',
       })],
     }),
@@ -103,7 +103,7 @@ export async function planoParaDocx(projeto) {
     h2('Solução'), p(pl.produto.solucao),
     h2('Público-alvo'), p(pl.produto.publicoAlvo),
     h2('Personas'),
-    ...(pl.produto.personas || []).flatMap(pe => [p(`${pe.nome} — ${pe.descricao}. Dor: ${pe.dor}`)]),
+    ...(pl.produto.personas || []).flatMap(pe => [p(`${pe.nome}, ${pe.descricao}. Dor: ${pe.dor}`)]),
     h2('Funcionalidades do MVP'), ...bullets(pl.produto.funcionalidadesMvp),
     h2('Diferenciais'), ...bullets(pl.produto.diferenciais),
 
@@ -135,7 +135,7 @@ export async function planoParaDocx(projeto) {
 
     h1('4. Impacto'),
     h2('ODS da ONU'),
-    ...(pl.impacto.ods || []).map(o => p(`ODS ${o.numero} — ${o.nome}: ${o.contribuicao}`)),
+    ...(pl.impacto.ods || []).map(o => p(`ODS ${o.numero}, ${o.nome}: ${o.contribuicao}`)),
     h2('KPIs de impacto'), ...bullets(pl.impacto.kpisImpacto),
     h2('Práticas ESG'), ...bullets(pl.impacto.praticasEsg),
     h2('Riscos e mitigação'),
@@ -144,7 +144,7 @@ export async function planoParaDocx(projeto) {
 
     h1('5. Editais & Fomento'),
     ...(pl.editais.editaisRecomendados || []).flatMap(e => [
-      p(`${e.nome} (${e.orgao}) — aderência ${e.aderencia}/100`, { bold: true }),
+      p(`${e.nome} (${e.orgao}): aderência ${e.aderencia}/100`, { bold: true }),
       p(e.motivo, { size: 20 }),
     ]),
     h2('Documentação necessária'), ...bullets(pl.editais.documentacaoNecessaria),
@@ -155,7 +155,7 @@ export async function planoParaDocx(projeto) {
 
   const doc = new Document({
     creator: 'ZoomDev OS',
-    title: `Plano de Negócios — ${projeto.nome}`,
+    title: `Plano de Negócios: ${projeto.nome}`,
     styles: { default: { document: { run: { font: 'Calibri' } } } },
     sections: [{ properties: {}, children }],
   });

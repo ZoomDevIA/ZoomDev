@@ -1,13 +1,13 @@
-# Protocolo de Instância Cognitiva (PIC) — Sexta-Feira e os 25 agentes
+# Protocolo de Instância Cognitiva (PIC): Sexta-Feira e os 25 agentes
 
-> "O nudge certo, do agente certo, na hora certa." — regra de ouro da Sexta-Feira
+> "O nudge certo, do agente certo, na hora certa.": regra de ouro da Sexta-Feira
 
 ## O que é um PIC
 
 O **Protocolo de Instância Cognitiva** é o documento vivo que define a mente de um agente
 da ZoomDev OS: identidade, missão, domínios de maestria, ferramentas, regras inegociáveis,
 protocolo de cooperação e ciclo de evolução. Cada agente da plataforma tem o seu; a
-Sexta-Feira tem o mais completo — e é a única capaz de **propor evoluções no próprio protocolo**.
+Sexta-Feira tem o mais completo, e é a única capaz de **propor evoluções no próprio protocolo**.
 
 ```
 server/src/protocols/
@@ -15,14 +15,14 @@ server/src/protocols/
 └── picAgentes.js      → PICs dos 25 agentes (especialidade, cooperação, gatilhos)
 ```
 
-## Sexta-Feira 🕶️ — a inteligência-mestra
+## Sexta-Feira 🕶️: a inteligência-mestra
 
 A Sexta-Feira enxerga o ecossistema inteiro e responde ao **administrador** no super
 dashboard (`/admin`). Seus pilares:
 
 | Pilar | Implementação |
 |---|---|
-| **Visão total** | `snapshotEcossistema()` — usuários, projetos, fases, missões, carbono, seiva, tudo em tempo real. Nada é inventado: cada frase dela cita o dado. |
+| **Visão total** | `snapshotEcossistema()`, usuários, projetos, fases, missões, carbono, seiva, tudo em tempo real. Nada é inventado: cada frase dela cita o dado. |
 | **Radar Unicórnio** | Score explicável 0–100 por projeto: Plano (25) + Execução (25) + Validação (20) + Fomento (15) + Impacto/ESG (15). Tiers: ≥80 Unicórnio em formação 🦄 · ≥60 Alto potencial 🚀 · ≥40 Promissor 🌿 · <40 Semente 🌱 |
 | **Matriz de fomento** | Cruzamento contínuo editais × projetos com score de aderência e dias de prazo. Aderência ≥70 com prazo ≤60 dias dispara nudge automático. |
 | **Internet em tempo real** | `conversarComInternet()` usa o server tool `web_search` do Claude (com tratamento de `pause_turn`) para tendências, novos editais e movimentos de concorrentes. |
@@ -43,7 +43,7 @@ dashboard (`/admin`). Seus pilares:
 - Aprovação gera versão minor (1.0.0 → 1.1.0) com notas e histórico completo
 - Rollback cria nova versão com o conteúdo restaurado (o histórico nunca é apagado)
 
-## Os 25 agentes — um organismo, cinco camadas
+## Os 25 agentes: um organismo, cinco camadas
 
 A Sexta-Feira orquestra os agentes em camadas, acionadas por eventos do ecossistema:
 
@@ -58,14 +58,14 @@ A Sexta-Feira orquestra os agentes em camadas, acionadas por eventos do ecossist
 Cada PIC de agente define: **identidade**, **especialidade profunda**, **rede de cooperação**
 (a quem passar o bastão) e **gatilhos preditivos** que a Sexta-Feira monitora.
 
-## Agent Bus — antecipação gamificada
+## Agent Bus: antecipação gamificada
 
 O Agent Bus (`server/src/services/agentBus.js`) transforma análise preditiva em ação:
 
 - Analisa o estado real de cada fundador (projetos, missões, conquistas, editais)
 - Gera **nudges assinados pelo agente especialista** ("Curupira antecipou: …")
 - Cada nudge é gamificado: cita XP, seiva ou conquista em jogo, e tem ação de 1 clique
-- **Máximo 2 nudges/dia por fundador** — inteligência que não vira spam
+- **Máximo 2 nudges/dia por fundador**: inteligência que não vira spam
 - Nudge dispensado (por chave estável) nunca volta; aceites alimentam o KPI de taxa de aceite
 - A Sexta-Feira monitora a taxa (meta ≥ 35%) e propõe ajustes de frequência via PIC
 

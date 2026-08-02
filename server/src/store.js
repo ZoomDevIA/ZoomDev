@@ -1,4 +1,4 @@
-// Persistência simples em JSON (fundação — trocável por Postgres/Supabase via esta interface)
+// Persistência simples em JSON (fundação: trocável por Postgres/Supabase via esta interface)
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
