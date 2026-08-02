@@ -60,13 +60,30 @@ npm run dev          # API na 4000 + web na 5173 (abra a 5173)
 
 ### Publicando online
 
-O repositório traz `Dockerfile` e `render.yaml` prontos:
+O servidor detecta `web/dist` e serve o frontend junto com a API — uma porta, um
+processo. A porta vem de `PORT`, que Railway e Render injetam automaticamente.
 
-- **Render:** conecte o repositório em [render.com](https://render.com) — o `render.yaml`
-  configura build, porta, health check e disco persistente sozinho.
-- **Qualquer host com Docker:** `docker build -t zoomdev . && docker run -p 4000:4000 zoomdev`
+#### Railway (recomendado)
 
-O servidor detecta `web/dist` e serve o frontend junto com a API — uma porta, um processo.
+1. Em [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
+2. Selecione `Neroxxx2031/ZoomDev` e a branch `claude/vibe-coding-platform-huaz3v`
+3. O `railway.json` já aponta para o `Dockerfile` — o build começa sozinho
+4. Em **Settings → Networking**, clique em **Generate Domain** para receber a URL pública
+5. Em **Variables**, adicione o que quiser ativar (tudo opcional — sem nada, roda em modo demo)
+6. Em **Settings → Volumes**, crie um volume montado em `/app/data` para os dados
+   sobreviverem aos deploys
+
+#### Render
+
+Conecte o repositório em [render.com](https://render.com) — o `render.yaml` configura
+build, porta, health check e disco persistente sozinho.
+
+#### Qualquer host com Docker
+
+```bash
+docker build -t zoomdev .
+docker run -p 4000:4000 -v zoomdev-dados:/app/data zoomdev
+```
 
 ## O que já está implementado
 
