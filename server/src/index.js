@@ -1,4 +1,6 @@
 // ZoomDev OS — API
+import fs from 'node:fs';
+import path from 'node:path';
 import express from 'express';
 import cors from 'cors';
 import { config } from './config.js';
@@ -74,6 +76,17 @@ app.use((err, _req, res, _next) => {
   if (status >= 500) console.error(err);
   res.status(status).json({ error: err.message || 'Erro interno.', code: err.code });
 });
+
+// ── Frontend compilado ────────────────────────────────────────────────────
+// Se web/dist existir, o mesmo processo serve a aplicação: uma porta só, sem
+// precisar do Vite. É o que torna `npm run preview` e o deploy triviais.
+const distDir = new URL('../../web/dist/', import.meta.url).pathname;
+if (fs.existsSync(path.join(distDir, 'index.html'))) {
+  app.use(express.static(distDir));
+  // SPA: qualquer rota que não seja /api cai no index.html
+  app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(distDir, 'index.html')));
+  console.log('Servindo o frontend compilado de web/dist');
+}
 
 // Protocolos: garante o PIC da Sexta-Feira e migra os PICs dos agentes se a
 // versão base do código evoluiu (histórico preservado, rollback disponível).

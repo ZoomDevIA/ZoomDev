@@ -20,13 +20,53 @@ sites e design, com trilha especializada em bioeconomia amazônica, editais e im
 
 ## Rodando o projeto
 
+**Pré-requisito:** Node.js 20 ou superior ([nodejs.org](https://nodejs.org)).
+
+### Teste rápido — uma porta só
+
 ```bash
+git clone https://github.com/Neroxxx2031/ZoomDev.git
+cd ZoomDev
+git checkout claude/vibe-coding-platform-huaz3v
 npm install
-npm run dev          # API (porta 4000) + web (porta 5173)
+npm run preview
 ```
 
-- **Sem `ANTHROPIC_API_KEY`:** modo demo — planos de exemplo determinísticos, jornada completa funcional.
-- **Com `ANTHROPIC_API_KEY`:** os 5 agentes rodam via API Claude (`claude-fable-5`, configurável em `ZOOMDEV_MODEL`).
+Abra **http://localhost:4000** e crie sua conta. O primeiro usuário registrado
+vira o administrador e ganha acesso ao painel da Sexta-Feira.
+
+### Desenvolvimento — com recarga automática
+
+```bash
+npm run dev          # API na 4000 + web na 5173 (abra a 5173)
+```
+
+### Modos de operação
+
+- **Sem `ANTHROPIC_API_KEY`:** modo demo — **tudo funciona**. Planos, MVP, Conselho,
+  radar de editais e cálculos operam com geradores determinísticos sobre dados reais.
+- **Com `ANTHROPIC_API_KEY`:** os agentes rodam via API Claude (`claude-fable-5`,
+  configurável em `ZOOMDEV_MODEL`) e a Sexta-Feira ganha busca na internet.
+
+### Variáveis de ambiente
+
+| Variável | Para quê | Sem ela |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | IA de verdade nos agentes | Modo demo determinístico |
+| `ZOOMDEV_ADMIN_EMAIL` | Define quem é o administrador | Primeiro usuário registrado |
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | Cobrança de assinatura | Fluxo simulado |
+| `PIX_CHAVE`, `PIX_NOME`, `PIX_CIDADE` | PIX em produção | BR Code válido, confirmação manual |
+| `ZOOMDEV_DATA_DIR` | Onde os dados ficam | `server/data/` |
+
+### Publicando online
+
+O repositório traz `Dockerfile` e `render.yaml` prontos:
+
+- **Render:** conecte o repositório em [render.com](https://render.com) — o `render.yaml`
+  configura build, porta, health check e disco persistente sozinho.
+- **Qualquer host com Docker:** `docker build -t zoomdev . && docker run -p 4000:4000 zoomdev`
+
+O servidor detecta `web/dist` e serve o frontend junto com a API — uma porta, um processo.
 
 ## O que já está implementado
 

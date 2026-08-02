@@ -1,0 +1,35 @@
+# Deploy de um clique no Render (render.com) — plano gratuito serve para testes.
+# Após conectar o repositório, o Render lê este arquivo e sobe tudo sozinho.
+services:
+  - type: web
+    name: zoomdev-os
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Sem a chave, a plataforma roda em modo demo — tudo funciona.
+      # Defina no painel do Render para ativar a IA de verdade.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # E-mail que recebe o papel de administrador (painel da Sexta-Feira).
+      - key: ZOOMDEV_ADMIN_EMAIL
+        sync: false
+      # Pagamentos (opcionais — sem eles o fluxo roda em modo simulado)
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: PIX_CHAVE
+        sync: false
+      # Os dados ficam em disco persistente
+      - key: ZOOMDEV_DATA_DIR
+        value: /var/data
+    disk:
+      name: zoomdev-dados
+      mountPath: /var/data
+      sizeGB: 1
