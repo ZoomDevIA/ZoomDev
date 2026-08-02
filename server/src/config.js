@@ -5,6 +5,8 @@ export const config = {
   model: process.env.ZOOMDEV_MODEL || 'claude-fable-5',
   // Sem ANTHROPIC_API_KEY o servidor roda em modo demo (planos de exemplo determinísticos)
   hasApiKey: Boolean(process.env.ANTHROPIC_API_KEY),
+  // Administrador do ecossistema: e-mail explícito via env; sem env, o primeiro usuário registrado
+  adminEmail: (process.env.ZOOMDEV_ADMIN_EMAIL || '').trim().toLowerCase() || null,
   dataDir: process.env.ZOOMDEV_DATA_DIR || new URL('../data/', import.meta.url).pathname,
   // Economia de créditos ("seiva")
   credits: {

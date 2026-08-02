@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react';
 
 export const ToastContext = createContext({ toasts: [], notify: () => {} });
+export const useToast = () => useContext(ToastContext);
 
 export default function GamificationToasts() {
   const { toasts } = useContext(ToastContext);

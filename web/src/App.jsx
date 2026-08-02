@@ -16,6 +16,7 @@ import Editais from './pages/Editais.jsx';
 import Investidores from './pages/Investidores.jsx';
 import Configuracoes from './pages/Configuracoes.jsx';
 import StrategyCore from './pages/StrategyCore.jsx';
+import Admin from './pages/Admin.jsx';
 
 export const UserContext = createContext(null);
 export const useUser = () => useContext(UserContext);
@@ -87,6 +88,7 @@ export default function App() {
               <Route path="/carbono" element={<Navigate to="/carbonpay" replace />} />
               <Route path="/planos" element={<Planos />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
+              {user.isAdmin && <Route path="/admin" element={<Admin />} />}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </Layout>

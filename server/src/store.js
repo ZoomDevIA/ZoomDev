@@ -5,14 +5,14 @@ import { config } from './config.js';
 
 const DB_FILE = path.join(config.dataDir, 'db.json');
 
-const empty = () => ({ users: {}, projects: {}, sessions: {}, carbonOrders: {} });
+const empty = () => ({ users: {}, projects: {}, sessions: {}, carbonOrders: {}, pic: null, nudges: {}, reports: {} });
 
 let db = empty();
 
 export function load() {
   try {
     fs.mkdirSync(config.dataDir, { recursive: true });
-    if (fs.existsSync(DB_FILE)) db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    if (fs.existsSync(DB_FILE)) db = { ...empty(), ...JSON.parse(fs.readFileSync(DB_FILE, 'utf8')) };
   } catch (e) {
     console.error('store: falha ao carregar, iniciando vazio', e.message);
     db = empty();
@@ -37,6 +37,13 @@ export const store = {
   get projects() { return db.projects; },
   get sessions() { return db.sessions; },
   get carbonOrders() { return db.carbonOrders; },
+  // Estado do Protocolo de Instância Cognitiva da Sexta-Feira (versões + propostas)
+  get pic() { return db.pic; },
+  set pic(v) { db.pic = v; },
+  // Nudges do Agent Bus por usuário: { [userId]: { enviados: [], dispensados: [] } }
+  get nudges() { return db.nudges; },
+  // Relatórios do ecossistema gerados pela Sexta-Feira
+  get reports() { return db.reports; },
 };
 
 export function id(prefix) {

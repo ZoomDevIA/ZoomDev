@@ -52,7 +52,33 @@ export const api = {
   analyze: (body) => req('/analyze', { method: 'POST', body: JSON.stringify(body) }),
   chat: (mensagens) => req('/chat', { method: 'POST', body: JSON.stringify({ mensagens }) }),
   chatHistorico: () => req('/chat'),
+  // Agent Bus (nudges preditivos orquestrados pela Sexta-Feira)
+  nudges: () => req('/nudges'),
+  nudgeDispensar: (id) => req(`/nudges/${id}/dispensar`, { method: 'POST' }),
+  nudgeAceitar: (id) => req(`/nudges/${id}/aceitar`, { method: 'POST' }),
+  // Super dashboard do administrador (Sexta-Feira)
+  adminOverview: () => req('/admin/overview'),
+  adminChat: (mensagens) => req('/admin/chat', { method: 'POST', body: JSON.stringify({ mensagens }) }),
+  adminChatHistorico: () => req('/admin/chat'),
+  adminGerarRelatorio: () => req('/admin/relatorios', { method: 'POST' }),
+  adminRelatorios: () => req('/admin/relatorios'),
+  adminPic: () => req('/admin/pic'),
+  adminPicPropor: () => req('/admin/pic/propor', { method: 'POST' }),
+  adminPicAprovar: (id) => req(`/admin/pic/propostas/${id}/aprovar`, { method: 'POST' }),
+  adminPicRejeitar: (id) => req(`/admin/pic/propostas/${id}/rejeitar`, { method: 'POST' }),
+  adminPicRollback: (versao) => req('/admin/pic/rollback', { method: 'POST', body: JSON.stringify({ versao }) }),
+  adminPicsAgentes: () => req('/admin/pics-agentes'),
 };
+
+// Abre o relatório do ecossistema (HTML autenticado) em nova aba
+export async function abrirRelatorio(relId) {
+  const res = await fetch(`/api/admin/relatorios/${relId}.html`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Falha ao abrir o relatório.');
+  const blob = await res.blob();
+  window.open(URL.createObjectURL(blob.slice(0, blob.size, 'text/html')), '_blank');
+}
 
 // SSE da geração do plano (EventSource não envia headers → usa fetch streaming)
 export async function gerarPlanoSSE(projId, handlers) {

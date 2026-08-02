@@ -5,6 +5,8 @@ import { store, save } from '../store.js';
 import { config } from '../config.js';
 import { structured, conversar } from '../agents/claude.js';
 import { AGENTES_GERAIS, AGENTES_BIO, EDITAIS_SEED, NOTIFICACOES_SEED } from '../data/seeds.js';
+import { aderenciaHeuristica } from '../services/unicornio.js';
+import { nudgesDoDia, dispensarNudge, aceitarNudge } from '../services/agentBus.js';
 
 export const platformRouter = Router();
 
@@ -35,8 +37,8 @@ const ADERENCIA_SCHEMA = {
 function aderenciaDemo(edital, projeto) {
   const bio = projeto.classificacao === 'biostartup';
   const editalBio = edital.tags.some(t => ['bioeconomia', 'sociobiodiversidade', 'amazônia', 'sustentabilidade'].includes(t));
-  const base = edital.id.includes('centelha') || edital.id.includes('catalisa') ? 78 : 62;
-  const score = Math.min(96, base + (bio && editalBio ? 18 : 0) + (!bio && !editalBio ? 10 : 0));
+  // Mesma régua do Radar Unicórnio/Sexta-Feira — uma verdade só no ecossistema
+  const score = aderenciaHeuristica(edital, projeto);
   return {
     score,
     motivo: bio && editalBio
@@ -170,4 +172,19 @@ A plataforma tem: geração de plano de negócios pelos 5 agentes, jornada gamif
 
 platformRouter.get('/chat', (req, res) => {
   res.json(req.user.chatLog || []);
+});
+
+// ── Agent Bus: nudges preditivos gamificados (orquestrados pela Sexta-Feira) ──
+platformRouter.get('/nudges', (req, res) => {
+  res.json(nudgesDoDia(req.user));
+});
+
+platformRouter.post('/nudges/:id/dispensar', (req, res) => {
+  if (!dispensarNudge(req.user, req.params.id)) return res.status(404).json({ error: 'Nudge não encontrado.' });
+  res.json({ ok: true });
+});
+
+platformRouter.post('/nudges/:id/aceitar', (req, res) => {
+  if (!aceitarNudge(req.user, req.params.id)) return res.status(404).json({ error: 'Nudge não encontrado.' });
+  res.json({ ok: true });
 });

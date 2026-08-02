@@ -56,7 +56,15 @@ function createSession(userId) {
 
 export function publicUser(u) {
   const { passwordHash, ...rest } = u;
-  return rest;
+  return { ...rest, isAdmin: isAdmin(u) };
+}
+
+// Admin do ecossistema: e-mail definido em ZOOMDEV_ADMIN_EMAIL ou, sem env, o primeiro usuário registrado
+export function isAdmin(user) {
+  if (!user) return false;
+  if (config.adminEmail) return user.email === config.adminEmail;
+  const primeiro = Object.values(store.users).sort((a, b) => a.criadoEm.localeCompare(b.criadoEm))[0];
+  return primeiro?.id === user.id;
 }
 
 export function authMiddleware(req, res, next) {
@@ -66,5 +74,12 @@ export function authMiddleware(req, res, next) {
     return res.status(401).json({ error: 'Não autenticado.' });
   }
   req.user = store.users[session.userId];
+  next();
+}
+
+export function adminMiddleware(req, res, next) {
+  if (!isAdmin(req.user)) {
+    return res.status(403).json({ error: 'Acesso restrito ao administrador do ecossistema.' });
+  }
   next();
 }

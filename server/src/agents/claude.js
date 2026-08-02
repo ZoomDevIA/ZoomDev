@@ -74,3 +74,39 @@ export async function conversar({ system, messages, effort = 'medium', maxTokens
   }
   return response.content.filter(b => b.type === 'text').map(b => b.text).join('');
 }
+
+/**
+ * Conversa com acesso à internet em tempo real (Sexta-Feira).
+ * Usa o server tool web_search; `pause_turn` é retomado re-enviando o conteúdo
+ * do assistant como está (sem texto extra), até ~4 iterações.
+ * Retorna { texto, buscas } — buscas = quantas pesquisas o modelo executou.
+ */
+export async function conversarComInternet({ system, messages, effort = 'high', maxTokens = 8000, maxBuscas = 5 }) {
+  if (!config.hasApiKey) {
+    throw Object.assign(new Error('Sem ANTHROPIC_API_KEY — use o modo demo.'), { code: 'NO_API_KEY' });
+  }
+  const anthropic = await client();
+  let msgs = [...messages];
+  let response = null;
+  for (let i = 0; i < 4; i++) {
+    const stream = anthropic.beta.messages.stream({
+      model: config.model,
+      max_tokens: maxTokens,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      system,
+      output_config: { effort },
+      tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: maxBuscas }],
+      messages: msgs,
+    });
+    response = await stream.finalMessage();
+    if (response.stop_reason !== 'pause_turn') break;
+    msgs = [...msgs, { role: 'assistant', content: response.content }];
+  }
+  if (response.stop_reason === 'refusal') {
+    throw Object.assign(new Error('Não posso ajudar com esse pedido — reformule, por favor.'), { code: 'REFUSAL' });
+  }
+  const buscas = response.content.filter(b => b.type === 'server_tool_use').length;
+  const texto = response.content.filter(b => b.type === 'text').map(b => b.text).join('');
+  return { texto, buscas };
+}

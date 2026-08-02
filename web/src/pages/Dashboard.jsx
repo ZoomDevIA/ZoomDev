@@ -4,6 +4,7 @@ import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import JourneyBar from '../components/JourneyBar.jsx';
 import AgentAvatar from '../components/AgentAvatar.jsx';
+import Nudges from '../components/Nudges.jsx';
 
 // Ações rápidas do protótipo (analyzeStartup): market | financial | edital | competitor
 const QUICK_ACTIONS = [
@@ -106,6 +107,9 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Agent Bus: os agentes antecipam os próximos passos (Sexta-Feira) */}
+      <Nudges />
 
       {/* Banner edital — clone do protótipo */}
       <div className="zd-notification rounded-xl px-5 py-3.5 flex items-center gap-3 justify-between flex-wrap">

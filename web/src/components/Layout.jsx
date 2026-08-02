@@ -51,7 +51,7 @@ export default function Layout({ children }) {
           <BrandLockup symbolSize={40} wordmarkHeight={32} />
         </div>
         <nav className="flex-1 mt-1">
-          {MENU.map(m => (
+          {[...MENU, ...(user.isAdmin ? [{ to: '/admin', label: 'Sexta-Feira', icon: '🕶️', badge: 'Admin' }] : [])].map(m => (
             <NavLink key={m.to} to={m.to} end={m.to === '/'}
               className={({ isActive }) => `zd-menu-item ${isActive ? 'active' : ''} flex items-center gap-3 px-5 py-3 text-sm font-medium`}>
               <span className="text-base w-5 text-center">{m.icon}</span>

@@ -2,11 +2,13 @@
 import express from 'express';
 import cors from 'cors';
 import { config } from './config.js';
-import { register, login, authMiddleware, publicUser } from './auth.js';
+import { register, login, authMiddleware, adminMiddleware, publicUser } from './auth.js';
 import { save } from './store.js';
 import { projectsRouter } from './routes/projects.js';
 import { carbonRouter } from './routes/carbon.js';
 import { platformRouter } from './routes/platform.js';
+import { adminRouter } from './routes/admin.js';
+import { initPic } from './agents/sextaFeira.js';
 import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gamification.js';
 
 const app = express();
@@ -41,6 +43,7 @@ app.get('/api/me', (req, res) => {
 
 app.use('/api/projects', projectsRouter);
 app.use('/api/carbon', carbonRouter);
+app.use('/api/admin', adminMiddleware, adminRouter);
 app.use('/api', platformRouter);
 
 app.use((err, _req, res, _next) => {
@@ -48,6 +51,9 @@ app.use((err, _req, res, _next) => {
   if (status >= 500) console.error(err);
   res.status(status).json({ error: err.message || 'Erro interno.', code: err.code });
 });
+
+// Garante o PIC fundador da Sexta-Feira no primeiro boot
+initPic();
 
 process.on('SIGINT', () => { save(); process.exit(0); });
 
