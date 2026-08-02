@@ -30,7 +30,22 @@ h1, h2, h3, .font-heading { font-family: 'Space Grotesk', ui-sans-serif, system-
 .zd-gradient-btn:disabled { opacity: .45; cursor: not-allowed; }
 .zd-menu-item { color: #ffffff80; transition: all .2s ease; }
 .zd-menu-item:hover { color: #ffffffe6; background: #00ff640f; }
-.zd-menu-item.active { color: #00ff64; background: #00ff641a; border-right: 2px solid #00ff64; }
+.zd-menu-item.active {
+  color: #00ff64;
+  background: linear-gradient(90deg, #00ff6422, #00ff6408);
+  position: relative;
+}
+/* Marcador angular no item ativo, no lugar da barrinha reta */
+.zd-menu-item.active::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 50%;
+  width: 3px; height: 60%;
+  transform: translateY(-50%);
+  background: #00ff64;
+  clip-path: polygon(0 0, 100% 14%, 100% 86%, 0 100%);
+  box-shadow: -2px 0 12px #00ff6480;
+}
 .zd-stat-card { background: #00ff640a; border: 1px solid rgba(0,255,100,.1); transition: all .3s ease; }
 .zd-stat-card:hover { border-color: #00ff6440; background: #00ff6412; }
 .zd-agent-card { background: #05140ae6; border: 1px solid rgba(0,255,100,.15); transition: all .3s ease; }

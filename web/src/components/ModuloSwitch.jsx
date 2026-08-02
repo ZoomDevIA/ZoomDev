@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { tingir } from './hud/index.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MÓDULO SWITCH: botão liga/desliga que se arrasta para os lados.
@@ -72,11 +73,11 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
       onMouseLeave={() => setContexto(false)}
     >
       <div
-        className={`h-full rounded-2xl border p-4 transition-all duration-300 flex flex-col gap-2.5 ${disabled ? 'opacity-60' : ''}`}
+        className={`hud-painel h-full p-4 flex flex-col gap-2.5 transition-all duration-300 ${disabled ? 'opacity-60' : ''}`}
         style={{
-          borderColor: ligado ? `${cor}66` : 'rgba(255,255,255,.10)',
-          background: ligado ? `${cor}10` : 'rgba(255,255,255,.025)',
-          boxShadow: ligado ? `0 0 24px ${cor}22` : 'none',
+          '--cor': ligado ? `${cor}8a` : 'rgba(255,255,255,.12)',
+          '--fundo': ligado ? tingir(cor, 0.09) : '#06140d',
+          boxShadow: ligado ? `0 0 26px ${cor}22` : 'none',
         }}
       >
         <div className="flex items-center gap-3">
@@ -85,10 +86,10 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
           <div className="min-w-0 flex-1">
             <div className="font-heading font-bold text-sm leading-tight">{modulo.nome}</div>
             <span
-              className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border inline-block mt-1"
+              className="hud-etiqueta mt-1"
               style={ligado
-                ? { color: cor, borderColor: `${cor}55`, background: `${cor}1a` }
-                : { color: '#ffffff55', borderColor: 'rgba(255,255,255,.14)' }}
+                ? { color: cor, background: `${cor}1a`, boxShadow: `inset 0 0 0 1px ${cor}55` }
+                : { color: '#ffffff55', background: 'transparent', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.14)' }}
             >
               {ligado ? 'ligado' : 'desligado'}
             </span>
@@ -109,25 +110,26 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
             onKeyDown={tecla}
             onFocus={() => setContexto(true)}
             onBlur={() => setContexto(false)}
-            className={`relative shrink-0 rounded-full border select-none touch-none outline-none focus-visible:ring-2 ${
+            className={`hud-trilho shrink-0 select-none touch-none outline-none focus-visible:ring-2 ${
               disabled ? 'cursor-not-allowed' : arrastando ? 'cursor-grabbing' : 'cursor-grab'}`}
             style={{
               width: LARGURA, height: ALTURA,
-              borderColor: ligado ? `${cor}77` : 'rgba(255,255,255,.16)',
               background: ligado
-                ? `linear-gradient(90deg, ${cor}44, ${cor}22)`
+                ? `linear-gradient(90deg, ${cor}4d, ${cor}1f)`
                 : 'rgba(255,255,255,.05)',
-              boxShadow: ligado ? `inset 0 0 14px ${cor}33` : 'inset 0 1px 3px rgba(0,0,0,.4)',
+              boxShadow: ligado
+                ? `inset 0 0 0 1px ${cor}88, inset 0 0 16px ${cor}33`
+                : 'inset 0 0 0 1px rgba(255,255,255,.16), inset 0 1px 3px rgba(0,0,0,.4)',
             }}
           >
             {/* Marcas dos dois lados: o botão diz para onde arrastar */}
-            <span className="absolute inset-y-0 left-2.5 flex items-center text-[8px] font-bold tracking-widest"
-              style={{ color: ligado ? '#04140a99' : 'transparent' }}>ON</span>
-            <span className="absolute inset-y-0 right-2.5 flex items-center text-[8px] font-bold tracking-widest"
+            <span className="hud-tec absolute inset-y-0 left-2.5 flex items-center text-[8px] font-bold"
+              style={{ color: ligado ? '#04140abb' : 'transparent' }}>ON</span>
+            <span className="hud-tec absolute inset-y-0 right-2.5 flex items-center text-[8px] font-bold"
               style={{ color: ligado ? 'transparent' : '#ffffff33' }}>OFF</span>
 
             <span
-              className="absolute top-1/2 rounded-full flex items-center justify-center text-[11px] font-bold"
+              className="hud-alavanca absolute top-1/2 flex items-center justify-center text-[10px] font-bold"
               style={{
                 width: RAIO, height: RAIO, left: 3,
                 transform: `translate(${x}px, -50%)`,
@@ -137,7 +139,7 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
                 color: ligado ? '#04140a' : '#ffffff66',
               }}
             >
-              {ligado ? '✓' : '·'}
+              {ligado ? '//' : '||'}
             </span>
           </div>
         </div>
@@ -150,10 +152,10 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
         <div
           id={`ctx-${modulo.id}`}
           role="tooltip"
-          className="absolute z-30 left-0 right-0 top-full mt-2 rounded-xl border p-4 zd-pop"
+          className="hud-painel hud-4 absolute z-30 left-0 right-0 top-full mt-2 p-4 zd-pop"
           style={{
-            background: '#04120af7',
-            borderColor: `${cor}44`,
+            '--cor': `${cor}6b`,
+            '--fundo': '#04120a',
             backdropFilter: 'blur(16px)',
             boxShadow: `0 12px 40px rgba(0,0,0,.55), 0 0 22px ${cor}1f`,
           }}

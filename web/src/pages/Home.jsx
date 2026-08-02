@@ -4,6 +4,8 @@ import { api, getToken } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import ModuloSwitch from '../components/ModuloSwitch.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
+import Icon from '../components/Icon.jsx';
+import { Painel, Rotulo, Etiqueta, Botao, Estatistica } from '../components/hud/index.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HOME: a porta de entrada da ZoomDev.
@@ -20,10 +22,10 @@ import BrandLockup from '../components/BrandLockup.jsx';
 const RASCUNHO = 'zd_rascunho_ideia';
 
 const FILTROS = [
-  { id: 'todos', label: 'Tudo' },
-  { id: 'bio', label: '🌿 BioStartups' },
-  { id: 'startup', label: '🚀 Startups' },
-  { id: 'carbono', label: '🍃 Com carbono' },
+  { id: 'todos', label: 'Tudo', icone: null },
+  { id: 'bio', label: 'BioStartups', icone: 'folha' },
+  { id: 'startup', label: 'Startups', icone: 'foguete' },
+  { id: 'carbono', label: 'Com carbono', icone: 'gota' },
 ];
 
 const EXEMPLOS = [
@@ -92,14 +94,16 @@ export default function Home() {
   };
 
   return (
-    <div className={logado ? 'space-y-12' : 'min-h-screen zd-bg zd-circuit-bg'}>
+    <div className={logado ? 'space-y-12' : 'min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan'}>
       {!logado && (
         <header className="border-b border-white/5">
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 px-5 py-4">
             <BrandLockup symbolSize={34} wordmarkHeight={26} />
             <div className="flex items-center gap-2">
               <Link to="/entrar" className="text-sm text-white/60 hover:text-white px-3 py-2 transition-colors">Entrar</Link>
-              <Link to="/entrar?modo=cadastro" className="zd-gradient-btn rounded-lg px-4 py-2 text-sm">Criar conta grátis</Link>
+              <Link to="/entrar?modo=cadastro" className="hud-botao px-4 py-2 text-sm inline-flex items-center gap-2">
+                Criar conta grátis <Icon nome="setaDireita" tam={14} />
+              </Link>
             </div>
           </div>
         </header>
@@ -110,7 +114,7 @@ export default function Home() {
         {/* ── Chamada + caixa de ideação ───────────────────────────────── */}
         <section className="space-y-7">
           <div className="text-center max-w-2xl mx-auto">
-            <div className="zd-tag rounded-full px-3 py-1 inline-block mb-4">Ideia → Exit</div>
+            <Etiqueta cor="#00ff64" className="mb-4">Ideia → Exit</Etiqueta>
             <h1 className="font-heading text-3xl md:text-[42px] font-bold leading-[1.12]">
               O que você quer <span className="zd-gradient-text">construir hoje?</span>
             </h1>
@@ -120,11 +124,12 @@ export default function Home() {
             </p>
           </div>
 
-          <form onSubmit={construir} className="zd-card-glow rounded-3xl p-5 md:p-6 space-y-5 max-w-3xl mx-auto">
+          <Painel aceso quatroCantos tamanho="g" as="div" className="p-5 md:p-6 max-w-3xl mx-auto">
+          <form onSubmit={construir} className="space-y-5">
             <div className="relative">
               <textarea
                 rows={4}
-                className="zd-input w-full rounded-2xl px-5 py-4 text-[15px] resize-y leading-relaxed"
+                className="hud-campo w-full px-5 py-4 text-[15px] resize-y leading-relaxed"
                 placeholder="Ex.: uma plataforma que conecta cooperativas de açaí do Pará a compradores internacionais, com rastreabilidade da colheita à entrega e certificação de origem…"
                 value={descricao}
                 onChange={e => setDescricao(e.target.value)}
@@ -137,9 +142,7 @@ export default function Home() {
 
             {/* ── Os dois seletores ─────────────────────────────────────── */}
             <div>
-              <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider mb-2.5">
-                Módulos desta construção · arraste para ligar
-              </div>
+              <Rotulo className="mb-2.5">MÓDULOS DESTA CONSTRUÇÃO · ARRASTE PARA LIGAR</Rotulo>
               <div className="grid sm:grid-cols-2 gap-3 items-stretch">
                 {modulosInfo.map(m => (
                   <ModuloSwitch
@@ -155,14 +158,14 @@ export default function Home() {
             {erro && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{erro}</div>}
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <button type="submit" disabled={!pronto || enviando} className="zd-gradient-btn flex-1 rounded-xl py-3.5 text-sm">
-                {enviando ? 'Estruturando sua ideia…' : logado ? '✦ Construir agora →' : '✦ Construir agora: criar conta grátis →'}
-              </button>
-              <Link
-                to={logado ? '/carbonpay' : '/entrar'}
-                className="rounded-xl border border-[#00c8ff44] text-[#00c8ff] hover:bg-[#00c8ff12] transition-colors px-5 py-3.5 text-sm text-center font-semibold shrink-0"
-              >
-                🍃 Abrir a calculadora
+              <Botao type="submit" disabled={!pronto || enviando} className="flex-1 py-3.5 text-sm">
+                <Icon nome="raio" tam={15} />
+                {enviando ? 'Estruturando sua ideia…' : logado ? 'Construir agora' : 'Construir agora · criar conta grátis'}
+                {!enviando && <Icon nome="setaDireita" tam={14} />}
+              </Botao>
+              <Link to={logado ? '/carbonpay' : '/entrar'}
+                className="hud-botao-vazio px-5 py-3.5 text-sm text-center font-semibold shrink-0 inline-flex items-center justify-center gap-2">
+                <Icon nome="folha" tam={15} /> Abrir a calculadora
               </Link>
             </div>
 
@@ -176,6 +179,7 @@ export default function Home() {
                     : 'Sem módulos ligados, a IA classifica sua ideia e escolhe a trilha por você.'}
             </p>
           </form>
+          </Painel>
 
           {/* Exemplos para quem travou na primeira frase */}
           <div className="max-w-3xl mx-auto">
@@ -183,7 +187,8 @@ export default function Home() {
               <span className="text-[11px] text-white/35">Sem ideia ainda? Comece por um destes:</span>
               {EXEMPLOS.map(ex => (
                 <button key={ex.titulo} type="button" onClick={() => usarExemplo(ex)}
-                  className="rounded-full border border-white/12 hover:border-[#00ff6455] hover:bg-[#00ff640d] px-3 py-1 text-[11px] text-white/60 hover:text-white/90 transition-all">
+                  className="hud-corte border border-white/12 hover:border-[#00ff6455] hover:bg-[#00ff640d] px-3 py-1.5 text-[11px] text-white/60 hover:text-white/90 transition-all"
+                  style={{ '--c': '6px' }}>
                   {ex.titulo} <span className="text-white/25">· {ex.tag}</span>
                 </button>
               ))}
@@ -195,15 +200,12 @@ export default function Home() {
         {stats && (
           <section className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
             {[
-              { n: stats.projetos, l: 'projetos nascidos aqui' },
-              { n: stats.planos, l: 'planos de negócios gerados' },
-              { n: stats.mvps, l: 'MVPs construídos' },
-              { n: stats.biostartups, l: 'biostartups na trilha verde' },
+              { n: stats.projetos, l: 'projetos nascidos aqui', c: '#00ff64', i: 'foguete' },
+              { n: stats.planos, l: 'planos de negócios gerados', c: '#00e5ff', i: 'documento' },
+              { n: stats.mvps, l: 'MVPs construídos', c: '#ffc531', i: 'cubo' },
+              { n: stats.biostartups, l: 'biostartups na trilha verde', c: '#22c55e', i: 'folha' },
             ].map(s => (
-              <div key={s.l} className="zd-stat-card rounded-xl p-4 text-center">
-                <div className="font-heading text-2xl font-bold zd-gradient-text">{s.n}</div>
-                <div className="text-[10px] text-white/45 mt-0.5 leading-tight">{s.l}</div>
-              </div>
+              <Estatistica key={s.l} valor={s.n} rotulo={s.l} cor={s.c} icone={<Icon nome={s.i} tam={15} />} />
             ))}
           </section>
         )}
@@ -222,26 +224,23 @@ export default function Home() {
             <div className="flex gap-1.5 flex-wrap">
               {FILTROS.map(f => (
                 <button key={f.id} onClick={() => setFiltro(f.id)}
-                  className={`rounded-full px-3 py-1.5 text-[11px] font-semibold border transition-all ${
-                    filtro === f.id
-                      ? 'border-[#00ff6455] bg-[#00ff6414] text-[#00ff64]'
-                      : 'border-white/10 text-white/45 hover:text-white/80 hover:border-white/25'}`}>
-                  {f.label}
+                  className={`hud-aba hud-caps px-3 py-1.5 text-[10px] inline-flex items-center gap-1.5 ${filtro === f.id ? 'ativa' : ''}`}>
+                  {f.icone && <Icon nome={f.icone} tam={11} />}{f.label}
                 </button>
               ))}
             </div>
           </div>
 
           {vitrine.length === 0 ? (
-            <div className="zd-card rounded-2xl p-10 text-center">
-              <div className="text-3xl mb-2">🌱</div>
+            <Painel className="p-10 text-center">
+              <Icon nome="semente" tam={34} className="text-[#00ff64] mx-auto mb-3" />
               <div className="font-heading font-bold">A vitrine ainda está vazia</div>
               <p className="text-white/45 text-sm mt-1.5 max-w-md mx-auto">
                 {filtro === 'todos'
                   ? 'Nenhum projeto foi publicado ainda. Construa o seu, gere o plano e publique: o primeiro da vitrine pode ser você.'
                   : 'Nenhum projeto publicado nesse filtro por enquanto.'}
               </p>
-            </div>
+            </Painel>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
               {vitrine.map(p => <CardVitrine key={p.id} projeto={p} logado={logado} />)}
@@ -252,10 +251,10 @@ export default function Home() {
         {!logado && (
           <footer className="text-center pt-4 pb-2 border-t border-white/5">
             <p className="text-white/40 text-sm">
-              Crie sua conta gratuita e receba 500 🌿 de seiva para gerar seu primeiro plano completo.
+              Crie sua conta gratuita e receba 500 de seiva para gerar seu primeiro plano completo.
             </p>
-            <Link to="/entrar?modo=cadastro" className="zd-gradient-btn rounded-xl px-6 py-3 text-sm inline-block mt-4">
-              Começar agora →
+            <Link to="/entrar?modo=cadastro" className="hud-botao px-6 py-3 text-sm inline-flex items-center gap-2 mt-4">
+              Começar agora <Icon nome="setaDireita" tam={14} />
             </Link>
             <div className="text-[10px] text-white/20 mt-8">© 2026 ZoomDev OS · Da ideia ao exit</div>
           </footer>
@@ -282,19 +281,18 @@ function CardVitrine({ projeto: p, logado }) {
   const selos = useMemo(() => [
     p.temPlano && { t: 'Plano', c: '#00ff64' },
     p.temMvp && { t: 'MVP', c: '#00c8ff' },
-    p.modulos.carbono && { t: '🍃 Carbono', c: '#00c8ff' },
+    p.modulos.carbono && { t: 'Carbono', c: '#00e5ff' },
   ].filter(Boolean), [p]);
 
   return (
-    <article className="zd-agent-card rounded-2xl p-4 flex flex-col gap-3">
+    <Painel vivo cor={cor} className="p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border"
-              style={{ color: cor, borderColor: `${cor}44`, background: `${cor}12` }}>
-              {bio ? '🌿 BioStartup' : '🚀 Startup'}
-            </span>
-            {p.destaque && <span className="zd-tag rounded-full px-2 py-0.5">★ destaque</span>}
+            <Etiqueta cor={cor}>
+              <Icon nome={bio ? 'folha' : 'foguete'} tam={10} />{bio ? 'BioStartup' : 'Startup'}
+            </Etiqueta>
+            {p.destaque && <Etiqueta cor="#ffc531"><Icon nome="trofeu" tam={10} />destaque</Etiqueta>}
           </div>
           <h3 className="font-heading font-bold text-[15px] mt-2 leading-snug">{p.nome}</h3>
         </div>
@@ -304,10 +302,7 @@ function CardVitrine({ projeto: p, logado }) {
 
       {selos.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {selos.map(s => (
-            <span key={s.t} className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border"
-              style={{ color: s.c, borderColor: `${s.c}33`, background: `${s.c}0f` }}>{s.t}</span>
-          ))}
+          {selos.map(s => <Etiqueta key={s.t} cor={s.c}>{s.t}</Etiqueta>)}
         </div>
       )}
 
@@ -317,12 +312,12 @@ function CardVitrine({ projeto: p, logado }) {
         </div>
         <button onClick={curtir} disabled={!logado}
           title={logado ? 'Apoiar este projeto' : 'Entre para apoiar'}
-          className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] border transition-all ${
+          className={`shrink-0 hud-corte px-2.5 py-1 text-[11px] border transition-all inline-flex items-center gap-1.5 ${
             curtido ? 'border-[#00ff6455] bg-[#00ff6414] text-[#00ff64]' : 'border-white/10 text-white/45 hover:text-white/80'}
-            ${logado ? '' : 'cursor-default opacity-60'}`}>
-          {curtido ? '🌿' : '🤍'} {curtidas}
+            ${logado ? '' : 'cursor-default opacity-60'}`} style={{ '--c': '5px' }}>
+          <Icon nome="folha" tam={11} /> {curtidas}
         </button>
       </div>
-    </article>
+    </Painel>
   );
 }

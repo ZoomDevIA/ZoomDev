@@ -21,7 +21,8 @@ import Impacto from './pages/Impacto.jsx';
 import Compensacao from './pages/Compensacao.jsx';
 import Mundo from './pages/Mundo.jsx';
 import Home from './pages/Home.jsx';
-import Painel from './pages/Painel.jsx';
+import Estilo from './pages/Estilo.jsx';
+
 
 export const UserContext = createContext(null);
 export const useUser = () => useContext(UserContext);
@@ -109,6 +110,7 @@ export default function App() {
               <Route path="/carbono" element={<Navigate to="/carbonpay" replace />} />
               <Route path="/planos" element={<Planos />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/estilo" element={<Estilo />} />
               {user.isAdmin && <Route path="/admin" element={<Admin />} />}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

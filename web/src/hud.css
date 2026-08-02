@@ -1,0 +1,383 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CAMADA HUD — a linguagem visual de interface de jogo da ZoomDev OS.
+
+   Cinco ideias sustentam tudo o que vem abaixo:
+
+   1. CHANFRO no lugar de raio. Cantos cortados em 45 graus, nunca arredondados.
+   2. BORDA DE UM PIXEL luminosa, com o preenchimento escuro por dentro.
+   3. HACHURA diagonal como textura de destaque, não como enfeite.
+   4. SEGMENTAÇÃO: barras e medidores em blocos, nunca em gradiente contínuo.
+   5. LINHA-GUIA com terminador em ponto para ligar rótulo e conteúdo.
+
+   O chanfro com contorno visível não existe em CSS puro: clip-path corta a
+   borda junto. A solução aqui usa duas camadas — ::before pinta a cor da
+   linha e ::after pinta o fundo um pixel menor, deixando a borda aparecer.
+   É por isso que todo componente HUD precisa de position:relative e do
+   conteúdo em z-index 1.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Paleta estrutural */
+  --hud-ciano: #00e5ff;
+  --hud-verde: #00ff64;
+  --hud-ambar: #ffc531;
+  --hud-magenta: #ff4d8d;
+  --hud-roxo: #a855f7;
+
+  --hud-fundo: #030d07;
+  --hud-painel: #06140dd9;
+  --hud-painel-solido: #06140d;
+  --hud-linha: #00e5ff3d;
+  --hud-linha-forte: #00e5ff85;
+  --hud-texto-fraco: #9fb8ad;
+
+  /* Geometria */
+  --chanfro: 10px;
+  --chanfro-p: 6px;
+  --chanfro-g: 16px;
+}
+
+/* Posicionamento em :where() para especificidade zero: assim uma classe
+   utilitária como .absolute ou .fixed continua vencendo, e um painel HUD pode
+   ser usado como tooltip flutuante sem virar bloco no fluxo. */
+:where(.hud-painel, .hud-aba, .hud-trilho, .hud-botao, .hud-botao-vazio, .hud-barra, .hud-anel, .hud-scan) {
+  position: relative;
+}
+
+/* Formas de recorte reaproveitadas por vários componentes.
+   Chanfro na diagonal principal: canto superior esquerdo e inferior direito. */
+.hud-corte {
+  --c: var(--chanfro);
+  clip-path: polygon(
+    var(--c) 0, 100% 0,
+    100% calc(100% - var(--c)), calc(100% - var(--c)) 100%,
+    0 100%, 0 var(--c)
+  );
+}
+.hud-corte-4 {   /* os quatro cantos cortados */
+  --c: var(--chanfro);
+  clip-path: polygon(
+    var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c),
+    100% calc(100% - var(--c)), calc(100% - var(--c)) 100%,
+    var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)
+  );
+}
+
+/* ── Painel ───────────────────────────────────────────────────────────────
+   O bloco base. Borda luminosa, fundo escuro translúcido, canto chanfrado. */
+.hud-painel {
+  --cor: var(--hud-linha);
+  --fundo: var(--hud-painel);
+  --c: var(--chanfro);
+  isolation: isolate;
+}
+.hud-painel > * { position: relative; z-index: 1; }
+.hud-painel::before,
+.hud-painel::after {
+  content: '';
+  position: absolute;
+  clip-path: polygon(
+    var(--c) 0, 100% 0,
+    100% calc(100% - var(--c)), calc(100% - var(--c)) 100%,
+    0 100%, 0 var(--c)
+  );
+  transition: background .25s ease;
+}
+.hud-painel::before { inset: 0;   background: var(--cor); z-index: 0; }
+.hud-painel::after  { inset: 1px; background: var(--fundo); z-index: 0; }
+
+/* Variação de quatro cantos, para cartões maiores */
+.hud-painel.hud-4::before,
+.hud-painel.hud-4::after {
+  clip-path: polygon(
+    var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c),
+    100% calc(100% - var(--c)), calc(100% - var(--c)) 100%,
+    var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)
+  );
+}
+
+.hud-painel.hud-aceso { --cor: var(--hud-linha-forte); box-shadow: 0 0 26px #00e5ff1c; }
+.hud-painel.hud-p { --c: var(--chanfro-p); }
+.hud-painel.hud-g { --c: var(--chanfro-g); }
+
+/* Reação ao passar o mouse, para blocos clicáveis */
+.hud-vivo { transition: transform .22s ease, box-shadow .22s ease; }
+.hud-vivo:hover { transform: translateY(-2px); }
+.hud-vivo:hover.hud-painel { --cor: var(--hud-linha-forte); box-shadow: 0 10px 34px #00e5ff14; }
+
+/* ── Cantoneiras ──────────────────────────────────────────────────────────
+   Quatro cantos em L, sem moldura fechada. Oito gradientes: dois por canto. */
+.hud-cantoneira {
+  --cor: var(--hud-linha-forte);
+  --tam: 14px;
+  background-image:
+    linear-gradient(var(--cor), var(--cor)), linear-gradient(var(--cor), var(--cor)),
+    linear-gradient(var(--cor), var(--cor)), linear-gradient(var(--cor), var(--cor)),
+    linear-gradient(var(--cor), var(--cor)), linear-gradient(var(--cor), var(--cor)),
+    linear-gradient(var(--cor), var(--cor)), linear-gradient(var(--cor), var(--cor));
+  background-size:
+    var(--tam) 1px, 1px var(--tam),
+    var(--tam) 1px, 1px var(--tam),
+    var(--tam) 1px, 1px var(--tam),
+    var(--tam) 1px, 1px var(--tam);
+  background-position:
+    0 0, 0 0,
+    100% 0, 100% 0,
+    0 100%, 0 100%,
+    100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* ── Hachura ──────────────────────────────────────────────────────────────
+   Listras diagonais. Serve de textura em cabeçalho, aba ativa e barra cheia. */
+.hud-hachura {
+  background-image: repeating-linear-gradient(
+    115deg,
+    currentColor 0 2px,
+    transparent 2px 6px
+  );
+  opacity: .55;
+}
+
+/* ── Aba angular ──────────────────────────────────────────────────────────
+   O canto superior direito cortado, como as abas da referência. */
+.hud-aba {
+  --cor: var(--hud-linha);
+  --fundo: #0a1a12;
+  --texto: var(--hud-texto-fraco);
+  color: var(--texto);
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+  background: var(--fundo);
+  border: 0;
+  transition: color .2s ease, background .2s ease;
+}
+.hud-aba::after {
+  content: '';
+  position: absolute; inset: auto 0 0 0; height: 2px;
+  background: transparent;
+  transition: background .2s ease;
+}
+.hud-aba:hover { color: #dff6ec; background: #0e2419; }
+.hud-aba.ativa {
+  color: var(--hud-fundo);
+  background: var(--hud-ambar);
+  font-weight: 700;
+}
+.hud-aba.ativa::after { background: #00000030; }
+
+/* ── Barra segmentada ─────────────────────────────────────────────────────
+   Progresso em blocos. O trilho é escuro; o preenchimento herda currentColor. */
+.hud-barra {
+  height: 10px;
+  background: #0b1d14;
+  border: 1px solid var(--hud-linha);
+  overflow: hidden;
+}
+.hud-barra > i {
+  display: block;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0 5px,
+    transparent 5px 8px
+  );
+  transition: width .5s cubic-bezier(.22,1,.36,1);
+}
+
+/* ── Medidor circular ─────────────────────────────────────────────────────
+   Anel de progresso desenhado por conic-gradient, com miolo vazado. */
+.hud-anel {
+  --pct: 0;
+  --cor: var(--hud-ciano);
+  position: relative;
+  border-radius: 50%;
+  background: conic-gradient(var(--cor) calc(var(--pct) * 1%), #0e2419 0);
+  display: grid;
+  place-items: center;
+}
+.hud-anel::before {
+  content: '';
+  position: absolute; inset: 4px;
+  border-radius: 50%;
+  background: var(--hud-painel-solido);
+  border: 1px solid var(--hud-linha);
+}
+.hud-anel > * { position: relative; z-index: 1; }
+
+/* ── Rótulo com linha-guia ────────────────────────────────────────────────
+   Texto pequeno em caixa alta, linha horizontal e ponto terminador. */
+.hud-rotulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--hud-ciano);
+  white-space: nowrap;
+}
+.hud-rotulo::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  min-width: 16px;
+  background: linear-gradient(90deg, var(--hud-linha-forte), transparent);
+  position: relative;
+}
+.hud-rotulo.ponto::after {
+  background:
+    radial-gradient(circle at 100% 50%, currentColor 0 2px, transparent 2px),
+    linear-gradient(90deg, var(--hud-linha-forte), #00e5ff1a);
+}
+
+/* ── Divisor angular ──────────────────────────────────────────────────────
+   O separador de seção das referências: asas laterais e um miolo chanfrado. */
+.hud-divisor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--hud-ciano);
+}
+.hud-divisor::before,
+.hud-divisor::after {
+  content: '';
+  flex: 1;
+  height: 6px;
+  background:
+    linear-gradient(90deg, transparent, #00e5ff26),
+    repeating-linear-gradient(115deg, #00e5ff33 0 2px, transparent 2px 5px);
+  clip-path: polygon(0 40%, 100% 0, 100% 60%, 0 100%);
+}
+.hud-divisor::after { transform: scaleX(-1); }
+
+/* ── Escaneamento e grade ─────────────────────────────────────────────────
+   Duas camadas sutis no fundo da aplicação. Ficam atrás de tudo e não
+   capturam clique. */
+
+.hud-scan::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(0deg, #00000026 0 1px, transparent 1px 3px);
+  opacity: .5;
+}
+.hud-grade {
+  background-image:
+    linear-gradient(#00e5ff08 1px, transparent 1px),
+    linear-gradient(90deg, #00e5ff08 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+/* ── Marcador de estado ───────────────────────────────────────────────────
+   Losango pulsante para "ligado", "ao vivo", "em campo". */
+.hud-pulso {
+  width: 7px; height: 7px;
+  background: currentColor;
+  transform: rotate(45deg);
+  animation: hudPulso 1.8s ease-in-out infinite;
+}
+@keyframes hudPulso {
+  0%, 100% { opacity: 1;  box-shadow: 0 0 6px currentColor; }
+  50%      { opacity: .4; box-shadow: 0 0 14px currentColor; }
+}
+
+/* ── Chave alternadora ────────────────────────────────────────────────────
+   Trilho e alavanca do seletor de módulos, agora com geometria angular. */
+.hud-trilho {
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  transition: background .28s ease, box-shadow .28s ease;
+}
+.hud-alavanca {
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+
+/* ── Tipografia de interface ──────────────────────────────────────────────
+   Rótulos técnicos em caixa alta com espaçamento largo. */
+.hud-tec {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .08em;
+}
+.hud-caps {
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-weight: 700;
+}
+
+/* ── Botão ────────────────────────────────────────────────────────────────
+   Ação primária: chanfro, contorno luminoso e varredura no hover. */
+.hud-botao {
+  overflow: hidden;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  background: linear-gradient(135deg, var(--hud-verde), var(--hud-ciano));
+  color: #04140a;
+  font-weight: 700;
+  letter-spacing: .04em;
+  transition: filter .2s ease, transform .2s ease;
+}
+.hud-botao:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
+.hud-botao:disabled { opacity: .4; cursor: not-allowed; }
+.hud-botao::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 40%, #ffffff5c 50%, transparent 60%);
+  transform: translateX(-120%);
+  transition: transform .55s ease;
+}
+.hud-botao:hover:not(:disabled)::after { transform: translateX(120%); }
+
+.hud-botao-vazio {
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  background: #0a1a12;
+  color: var(--hud-ciano);
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--hud-linha);
+  transition: box-shadow .2s ease, background .2s ease, color .2s ease;
+}
+.hud-botao-vazio:hover:not(:disabled) {
+  background: #0e2419;
+  box-shadow: inset 0 0 0 1px var(--hud-linha-forte);
+  color: #b9f2ff;
+}
+
+/* ── Entrada de texto ─────────────────────────────────────────────────────*/
+.hud-campo {
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  background: #07170f;
+  box-shadow: inset 0 0 0 1px var(--hud-linha);
+  color: #eafff5;
+  transition: box-shadow .2s ease;
+}
+.hud-campo:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--hud-linha-forte), 0 0 0 3px #00e5ff14;
+}
+.hud-campo::placeholder { color: #ffffff3d; }
+
+/* ── Etiqueta ─────────────────────────────────────────────────────────────*/
+.hud-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  background: #00e5ff14;
+  box-shadow: inset 0 0 0 1px #00e5ff33;
+  color: var(--hud-ciano);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Preferência do sistema por menos movimento: desliga as animações do HUD. */
+@media (prefers-reduced-motion: reduce) {
+  .hud-pulso { animation: none; }
+  .hud-botao::after { display: none; }
+  .hud-vivo:hover { transform: none; }
+  .hud-barra > i { transition: none; }
+}
