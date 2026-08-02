@@ -15,6 +15,58 @@ import { CATALOGO } from '../services/elenco.js';
 
 export const diagnosticoRouter = Router();
 
+// Chave real da Anthropic fica na casa dos 100+ caracteres. O corte em 40 é
+// generoso de propósito: pega o valor truncado sem depender do formato exato.
+const COMPRIMENTO_MINIMO_CHAVE = 40;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TESTE REAL DA CHAVE — /api/status?testar=ia
+//
+// Formato certo não é o mesmo que chave válida: só uma chamada de verdade
+// distingue "colei errado" de "a conta está sem crédito". O teste gasta um
+// punhado de tokens, então o resultado fica em cache por 5 minutos — a rota é
+// pública e não pode virar torneira de custo.
+// ═══════════════════════════════════════════════════════════════════════════
+const CACHE_TESTE_MS = 5 * 60 * 1000;
+let ultimoTeste = null;   // { em, resultado }
+
+async function testarChave() {
+  if (ultimoTeste && Date.now() - ultimoTeste.em < CACHE_TESTE_MS) {
+    return { ...ultimoTeste.resultado, cache: true, testadoEm: new Date(ultimoTeste.em).toISOString() };
+  }
+  let resultado;
+  if (!config.hasApiKey) {
+    resultado = { ok: false, situacao: 'sem_chave', mensagem: 'ANTHROPIC_API_KEY não está definida neste processo.' };
+  } else {
+    try {
+      const { default: Anthropic } = await import('@anthropic-ai/sdk');
+      const r = await new Anthropic().messages.create({
+        model: config.model,
+        max_tokens: 4,
+        messages: [{ role: 'user', content: 'ok' }],
+      });
+      resultado = {
+        ok: true,
+        situacao: 'valida',
+        mensagem: `A chave respondeu. Modelo ${r.model}. A plataforma está em modo IA de verdade.`,
+        modelo: r.model,
+      };
+    } catch (e) {
+      const status = e?.status || e?.response?.status || null;
+      const porStatus = {
+        401: ['chave_invalida', 'A Anthropic recusou a chave (401). Ela foi revogada, está incompleta ou pertence a outra organização. Gere uma nova em console.anthropic.com → API Keys.'],
+        403: ['sem_permissao', 'A chave existe mas não tem permissão para este modelo (403). Confira o workspace da chave.'],
+        404: ['modelo_desconhecido', `O modelo "${config.model}" não foi encontrado (404). Ajuste a variável ZOOMDEV_MODEL.`],
+        429: ['sem_credito', 'Chave válida, mas a conta está sem crédito ou atingiu o limite de uso (429). Adicione crédito em console.anthropic.com → Billing.'],
+      };
+      const [situacao, mensagem] = porStatus[status] || ['erro', `Falha ao falar com a Anthropic: ${e.message}`];
+      resultado = { ok: false, situacao, mensagem, status };
+    }
+  }
+  ultimoTeste = { em: Date.now(), resultado };
+  return { ...resultado, cache: false, testadoEm: new Date().toISOString() };
+}
+
 /** Mostra só o suficiente para conferir sem vazar o valor. */
 function pista(valor, { inicio = 0, fim = 4 } = {}) {
   if (!valor) return null;
@@ -46,8 +98,9 @@ function verificarDisco() {
   return resultado;
 }
 
-diagnosticoRouter.get('/status', (_req, res) => {
+diagnosticoRouter.get('/status', async (req, res) => {
   const chaveIA = process.env.ANTHROPIC_API_KEY || '';
+  const testeIA = req.query.testar === 'ia' ? await testarChave() : null;
   const disco = verificarDisco();
   const usuarios = Object.values(store.users);
   const adminDefinido = config.adminEmail;
@@ -66,13 +119,19 @@ diagnosticoRouter.get('/status', (_req, res) => {
     distOk ? 'web/dist encontrado e sendo servido' : 'web/dist ausente — o build não rodou', true);
 
   // ── IA ──
-  const formatoChaveOk = chaveIA.startsWith('sk-ant-');
-  add('ia', 'Inteligência artificial', config.hasApiKey && formatoChaveOk,
+  // Duas checagens antes de qualquer chamada: o prefixo e o comprimento.
+  // Chave real da Anthropic passa de 100 caracteres; algo com 10 é um valor
+  // truncado na hora de colar — e o prefixo sozinho não pega esse caso.
+  const prefixoOk = chaveIA.startsWith('sk-ant-');
+  const tamanhoOk = chaveIA.length >= COMPRIMENTO_MINIMO_CHAVE;
+  add('ia', 'Inteligência artificial', config.hasApiKey && prefixoOk && tamanhoOk,
     !config.hasApiKey
       ? 'ANTHROPIC_API_KEY não definida — a plataforma roda em modo demo (tudo funciona, com geradores determinísticos)'
-      : !formatoChaveOk
+      : !prefixoOk
         ? 'ANTHROPIC_API_KEY definida, mas não começa com "sk-ant-" — confira se colou a chave certa'
-        : `Ativa · modelo ${config.model} · chave ${pista(chaveIA, { inicio: 7 })}`);
+        : !tamanhoOk
+          ? `ANTHROPIC_API_KEY tem só ${chaveIA.length} caracteres. Uma chave real da Anthropic passa de 100 — o valor foi cortado na hora de colar. Copie de novo pelo botão de copiar do console.anthropic.com e cole inteiro, sem aspas e sem espaço no fim.`
+          : `Ativa · modelo ${config.model} · chave ${pista(chaveIA, { inicio: 12 })} (${chaveIA.length} caracteres). Confirme com /api/status?testar=ia`);
 
   // ── Persistência ──
   add('disco', 'Persistência dos dados',
@@ -124,6 +183,7 @@ diagnosticoRouter.get('/status', (_req, res) => {
     resumo: erros.length ? 'Há problemas críticos' : atencoes.length ? 'Funcionando, com pontos de atenção' : 'Tudo certo',
     pronto: erros.length === 0,
     checagens,
+    ...(testeIA ? { testeIA } : {}),
     plataforma: {
       ambiente: process.env.RAILWAY_ENVIRONMENT_NAME || process.env.RENDER_SERVICE_NAME || 'local',
       versaoNode: process.version,
