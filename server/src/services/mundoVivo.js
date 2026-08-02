@@ -5,6 +5,8 @@
 // ecossistema do usuário. Não é decoração: quando Curupira fala de área
 // degradada, é porque existe um projeto de bioeconomia sem linha de base.
 // ═══════════════════════════════════════════════════════════════════════════
+import fs from 'node:fs';
+import path from 'node:path';
 import { store } from '../store.js';
 import { agentesAtivos } from './elenco.js';
 import { radarProjeto } from './unicornio.js';
@@ -22,6 +24,34 @@ export const ESTACOES = [
 ];
 
 const rnd = (seed) => { const x = Math.sin(seed) * 10000; return x - Math.floor(x); };
+
+// ── Avatares ──────────────────────────────────────────────────────────────
+// O rosto do personagem voxel usa o avatar oficial do agente. Enquanto a arte
+// de um agente não existe, o emoji vira o rosto — e o PNG é adotado sozinho
+// assim que o arquivo aparecer, sem mexer em código.
+const DIR_AVATARES = path.resolve(process.cwd(), 'web/public/assets/agents');
+
+let cacheAvatares = null;
+function avataresDisponiveis() {
+  try {
+    const mtime = fs.statSync(DIR_AVATARES).mtimeMs;
+    if (!cacheAvatares || cacheAvatares.mtime !== mtime) {
+      cacheAvatares = {
+        mtime,
+        ids: new Set(fs.readdirSync(DIR_AVATARES)
+          .filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
+          .map(f => f.replace(/\.[^.]+$/, ''))),
+      };
+    }
+    return cacheAvatares.ids;
+  } catch {
+    return new Set();
+  }
+}
+
+export function avatarDe(agenteId) {
+  return avataresDisponiveis().has(agenteId) ? `/assets/agents/${agenteId}.png` : null;
+}
 
 /**
  * Monta a cena: agentes ativos posicionados em suas estações, com falas
@@ -81,6 +111,7 @@ export function cena(user) {
       const seed = aid.charCodeAt(0) * 37 + i * 13;
       habitantes.push({
         id: ag.id, nome: ag.nome, emoji: ag.emoji, cor: ag.cor || '#00ff64', casta: ag.casta,
+        avatar: avatarDe(ag.id),
         estacao: est.id, estacaoNome: est.nome,
         // posição base ao redor da estação
         x: est.x + (i % 3 - 1) * 2.4 + (rnd(seed) - 0.5),
@@ -88,7 +119,7 @@ export function cena(user) {
         fala: falas[ag.id] || `${ag.papel}.`,
         // ritmo próprio de caminhada, para o vale não parecer coreografado
         velocidade: 0.5 + rnd(seed + 2) * 0.5,
-        raio: 1.6 + rnd(seed + 3) * 1.4,
+        raio: 1.1 + rnd(seed + 3) * 0.9,
         fase: rnd(seed + 4) * Math.PI * 2,
       });
     });

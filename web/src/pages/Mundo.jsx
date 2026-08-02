@@ -31,31 +31,115 @@ const PRESETS = {
   alta: { pixelRatio: 1.75, sombras: true, arvores: 70, grama: 140, nevoa: 76, sombraMapa: 2048 },
 };
 
-// Constrói um "boneco" voxel no estilo bloco
-function criarAgenteVoxel(cor) {
+// ── Texturas de rosto ─────────────────────────────────────────────────────
+
+const cacheTextura = new Map();
+
+/** Rosto de emergência: o emoji do agente vira o rosto, sobre a cor da marca. */
+function texturaEmoji(emoji, cor) {
+  const chave = `emoji:${emoji}:${cor}`;
+  if (cacheTextura.has(chave)) return cacheTextura.get(chave);
+
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  const base = new THREE.Color(cor);
+  const grad = ctx.createLinearGradient(0, 0, 0, 128);
+  grad.addColorStop(0, `#${base.clone().multiplyScalar(0.55).getHexString()}`);
+  grad.addColorStop(1, `#${base.clone().multiplyScalar(0.25).getHexString()}`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+  ctx.font = '74px "Segoe UI Emoji", "Noto Color Emoji", serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, 64, 70);
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  cacheTextura.set(chave, t);
+  return t;
+}
+
+/** Plaquinha com o nome, sempre voltada para a câmera. */
+function texturaNome(nome, cor) {
+  const chave = `nome:${nome}`;
+  if (cacheTextura.has(chave)) return cacheTextura.get(chave);
+
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = 'rgba(4,14,10,.78)';
+  ctx.beginPath();
+  ctx.roundRect(4, 10, 248, 44, 12);
+  ctx.fill();
+  ctx.strokeStyle = cor;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#eaffea';
+  ctx.font = 'bold 26px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(nome.slice(0, 16), 128, 33);
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  cacheTextura.set(chave, t);
+  return t;
+}
+
+/**
+ * Boneco voxel com o AVATAR OFICIAL do agente aplicado à frente da cabeça —
+ * a mesma arte que aparece nos cards, agora em 3D. Sem avatar, o emoji assume
+ * o rosto e o PNG é adotado sozinho assim que o arquivo existir.
+ */
+function criarAgenteVoxel(cor, { avatar, emoji, nome } = {}) {
   const g = new THREE.Group();
+  const corBase = new THREE.Color(cor);
+
   const corpo = new THREE.Mesh(
-    new THREE.BoxGeometry(0.6, 0.75, 0.35),
-    new THREE.MeshLambertMaterial({ color: new THREE.Color(cor) })
+    new THREE.BoxGeometry(0.62, 0.75, 0.36),
+    new THREE.MeshLambertMaterial({ color: corBase })
   );
   corpo.position.y = 0.75;
   corpo.castShadow = true;
   g.add(corpo);
 
-  const cabeca = new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.5, 0.5),
-    new THREE.MeshLambertMaterial({ color: 0xf0d8b0 })
-  );
-  cabeca.position.y = 1.4;
+  // Cabeça: 6 materiais — o índice 4 é a face frontal (+Z), onde vai o rosto.
+  const lateral = () => new THREE.MeshLambertMaterial({ color: corBase.clone().multiplyScalar(0.42) });
+  const rosto = new THREE.MeshLambertMaterial({ map: texturaEmoji(emoji || '•', cor) });
+  const materiais = [lateral(), lateral(), lateral(), lateral(), rosto, lateral()];
+
+  const cabeca = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.62, 0.62), materiais);
+  cabeca.position.y = 1.44;
   cabeca.castShadow = true;
   g.add(cabeca);
 
-  // olhos (dois blocos escuros) — dão vida ao boneco
-  const olhoMat = new THREE.MeshBasicMaterial({ color: 0x0a1a0e });
-  for (const dx of [-0.12, 0.12]) {
-    const olho = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.04), olhoMat);
-    olho.position.set(dx, 1.45, 0.26);
-    g.add(olho);
+  // Avatar oficial substitui o rosto assim que a imagem carrega
+  if (avatar) {
+    new THREE.TextureLoader().load(
+      avatar,
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        // enquadra o topo da arte (é onde está o rosto nos avatares)
+        tex.repeat.set(1, 0.62);
+        tex.offset.set(0, 0.38);
+        rosto.map = tex;
+        rosto.needsUpdate = true;
+      },
+      undefined,
+      () => { /* mantém o emoji */ },
+    );
+  }
+
+  // Plaquinha com o nome, flutuando acima
+  if (nome) {
+    const placa = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.5, 0.375),
+      new THREE.MeshBasicMaterial({ map: texturaNome(nome, cor), transparent: true, depthWrite: false })
+    );
+    placa.position.y = 2.16;
+    g.add(placa);
+    g.userData.placa = placa;
   }
 
   // pernas e braços
@@ -84,7 +168,8 @@ function criarAgenteVoxel(cor) {
   aura.position.y = 0.03;
   g.add(aura);
 
-  g.userData = { pernas, bracos, aura };
+  // mescla: a plaquinha já foi registrada acima e não pode ser sobrescrita
+  Object.assign(g.userData, { pernas, bracos, aura });
   return g;
 }
 
@@ -282,7 +367,9 @@ export default function Mundo() {
     // ── Agentes ──
     const agentes = [];
     for (const h of cena.habitantes) {
-      const mesh = criarAgenteVoxel(h.cor);
+      const mesh = criarAgenteVoxel(h.cor, { avatar: h.avatar, emoji: h.emoji, nome: h.nome });
+      // escala generosa: o avatar é o protagonista da cena, precisa ser legível
+      mesh.scale.setScalar(1.6);
       mesh.position.set(h.x, 0.5, h.z);
       scene.add(mesh);
       agentes.push({ ...h, mesh, baseX: h.x, baseZ: h.z });
@@ -307,16 +394,16 @@ export default function Mundo() {
     renderer.domElement.addEventListener('pointerdown', aoClicar);
 
     // ── Câmera orbital com arraste ──
-    let angulo = 0.6, altura = 13, distancia = 27, arrastando = false, ultimoX = 0, ultimoY = 0, autoGira = true;
+    let angulo = 0.6, altura = 11.5, distancia = 25, arrastando = false, ultimoX = 0, ultimoY = 0, autoGira = true;
     const onDown = (e) => { arrastando = true; autoGira = false; ultimoX = e.clientX; ultimoY = e.clientY; };
     const onUp = () => { arrastando = false; };
     const onMove = (e) => {
       if (!arrastando) return;
       angulo -= (e.clientX - ultimoX) * 0.006;
-      altura = Math.max(8, Math.min(44, altura - (e.clientY - ultimoY) * 0.12));
+      altura = Math.max(3.5, Math.min(44, altura - (e.clientY - ultimoY) * 0.12));
       ultimoX = e.clientX; ultimoY = e.clientY;
     };
-    const onWheel = (e) => { e.preventDefault(); distancia = Math.max(16, Math.min(64, distancia + e.deltaY * 0.03)); };
+    const onWheel = (e) => { e.preventDefault(); distancia = Math.max(9, Math.min(64, distancia + e.deltaY * 0.03)); };
     renderer.domElement.addEventListener('pointerdown', onDown);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointermove', onMove);
@@ -325,6 +412,7 @@ export default function Mundo() {
     // ── Loop ──
     // começa em pleno dia (o ciclo escurece depois, não antes)
     let raf, t = Math.PI / 2 / 0.045, frames = 0, ultimoFps = performance.now();
+    let anguloCamera = 0;
     const relogio = new THREE.Clock();
 
     const animar = () => {
@@ -349,6 +437,8 @@ export default function Mundo() {
         b1.rotation.x = -passo * 0.7; b2.rotation.x = passo * 0.7;
         a.mesh.position.y = 0.5 + Math.abs(Math.sin(t * a.velocidade * 7)) * 0.05;
         a.mesh.userData.aura.rotation.z += dt * 0.8;
+        // a plaquinha do nome cancela a rotação do corpo e encara a câmera
+        if (a.mesh.userData.placa) a.mesh.userData.placa.rotation.y = -a.mesh.rotation.y + anguloCamera;
       }
 
       // ciclo dia/noite lento
@@ -367,8 +457,9 @@ export default function Mundo() {
       brilhoRio.material.opacity = 0.14 + Math.sin(t * 1.1) * 0.07;
 
       if (autoGira) angulo += dt * 0.06;
+      anguloCamera = Math.PI / 2 - angulo;
       camera.position.set(Math.cos(angulo) * distancia, altura, Math.sin(angulo) * distancia);
-      camera.lookAt(0, 2, 0);
+      camera.lookAt(0, 2.6, 0);
 
       renderer.render(scene, camera);
 
@@ -415,6 +506,12 @@ export default function Mundo() {
           </p>
         </div>
         <div className="flex gap-2 items-center text-[11px] text-white/45">
+          {cena && (
+            <span className="zd-tag rounded-full px-2.5 py-1"
+              title="Agentes com avatar oficial aplicado ao rosto do personagem">
+              🎨 {cena.habitantes.filter(h => h.avatar).length}/{cena.habitantes.length} avatares
+            </span>
+          )}
           <span className="zd-tag rounded-full px-2.5 py-1">qualidade {qualidade}</span>
           {fps > 0 && <span className="zd-tag-blue rounded-full px-2.5 py-1">{fps} fps</span>}
         </div>
@@ -480,10 +577,18 @@ export default function Mundo() {
                       <span className="text-xs font-bold">{e.nome}</span>
                     </div>
                     <div className="text-[10px] text-white/40 mt-1">{n.length} agente(s)</div>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
+                    <div className="flex flex-wrap gap-1.5 mt-2">
                       {n.map(h => (
-                        <span key={h.id} className="text-[9px] rounded px-1.5 py-0.5 border"
-                          style={{ borderColor: `${h.cor}44`, color: h.cor }}>{h.emoji} {h.nome}</span>
+                        <span key={h.id} className="flex items-center gap-1 text-[9px] rounded-full pl-0.5 pr-2 py-0.5 border"
+                          style={{ borderColor: `${h.cor}44`, color: h.cor }} title={h.avatar ? h.nome : `${h.nome} — avatar em produção`}>
+                          {h.avatar ? (
+                            <img src={h.avatar} alt="" className="w-4 h-4 rounded-full object-cover object-top" />
+                          ) : (
+                            <span className="w-4 h-4 rounded-full flex items-center justify-center text-[8px]"
+                              style={{ background: `${h.cor}22` }}>{h.emoji}</span>
+                          )}
+                          {h.nome}
+                        </span>
                       ))}
                     </div>
                   </div>
