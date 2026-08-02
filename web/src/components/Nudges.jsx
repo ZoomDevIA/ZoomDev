@@ -33,7 +33,7 @@ export default function Nudges() {
           <div key={n.id} className="zd-card-glow rounded-xl p-4 flex gap-3 relative">
             <button onClick={() => dispensar(n)} title="Dispensar"
               className="absolute top-2.5 right-3 text-white/30 hover:text-white/70 text-sm transition-colors">✕</button>
-            <AgentAvatar agente={{ id: n.agenteId, nome: n.agenteNome, emoji: n.agenteEmoji }} size="w-11 h-11" rounded="rounded-xl" emojiSize="text-xl" centralizar={false} />
+            <AgentAvatar agente={{ id: n.agenteId, nome: n.agenteNome, emoji: n.agenteEmoji }} size="w-12 h-14" emojiSize="text-xl" centralizar={false} />
             <div className="min-w-0 pr-4">
               <div className="text-[10px] zd-green font-semibold">{n.agenteEmoji} {n.agenteNome} antecipou:</div>
               <div className="text-sm font-bold mt-0.5">{n.titulo}</div>

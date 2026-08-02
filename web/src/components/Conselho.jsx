@@ -118,7 +118,7 @@ export default function Conselho({ projetoId }) {
                 <div key={p.agenteId} className="rounded-xl bg-white/[.04] border border-white/8 overflow-hidden">
                   <button onClick={() => setExpandido(x => x === p.agenteId ? null : p.agenteId)}
                     className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/[.03] transition-colors">
-                    <AgentAvatar agente={p} size="w-9 h-9" rounded="rounded-lg" emojiSize="text-base" centralizar={false} />
+                    <AgentAvatar agente={p} size="w-10 h-12" emojiSize="text-base" centralizar={false} />
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-bold">{p.nome}</div>
                       <div className="text-[11px] text-white/50 line-clamp-1">{p.parecer}</div>

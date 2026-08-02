@@ -377,7 +377,7 @@ function PicsAgentes() {
         <button key={p.agenteId} onClick={() => setAberto(a => a === p.agenteId ? null : p.agenteId)}
           className={`zd-card rounded-xl p-4 text-left hover:border-[#00ff6444] transition-colors ${p.isBio ? 'border-[#00ff6426]' : ''}`}>
           <div className="flex items-center gap-3">
-            <AgentAvatar agente={{ id: p.agenteId, nome: p.nome, emoji: p.emoji }} size="w-10 h-10" rounded="rounded-lg" emojiSize="text-lg" centralizar={false} />
+            <AgentAvatar agente={{ id: p.agenteId, nome: p.nome, emoji: p.emoji }} size="w-10 h-12" emojiSize="text-lg" centralizar={false} />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold">{p.nome} <span className="text-[10px] text-white/35 font-normal">PIC v{p.versao}</span></div>
               <div className="text-[11px] text-white/45">{p.categoria}{p.isBio ? ' · 🌿 bio' : ''}</div>

@@ -89,7 +89,7 @@ export default function Bioeconomia() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {agentes.bio.map(a => (
               <div key={a.id} className="zd-agent-card rounded-2xl p-4 text-center border-[#00ff6433]">
-                <AgentAvatar agente={a} size="w-24 h-24" />
+                <AgentAvatar agente={a} size="w-24 h-28" />
                 <div className="font-heading font-bold text-sm mt-2.5">{a.nome}</div>
                 <div className="text-[11px] text-white/50 mt-1">{a.papel}</div>
               </div>

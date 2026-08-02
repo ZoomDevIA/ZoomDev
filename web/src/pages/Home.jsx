@@ -115,7 +115,7 @@ export default function Home() {
         <section className="space-y-7">
           <div className="text-center max-w-2xl mx-auto">
             <Etiqueta cor="#00ff64" className="mb-4">Ideia → Exit</Etiqueta>
-            <h1 className="font-heading text-3xl md:text-[42px] font-bold leading-[1.12]">
+            <h1 className="font-heading text-[26px] sm:text-3xl md:text-[42px] font-bold leading-[1.12]">
               O que você quer <span className="zd-gradient-text">construir hoje?</span>
             </h1>
             <p className="text-white/55 text-sm md:text-base mt-3 leading-relaxed">
@@ -128,21 +128,23 @@ export default function Home() {
           <form onSubmit={construir} className="space-y-5">
             <div className="relative">
               <textarea
-                rows={4}
-                className="hud-campo w-full px-5 py-4 text-[15px] resize-y leading-relaxed"
+                rows={5}
+                className="hud-campo w-full px-4 sm:px-5 pt-4 pb-8 text-[14px] sm:text-[15px] resize-y leading-relaxed"
                 placeholder="Ex.: uma plataforma que conecta cooperativas de açaí do Pará a compradores internacionais, com rastreabilidade da colheita à entrega e certificação de origem…"
                 value={descricao}
                 onChange={e => setDescricao(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) construir(e); }}
               />
-              <div className="absolute bottom-3 right-4 text-[10px] text-white/25 pointer-events-none">
+              <div className="absolute bottom-2.5 right-4 text-[10px] text-white/25 pointer-events-none">
                 {descricao.length < 20 ? `${20 - descricao.length} caracteres para começar` : '⌘ + Enter'}
               </div>
             </div>
 
             {/* ── Os dois seletores ─────────────────────────────────────── */}
             <div>
-              <Rotulo className="mb-2.5">MÓDULOS DESTA CONSTRUÇÃO · ARRASTE PARA LIGAR</Rotulo>
+              <Rotulo className="mb-2.5">
+                MÓDULOS <span className="hidden sm:inline">DESTA CONSTRUÇÃO </span>· ARRASTE PARA LIGAR
+              </Rotulo>
               <div className="grid sm:grid-cols-2 gap-3 items-stretch">
                 {modulosInfo.map(m => (
                   <ModuloSwitch

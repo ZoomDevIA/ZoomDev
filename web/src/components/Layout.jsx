@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useUser } from '../App.jsx';
 import { api, setToken } from '../lib/api.js';
 import BrandLockup from './BrandLockup.jsx';
+import Logo from './Logo.jsx';
 import Copiloto from './Copiloto.jsx';
 import Icon from './Icon.jsx';
 import { Painel, Etiqueta, Pulso } from './hud/index.jsx';
@@ -10,9 +11,16 @@ import { Painel, Etiqueta, Pulso } from './hud/index.jsx';
 // ═══════════════════════════════════════════════════════════════════════════
 // LAYOUT — o chassi da aplicação na linguagem HUD.
 //
-// Barra lateral com marcador angular no item ativo, topo com a leitura de
-// estado do fundador (seiva, nível, sequência) e o painel da Maiá no rodapé.
-// Nenhum emoji na navegação: só glifos da biblioteca.
+// Três formatos, um componente:
+//
+//   CELULAR   barra lateral vira gaveta sobre o conteúdo, aberta pelo botão
+//             de menu no topo. Conteúdo ocupa a largura inteira.
+//   TABLET    barra lateral já visível, mas recolhida por padrão: só ícones,
+//             porque 768px não sobra para 240px de menu fixo.
+//   DESKTOP   barra lateral aberta, recolhível pelo botão no rodapé dela.
+//
+// A escolha de recolher fica em localStorage: quem gosta do modo compacto não
+// precisa reajustar a cada visita.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const MENU = [
@@ -42,6 +50,7 @@ const TABS = [
 ];
 
 const CORTE_ABA = 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)';
+const CHAVE_RECOLHIDO = 'zd_menu_recolhido';
 
 export default function Layout({ children }) {
   const { user, setUser } = useUser();
@@ -49,6 +58,12 @@ export default function Layout({ children }) {
   const [notifAbertas, setNotifAbertas] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
   const [menuMovel, setMenuMovel] = useState(false);
+  const [recolhido, setRecolhido] = useState(() => {
+    const salvo = localStorage.getItem(CHAVE_RECOLHIDO);
+    // Sem preferência salva, tablet começa recolhido e desktop começa aberto.
+    if (salvo === null) return window.innerWidth < 1100;
+    return salvo === '1';
+  });
   const notifRef = useRef(null);
 
   const capacidades = user.capacidades || [];
@@ -64,28 +79,38 @@ export default function Layout({ children }) {
   ];
 
   useEffect(() => { api.notificacoes().then(setNotificacoes).catch(() => {}); }, []);
+  useEffect(() => { localStorage.setItem(CHAVE_RECOLHIDO, recolhido ? '1' : '0'); }, [recolhido]);
   useEffect(() => {
     const fechar = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) setNotifAbertas(false); };
     document.addEventListener('mousedown', fechar);
     return () => document.removeEventListener('mousedown', fechar);
   }, []);
+  // Rota trocada fecha a gaveta: no celular ela cobre a tela inteira.
+  useEffect(() => { setMenuMovel(false); }, [children]);
 
   const sair = () => { setToken(null); setUser(null); nav('/'); };
 
-  const navegacao = (
-    <nav className="flex-1 mt-1 overflow-y-auto">
+  // `compacto` vale só na barra fixa; a gaveta do celular é sempre completa.
+  const navegacao = (compacto) => (
+    <nav className="flex-1 mt-1 overflow-y-auto overflow-x-hidden">
       {itens.map(m => (
         <NavLink key={m.to} to={m.to} end={m.to === '/'}
           onClick={() => setMenuMovel(false)}
-          className={({ isActive }) => `zd-menu-item flex items-center gap-3 px-5 py-2.5 text-[13px] font-medium ${isActive ? 'active' : ''}`}>
+          title={compacto ? m.label : undefined}
+          className={({ isActive }) => `zd-menu-item flex items-center gap-3 py-2.5 text-[13px] font-medium ${
+            compacto ? 'px-0 justify-center' : 'px-5'} ${isActive ? 'active' : ''}`}>
           {({ isActive }) => (
             <>
-              <Icon nome={m.icone} tam={17} className={isActive ? '' : 'opacity-60'} />
-              <span className="flex-1">{m.label}</span>
-              {m.selo && (
-                <Etiqueta cor={isActive ? '#00ff64' : '#00e5ff'} className="!text-[8px] !py-0.5 !px-1.5">
-                  {m.selo}
-                </Etiqueta>
+              <Icon nome={m.icone} tam={compacto ? 19 : 17} className={isActive ? '' : 'opacity-60'} />
+              {!compacto && (
+                <>
+                  <span className="flex-1 truncate">{m.label}</span>
+                  {m.selo && (
+                    <Etiqueta cor={isActive ? '#00ff64' : '#00e5ff'} className="!text-[8px] !py-0.5 !px-1.5">
+                      {m.selo}
+                    </Etiqueta>
+                  )}
+                </>
               )}
             </>
           )}
@@ -94,65 +119,95 @@ export default function Layout({ children }) {
     </nav>
   );
 
-  const rodapeMaia = (
-    <div className="p-4 border-t border-white/5">
-      <Painel tamanho="p" className="p-3 flex items-center gap-3">
-        <img src="/assets/agents/faces/maia.png" alt="Maiá"
-          className="w-10 h-10 object-cover object-center shrink-0 hud-corte"
-          style={{ '--c': '7px', boxShadow: '0 0 14px #00ff6440' }} />
-        <div className="min-w-0">
-          <div className="text-xs font-bold truncate">Maiá</div>
-          <div className="hud-tec text-[8.5px] text-white/35">INTELIGÊNCIA REGENERATIVA</div>
-          <div className="text-[10px] zd-green flex items-center gap-1.5 mt-1">
-            <Pulso cor="#00ff64" /> em campo
+  const rodape = (compacto) => (
+    <div className={`border-t border-white/5 ${compacto ? 'p-2' : 'p-4'}`}>
+      {compacto ? (
+        <img src="/assets/agents/faces/maia.png" alt="Maiá" title="Maiá · Inteligência Regenerativa"
+          className="w-9 h-9 object-cover object-center mx-auto hud-corte"
+          style={{ '--c': '6px', boxShadow: '0 0 12px #00ff6440' }} />
+      ) : (
+        <Painel tamanho="p" className="p-3 flex items-center gap-3">
+          <img src="/assets/agents/faces/maia.png" alt="Maiá"
+            className="w-10 h-10 object-cover object-center shrink-0 hud-corte"
+            style={{ '--c': '7px', boxShadow: '0 0 14px #00ff6440' }} />
+          <div className="min-w-0">
+            <div className="text-xs font-bold truncate">Maiá</div>
+            <div className="hud-tec text-[8.5px] text-white/35">INTELIGÊNCIA REGENERATIVA</div>
+            <div className="text-[10px] zd-green flex items-center gap-1.5 mt-1">
+              <Pulso cor="#00ff64" /> em campo
+            </div>
           </div>
-        </div>
-      </Painel>
-      <div className="hud-tec text-[9px] text-white/20 mt-3">© 2026 ZOOMDEV OS</div>
+        </Painel>
+      )}
+
+      {/* Botão de recolher: só existe na barra fixa, não na gaveta do celular */}
+      {compacto !== null && (
+        <button
+          onClick={() => setRecolhido(v => !v)}
+          title={recolhido ? 'Expandir menu' : 'Recolher menu'}
+          aria-label={recolhido ? 'Expandir menu' : 'Recolher menu'}
+          aria-expanded={!recolhido}
+          className={`hidden md:flex items-center gap-2 w-full mt-3 py-2 text-[11px] text-white/40 hover:text-[#00e5ff] hover:bg-white/[.04] transition-colors ${
+            compacto ? 'justify-center' : 'px-3'}`}
+        >
+          <Icon nome="chevron" tam={15} className={recolhido ? '-rotate-90' : 'rotate-90'} />
+          {!compacto && <span className="hud-caps">Recolher menu</span>}
+        </button>
+      )}
+
+      {!compacto && <div className="hud-tec text-[9px] text-white/20 mt-2">© 2026 ZOOMDEV OS</div>}
     </div>
   );
 
   return (
     <div className="min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan flex">
-      <aside className="zd-sidebar w-60 shrink-0 hidden md:flex flex-col relative z-10">
-        <div className="px-4 py-6">
-          <BrandLockup symbolSize={38} wordmarkHeight={30} />
+      {/* Barra fixa: tablet e desktop */}
+      <aside className={`zd-sidebar shrink-0 hidden md:flex flex-col relative z-10 transition-[width] duration-300 ${
+        recolhido ? 'w-[68px]' : 'w-60'}`}>
+        <div className={`py-6 ${recolhido ? 'px-2 flex justify-center' : 'px-4'}`}>
+          {recolhido ? <Logo className="w-9 h-9" /> : <BrandLockup symbolSize={38} wordmarkHeight={30} />}
         </div>
-        {navegacao}
-        {rodapeMaia}
+        {navegacao(recolhido)}
+        {rodape(recolhido)}
       </aside>
 
-      {/* Gaveta de navegação no celular */}
+      {/* Gaveta: celular */}
       {menuMovel && (
         <div className="fixed inset-0 z-50 md:hidden" onClick={() => setMenuMovel(false)}>
-          <div className="absolute inset-0 bg-black/70" />
-          <aside className="zd-sidebar w-64 h-full flex flex-col relative" onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
+          <aside className="zd-sidebar w-[min(78vw,17rem)] h-full flex flex-col relative"
+            onClick={e => e.stopPropagation()}>
             <div className="px-4 py-5 flex items-center justify-between">
-              <BrandLockup symbolSize={32} wordmarkHeight={26} />
-              <button onClick={() => setMenuMovel(false)} className="text-white/40 hover:text-white p-1">
+              <BrandLockup symbolSize={30} wordmarkHeight={24} />
+              <button onClick={() => setMenuMovel(false)} aria-label="Fechar menu"
+                className="text-white/40 hover:text-white p-2 -mr-2">
                 <Icon nome="fechar" tam={18} />
               </button>
             </div>
-            {navegacao}
-            {rodapeMaia}
+            {navegacao(false)}
+            {rodape(null)}
           </aside>
         </div>
       )}
 
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <header className="border-b border-[#00e5ff1f]">
-          <div className="flex items-center justify-between gap-4 px-4 md:px-5 py-3">
-            <div className="flex items-center gap-3 md:hidden">
-              <button onClick={() => setMenuMovel(true)} className="text-white/60 hover:text-white p-1" title="Menu">
+          <div className="flex items-center justify-between gap-2 md:gap-4 px-3 sm:px-4 md:px-5 py-2.5 md:py-3">
+            <div className="flex items-center gap-2 md:hidden min-w-0">
+              <button onClick={() => setMenuMovel(true)} aria-label="Abrir menu"
+                className="text-white/60 hover:text-white p-2 -ml-2 shrink-0">
                 <Icon nome="lista" tam={20} />
               </button>
-              <BrandLockup symbolSize={26} wordmarkHeight={20} />
+              {/* Abaixo de 420px o wordmark disputa espaço com as etiquetas de
+                  estado e as duas se sobrepõem: aí fica só o símbolo. */}
+              <span className="hidden min-[420px]:block"><BrandLockup symbolSize={24} wordmarkHeight={18} /></span>
+              <span className="min-[420px]:hidden"><Logo className="w-7 h-7" /></span>
             </div>
 
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 min-w-0 overflow-x-auto">
               {TABS.map(t => (
                 <NavLink key={t.to} to={t.to} end={t.to === '/'}
-                  className={({ isActive }) => `px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[.04em] whitespace-nowrap transition-colors ${
+                  className={({ isActive }) => `px-2 xl:px-2.5 py-1.5 text-[10px] xl:text-[11px] font-semibold uppercase tracking-[.04em] whitespace-nowrap transition-colors ${
                     isActive ? 'text-[#00ff64] bg-[#00ff6414]' : 'text-white/40 hover:text-white/85 hover:bg-white/5'}`}
                   style={({ isActive }) => (isActive ? { clipPath: CORTE_ABA } : undefined)}>
                   {t.label}
@@ -160,30 +215,30 @@ export default function Layout({ children }) {
               ))}
             </nav>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <Etiqueta cor="#00ff64" title="Seiva: seus créditos de IA">
                 <Icon nome="seiva" tam={11} /> {user.creditos}
               </Etiqueta>
-              <Etiqueta cor="#00e5ff" title={`XP total: ${user.gamification.xp}`} className="hidden sm:inline-flex">
+              <Etiqueta cor="#00e5ff" title={`XP total: ${user.gamification.xp}`} className="hidden md:inline-flex">
                 NV {user.nivel.nivel} · {user.nivel.nome}
               </Etiqueta>
               {user.gamification.streak?.dias > 1 && (
-                <Etiqueta cor="#ffc531" title="Sequência de dias construindo" className="hidden md:inline-flex">
+                <Etiqueta cor="#ffc531" title="Sequência de dias construindo" className="hidden xl:inline-flex">
                   <Icon nome="chama" tam={11} /> {user.gamification.streak.dias}d
                 </Etiqueta>
               )}
 
               <div className="relative" ref={notifRef}>
-                <button onClick={() => setNotifAbertas(v => !v)}
-                  className="relative text-white/45 hover:text-[#00e5ff] transition-colors p-1" title="Notificações">
+                <button onClick={() => setNotifAbertas(v => !v)} aria-label="Notificações"
+                  className="relative text-white/45 hover:text-[#00e5ff] transition-colors p-2">
                   <Icon nome="transmissao" tam={18} />
                   {notificacoes.length > 0 && (
-                    <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-[#00ff64]"
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#00ff64]"
                       style={{ transform: 'rotate(45deg)' }} />
                   )}
                 </button>
                 {notifAbertas && (
-                  <Painel aceso className="absolute right-0 mt-3 w-80 p-2 z-40">
+                  <Painel aceso className="absolute right-0 mt-3 w-[min(20rem,calc(100vw-1.5rem))] p-2 z-40">
                     <div className="hud-caps text-[9px] text-white/40 px-2 py-1.5">Notificações</div>
                     {notificacoes.map(n => (
                       <div key={n.id} className="zd-notification px-3 py-2.5 mb-1.5">
@@ -195,15 +250,15 @@ export default function Layout({ children }) {
                 )}
               </div>
 
-              <button onClick={sair} title="Sair"
-                className="text-white/35 hover:text-[#ff4d8d] transition-colors p-1">
+              <button onClick={sair} title="Sair" aria-label="Sair"
+                className="text-white/35 hover:text-[#ff4d8d] transition-colors p-2">
                 <Icon nome="cadeadoAberto" tam={17} />
               </button>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-8 overflow-x-hidden">{children}</main>
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden">{children}</main>
       </div>
 
       <Copiloto />

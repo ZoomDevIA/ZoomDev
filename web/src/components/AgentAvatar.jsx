@@ -3,12 +3,20 @@ import React, { useState } from 'react';
 // ═══════════════════════════════════════════════════════════════════════════
 // AVATAR DE AGENTE: ponto único de verdade para exibir a arte de um agente.
 //
-// Cascata: recorte do rosto (agents/faces/) → retrato (agents/) → emoji.
-// Nunca renderiza <img> sem src: o navegador exibiria o texto do alt e o
-// componente ficaria quebrado.
+// Regra de enquadramento, decidida pelo fundador:
 //
-// Enquadramento: o recorte de rosto já vem centrado, então usa object-center;
-// o retrato é vertical com o rosto no topo, então usa object-top.
+//   MAIÁ    mantém o recorte de rosto dentro da moldura chanfrada. Ela é o
+//           copiloto, aparece no chat e na barra lateral em tamanho pequeno,
+//           e ali o rosto precisa preencher o espaço.
+//
+//   DEMAIS  aparecem INTEIROS, sem moldura e sem corte. object-contain em vez
+//           de object-cover: a arte se ajusta ao espaço disponível e nenhuma
+//           parte do personagem fica de fora. O brilho vem de drop-shadow na
+//           silhueta, não de uma borda em volta.
+//
+// Nunca renderiza <img> sem src: o navegador exibiria o texto do alt e o
+// componente ficaria quebrado. Sem arte, cai no emoji dentro de um quadro
+// discreto, que aí sim precisa de contorno para não flutuar solto.
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Aceita o objeto da API (com rosto/retrato/avatar) ou apenas o id. */
@@ -36,35 +44,50 @@ function resolver(agente) {
 export default function AgentAvatar({
   agente,
   size = 'w-16 h-16',
-  rounded = 'rounded-2xl',
   emojiSize = 'text-2xl',
   className = '',
   centralizar = true,
 }) {
   const a = resolver(agente);
-  const [passo, setPasso] = useState(0); // 0 = rosto · 1 = retrato · 2 = emoji
+  const ehMaia = a.id === 'maia';
+  const [falhou, setFalhou] = useState(false);
 
-  const src = passo === 0 ? a.rosto : passo === 1 ? a.retrato : null;
-  const ehRosto = passo === 0;
   const cor = a.cor || '#00ff64';
+  // A Maiá usa o recorte de rosto; os demais, o retrato inteiro.
+  const src = falhou ? null : (ehMaia ? (a.rosto || a.retrato) : a.retrato);
+  const base = `${size} ${centralizar ? 'mx-auto' : ''} shrink-0 flex items-center justify-center ${emojiSize} ${className}`;
+
+  if (!src) {
+    return (
+      <div className={`${base} hud-corte`}
+        style={{ '--c': '6px', background: `${cor}12`, boxShadow: `inset 0 0 0 1px ${cor}33` }}
+        title={`${a.nome || 'Agente'} · avatar em produção`}>
+        <span aria-label={a.nome}>{a.emoji || '•'}</span>
+      </div>
+    );
+  }
+
+  if (ehMaia) {
+    return (
+      <div className={`${base} hud-corte overflow-hidden`}
+        style={{ '--c': '7px', boxShadow: `inset 0 0 0 1px ${cor}44, 0 0 16px ${cor}30` }}
+        title={a.nome}>
+        <img src={src} alt={a.nome || ''} loading="lazy" onError={() => setFalhou(true)}
+          className="w-full h-full object-cover object-center" />
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`${size} ${rounded} ${centralizar ? 'mx-auto' : ''} overflow-hidden border shrink-0 flex items-center justify-center ${emojiSize} ${className}`}
-      style={{ borderColor: `${cor}33`, background: `${cor}12`, boxShadow: src ? `0 0 18px ${cor}30` : undefined }}
-      title={src ? a.nome : `${a.nome || 'Agente'}: avatar em produção`}
-    >
-      {src ? (
-        <img
-          src={src}
-          alt={a.nome || ''}
-          loading="lazy"
-          onError={() => setPasso(p => p + 1)}
-          className={`w-full h-full object-cover ${ehRosto ? 'object-center' : 'object-top'}`}
-        />
-      ) : (
-        <span aria-label={a.nome}>{a.emoji || '•'}</span>
-      )}
+    <div className={base} title={a.nome}>
+      <img
+        src={src}
+        alt={a.nome || ''}
+        loading="lazy"
+        onError={() => setFalhou(true)}
+        className="max-w-full max-h-full w-auto h-auto object-contain"
+        style={{ filter: `drop-shadow(0 0 10px ${cor}55) drop-shadow(0 3px 6px rgba(0,0,0,.55))` }}
+      />
     </div>
   );
 }

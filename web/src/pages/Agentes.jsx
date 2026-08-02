@@ -60,7 +60,7 @@ export default function Agentes() {
                 className={`zd-agent-card rounded-2xl p-4 transition-opacity ${a.ativo ? '' : 'opacity-55'}`}
                 style={a.ativo ? { borderColor: `${a.cor}2e` } : undefined}>
                 <div className="flex items-start gap-3">
-                  <AgentAvatar agente={a} size="w-12 h-12" rounded="rounded-xl" emojiSize="text-xl" centralizar={false} />
+                  <AgentAvatar agente={a} size="w-14 h-16" emojiSize="text-xl" centralizar={false} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-heading font-bold text-sm">{a.nome}</span>

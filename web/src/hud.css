@@ -215,7 +215,9 @@
   letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--hud-ciano);
-  white-space: nowrap;
+  /* Em tela estreita o rótulo precisa quebrar: com nowrap ele era cortado
+     pela borda do cartão e a última palavra sumia. */
+  flex-wrap: wrap;
 }
 .hud-rotulo::after {
   content: '';
