@@ -5,7 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import { config } from './config.js';
 import { register, login, authMiddleware, adminMiddleware, publicUser } from './auth.js';
-import { save } from './store.js';
+import { save, store } from './store.js';
 import { projectsRouter } from './routes/projects.js';
 import { carbonRouter } from './routes/carbon.js';
 import { platformRouter } from './routes/platform.js';
@@ -15,6 +15,12 @@ import { editaisRouter } from './routes/editais.js';
 import { diagnosticoRouter } from './routes/diagnostico.js';
 import { homeRouter } from './routes/home.js';
 import { painelRouter } from './routes/painel.js';
+import { contaRouter } from './routes/conta.js';
+import { pedirRedefinicao, redefinir } from './services/recuperacaoSenha.js';
+import { limitar } from './services/limite.js';
+import { agendarBackup } from './services/backup.js';
+import { registrarAceiteTermos, VERSAO_TERMOS } from './services/lgpd.js';
+import { modoEmail } from './services/email.js';
 import { elencoRouter } from './routes/elencoConselho.js';
 import { pagamentosRouter } from './routes/pagamentos.js';
 import { processarWebhookStripe } from './services/pagamentos.js';
@@ -51,12 +57,42 @@ app.use('/api', homeRouter);
 
 app.get('/api/planos', (_req, res) => res.json(config.plans));
 
-app.post('/api/auth/register', (req, res, next) => {
-  try { res.json(register(req.body || {})); } catch (e) { next(e); }
-});
-app.post('/api/auth/login', (req, res, next) => {
-  try { res.json(login(req.body || {})); } catch (e) { next(e); }
-});
+// Cadastro e login com freio: sem isso, as duas rotas aceitam tentativa
+// infinita e viram porta de força bruta e de criação de contas em massa.
+app.post('/api/auth/register',
+  limitar({ max: 5, janelaSeg: 3600, mensagem: 'Muitas contas criadas deste endereço. Tente mais tarde.' }),
+  (req, res, next) => {
+    try {
+      const r = register(req.body || {});
+      // Aceite dos termos gravado com a versão vigente no momento do cadastro.
+      registrarAceiteTermos(store.users[r.user.id]);
+      res.json({ ...r, user: { ...r.user, termosAceitos: store.users[r.user.id].termosAceitos } });
+    } catch (e) { next(e); }
+  });
+
+app.post('/api/auth/login',
+  limitar({ max: 8, janelaSeg: 600, mensagem: 'Muitas tentativas de login. Aguarde alguns minutos.' }),
+  (req, res, next) => {
+    try { res.json(login(req.body || {})); } catch (e) { next(e); }
+  });
+
+// ── Recuperação de senha (pública: quem esqueceu não consegue autenticar) ──
+app.post('/api/auth/recuperar',
+  limitar({ max: 5, janelaSeg: 900, mensagem: 'Muitos pedidos de recuperação. Aguarde 15 minutos.' }),
+  async (req, res, next) => {
+    try { res.json(await pedirRedefinicao(req.body?.email)); } catch (e) { next(e); }
+  });
+
+app.post('/api/auth/redefinir',
+  limitar({ max: 10, janelaSeg: 900, campo: 'token', mensagem: 'Muitas tentativas. Aguarde.' }),
+  async (req, res, next) => {
+    try { res.json(await redefinir(req.body || {})); } catch (e) { next(e); }
+  });
+
+app.get('/api/termos-versao', (_req, res) => res.json({
+  versao: VERSAO_TERMOS,
+  emailConfigurado: modoEmail() !== 'registro',
+}));
 
 app.use('/api', authMiddleware);
 
@@ -81,6 +117,7 @@ app.use('/api/projects', projectsRouter);
 app.use('/api/carbon', carbonRouter);
 app.use('/api/admin', adminMiddleware, adminRouter);
 app.use('/api/painel', painelRouter);
+app.use('/api/conta', contaRouter);
 app.use('/api/impacto', impactoRouter);
 app.use('/api/editais', editaisRouter);
 app.use('/api/pagamentos', pagamentosRouter);
@@ -112,6 +149,10 @@ if (migracao) console.log(`PIC agentes: v${migracao.de} → v${migracao.para} ($
 
 // Pulso diário: varredura de editais, matches, radar e alertas
 agendarPulso();
+
+// Cópias rotativas do banco dentro do volume: o volume protege contra a troca
+// de imagem no deploy, não contra escrita corrompida ou exclusão acidental.
+agendarBackup();
 
 process.on('SIGINT', () => { save(); process.exit(0); });
 

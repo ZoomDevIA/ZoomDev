@@ -143,7 +143,28 @@ export const api = {
   painelDestacar: (id, destacar) => req(`/painel/vitrine/${id}/destaque`, { method: 'POST', body: JSON.stringify({ destacar }) }),
   painelOcultar: (id, ocultar) => req(`/painel/vitrine/${id}/ocultar`, { method: 'POST', body: JSON.stringify({ ocultar }) }),
   painelAuditoria: (limite = 100) => req(`/painel/auditoria?limite=${limite}`),
+
+  // ── Conta: senha, perfil e direitos do titular (LGPD) ────────────────────
+  pedirRecuperacao: (email) => req('/auth/recuperar', { method: 'POST', body: JSON.stringify({ email }) }),
+  redefinirSenha: (body) => req('/auth/redefinir', { method: 'POST', body: JSON.stringify(body) }),
+  trocarSenha: (body) => req('/conta/senha', { method: 'POST', body: JSON.stringify(body) }),
+  atualizarPerfil: (body) => req('/conta', { method: 'PATCH', body: JSON.stringify(body) }),
+  aceitarTermos: () => req('/conta/termos', { method: 'POST' }),
+  excluirConta: (body) => req('/conta', { method: 'DELETE', body: JSON.stringify(body) }),
+  termosVersao: () => req('/termos-versao'),
 };
+
+// Baixa o pacote de dados do titular (LGPD, artigo 18)
+export async function baixarMeusDados() {
+  const res = await fetch('/api/conta/exportar', { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Não foi possível gerar a exportação.');
+  const blob = await res.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `zoomdev-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
+}
 
 // Abre o relatório do ecossistema (HTML autenticado) em nova aba
 export async function abrirRelatorio(relId) {

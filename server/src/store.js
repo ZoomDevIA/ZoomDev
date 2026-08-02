@@ -10,7 +10,7 @@ const empty = () => ({
   pic: null, picAgentes: null, nudges: {}, reports: {},
   radar: null, pulso: null, planosCompensacao: {},
   elenco: null, conselhos: {}, transacoes: {},
-  sessoesPainel: {}, auditoria: [], vitrine: null,
+  sessoesPainel: {}, auditoria: [], vitrine: null, recuperacoes: {},
 });
 
 let db = empty();
@@ -75,6 +75,8 @@ export const store = {
   // Curadoria da vitrine da comunidade (destaques e ocultações)
   get vitrine() { return db.vitrine; },
   set vitrine(v) { db.vitrine = v; },
+  // Pedidos de redefinição de senha, indexados pelo hash do token
+  get recuperacoes() { return db.recuperacoes; },
 };
 
 export function id(prefix) {

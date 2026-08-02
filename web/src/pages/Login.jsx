@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { api, setToken } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
+import Icon from '../components/Icon.jsx';
+import { Botao, Campo, Painel } from '../components/hud/index.jsx';
 
 export default function Login() {
   const { refreshUser } = useUser();
@@ -16,10 +18,24 @@ export default function Login() {
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState(null);
+  // Recuperação de senha: um passo à parte, dentro da mesma caixa
+  const [recuperando, setRecuperando] = useState(false);
+  const [recuperacao, setRecuperacao] = useState(null);
 
   const emBreve = (nome) => {
     setAviso(`Login com ${nome} estará disponível em breve.`);
     setTimeout(() => setAviso(null), 3500);
+  };
+
+  const pedirRecuperacao = async (e) => {
+    e.preventDefault();
+    setErro(null); setEnviando(true);
+    try {
+      // A resposta é idêntica exista ou não a conta: a tela não pode revelar
+      // quais e-mails estão cadastrados.
+      setRecuperacao(await api.pedirRecuperacao(form.email));
+    } catch (err) { setErro(err.message); }
+    finally { setEnviando(false); }
   };
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
@@ -76,6 +92,18 @@ export default function Login() {
               </p>
             </div>
           )}
+          {recuperando ? (
+            <RecuperarSenha
+              email={form.email}
+              onEmail={(v) => setForm(f => ({ ...f, email: v }))}
+              resultado={recuperacao}
+              erro={erro}
+              enviando={enviando}
+              onEnviar={pedirRecuperacao}
+              onVoltar={() => { setRecuperando(false); setRecuperacao(null); setErro(null); }}
+            />
+          ) : (
+          <>
           <div className="flex rounded-full bg-white/5 p-1 mb-6">
             {['entrar', 'criar'].map(t => (
               <button key={t} onClick={() => setTab(t)}
@@ -111,12 +139,21 @@ export default function Login() {
                 <label className="flex items-center gap-2 text-white/55 cursor-pointer">
                   <input type="checkbox" defaultChecked className="accent-[#00ff64]" /> Lembrar de mim
                 </label>
-                <button type="button" onClick={() => emBreve('recuperação de senha')} className="zd-green hover:underline">Esqueci minha senha</button>
+                <button type="button" onClick={() => { setRecuperando(true); setErro(null); }}
+                  className="zd-green hover:underline">Esqueci minha senha</button>
               </div>
             )}
             <button type="submit" disabled={enviando} className="zd-gradient-btn w-full rounded-lg py-3 text-sm">
               {enviando ? 'Aguarde…' : tab === 'entrar' ? 'Entrar na plataforma →' : 'Criar conta →'}
             </button>
+            {tab === 'criar' && (
+              <p className="text-[10px] text-white/32 leading-relaxed">
+                Ao criar a conta você aceita os{' '}
+                <Link to="/termos" className="zd-green hover:underline">termos de uso</Link> e a{' '}
+                <Link to="/privacidade" className="zd-green hover:underline">política de privacidade</Link>.
+                A versão aceita fica registrada com data na sua conta.
+              </p>
+            )}
           </form>
 
           <div className="flex items-center gap-3 my-5">
@@ -133,14 +170,83 @@ export default function Login() {
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-white/35 mt-5">🔒 Seus dados estão protegidos com criptografia de ponta a ponta.</p>
-          <div className="text-center mt-4 pt-4 border-t border-white/8">
+          <p className="text-[11px] text-white/35 mt-5 flex items-start gap-1.5">
+            <Icon nome="cadeado" tam={12} className="mt-0.5 shrink-0" />
+            Sua senha é guardada como hash scrypt com sal único. Nem o administrador consegue lê-la.
+          </p>
+          </>
+          )}
+          <div className="text-center mt-4 pt-4 border-t border-white/8 flex justify-center gap-4 flex-wrap">
             <Link to="/" className="text-[11px] text-white/40 hover:text-white/70 transition-colors">
-              ← voltar para a home
+              voltar para a home
             </Link>
+            <Link to="/termos" className="text-[11px] text-white/30 hover:text-white/60 transition-colors">termos</Link>
+            <Link to="/privacidade" className="text-[11px] text-white/30 hover:text-white/60 transition-colors">privacidade</Link>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Recuperação de senha ──────────────────────────────────────────────────
+// A resposta do servidor é a mesma exista ou não a conta. A tela repete essa
+// neutralidade no texto: dizer "e-mail não encontrado" entregaria quais
+// endereços estão cadastrados a quem estivesse testando.
+function RecuperarSenha({ email, onEmail, resultado, erro, enviando, onEnviar, onVoltar }) {
+  if (resultado) {
+    return (
+      <div className="text-center space-y-3">
+        <Icon nome="enviar" tam={30} className="text-[#00ff64] mx-auto" />
+        <h2 className="font-heading text-lg font-bold">Pedido registrado</h2>
+        <p className="text-white/55 text-[13px] leading-relaxed">
+          Se existir uma conta com <b className="text-white/80">{email}</b>, o link de redefinição
+          chega em instantes. Ele vale por 30 minutos e só pode ser usado uma vez.
+        </p>
+
+        {resultado.link && (
+          <Painel cor="#ffc531" className="p-3.5 text-left">
+            <div className="hud-caps text-[9px] text-[#ffc531] mb-1.5">Ambiente sem provedor de e-mail</div>
+            <p className="text-[11px] text-white/50 mb-2">{resultado.aviso}</p>
+            <a href={resultado.link} className="text-[11px] text-[#00e5ff] break-all hover:underline">
+              {resultado.link}
+            </a>
+          </Painel>
+        )}
+
+        <button onClick={onVoltar} className="text-[12px] text-white/45 hover:text-white/80 transition-colors pt-1">
+          voltar para a entrada
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={onEnviar} className="space-y-4">
+      <div className="text-center mb-1">
+        <Icon nome="chave" tam={28} className="text-[#00e5ff] mx-auto mb-2" />
+        <h2 className="font-heading text-lg font-bold">Recuperar acesso</h2>
+        <p className="text-white/50 text-[13px] mt-1.5">
+          Informe o e-mail da conta. Enviamos um link para você definir uma senha nova.
+        </p>
+      </div>
+
+      {erro && <div className="text-sm text-[#ff4d8d] bg-[#ff4d8d14] px-3 py-2">{erro}</div>}
+
+      <div>
+        <label className="text-xs text-white/60 block mb-1.5">E-mail</label>
+        <Campo type="email" required autoFocus className="w-full px-3 py-2.5 text-sm"
+          placeholder="seu@email.com" value={email} onChange={e => onEmail(e.target.value)} />
+      </div>
+
+      <Botao type="submit" disabled={enviando || !email} className="w-full py-3 text-sm">
+        <Icon nome="enviar" tam={14} /> {enviando ? 'Enviando…' : 'Enviar link de redefinição'}
+      </Botao>
+
+      <button type="button" onClick={onVoltar}
+        className="w-full text-[12px] text-white/45 hover:text-white/80 transition-colors">
+        voltar para a entrada
+      </button>
+    </form>
   );
 }

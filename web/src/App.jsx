@@ -23,6 +23,8 @@ import Mundo from './pages/Mundo.jsx';
 import Home from './pages/Home.jsx';
 import Estilo from './pages/Estilo.jsx';
 import Painel from './pages/Painel.jsx';
+import Redefinir from './pages/Redefinir.jsx';
+import Legal from './pages/Legal.jsx';
 
 
 export const UserContext = createContext(null);
@@ -87,6 +89,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/entrar" element={<Login />} />
+            <Route path="/redefinir" element={<Redefinir />} />
+            <Route path="/termos" element={<Legal />} />
+            <Route path="/privacidade" element={<Legal />} />
             <Route path="*" element={<Navigate to="/entrar" replace />} />
           </Routes>
         ) : (
@@ -112,6 +117,9 @@ export default function App() {
               <Route path="/planos" element={<Planos />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
               <Route path="/estilo" element={<Estilo />} />
+              <Route path="/termos" element={<Legal />} />
+              <Route path="/privacidade" element={<Legal />} />
+              <Route path="/redefinir" element={<Navigate to="/configuracoes" replace />} />
               {user.isAdmin && <Route path="/admin" element={<Admin />} />}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
