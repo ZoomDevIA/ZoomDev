@@ -12,6 +12,7 @@ import { platformRouter } from './routes/platform.js';
 import { adminRouter } from './routes/admin.js';
 import { impactoRouter } from './routes/impacto.js';
 import { editaisRouter } from './routes/editais.js';
+import { diagnosticoRouter } from './routes/diagnostico.js';
 import { elencoRouter } from './routes/elencoConselho.js';
 import { pagamentosRouter } from './routes/pagamentos.js';
 import { processarWebhookStripe } from './services/pagamentos.js';
@@ -40,6 +41,8 @@ app.get('/api/health', (_req, res) => res.json({
   ok: true,
   modo: config.hasApiKey ? `ia (${config.model})` : 'demo (sem ANTHROPIC_API_KEY)',
 }));
+
+app.use('/api', diagnosticoRouter);
 
 app.get('/api/planos', (_req, res) => res.json(config.plans));
 

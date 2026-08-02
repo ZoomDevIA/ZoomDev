@@ -29,16 +29,24 @@ const rnd = (seed) => { const x = Math.sin(seed) * 10000; return x - Math.floor(
 // O rosto do personagem voxel usa o avatar oficial do agente. Enquanto a arte
 // de um agente não existe, o emoji vira o rosto — e o PNG é adotado sozinho
 // assim que o arquivo aparecer, sem mexer em código.
-const DIR_AVATARES = path.resolve(process.cwd(), 'web/public/assets/agents');
+// Caminhos resolvidos a partir DESTE módulo, nunca de process.cwd(): em
+// produção o `npm start -w server` roda com o diretório de trabalho em
+// server/, e um caminho relativo ao cwd apontaria para o lugar errado.
+const DIRS_AVATARES = [
+  new URL('../../../web/dist/assets/agents/', import.meta.url).pathname,   // build de produção
+  new URL('../../../web/public/assets/agents/', import.meta.url).pathname, // desenvolvimento
+];
 
 let cacheAvatares = null;
 function avataresDisponiveis() {
   try {
-    const mtime = fs.statSync(DIR_AVATARES).mtimeMs;
-    if (!cacheAvatares || cacheAvatares.mtime !== mtime) {
+    const dir = DIRS_AVATARES.find(d => fs.existsSync(d));
+    if (!dir) return new Set();
+    const mtime = fs.statSync(dir).mtimeMs;
+    if (!cacheAvatares || cacheAvatares.dir !== dir || cacheAvatares.mtime !== mtime) {
       cacheAvatares = {
-        mtime,
-        ids: new Set(fs.readdirSync(DIR_AVATARES)
+        dir, mtime,
+        ids: new Set(fs.readdirSync(dir)
           .filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
           .map(f => f.replace(/\.[^.]+$/, ''))),
       };
