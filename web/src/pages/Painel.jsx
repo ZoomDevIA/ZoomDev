@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { api, getPainelToken, setPainelToken } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
+import Icon from '../components/Icon.jsx';
+import { Painel as Bloco, Rotulo, Etiqueta, Botao, Campo, Abas, Estatistica } from '../components/hud/index.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PAINEL DE ADMINISTRAÇÃO: área com porta própria.
@@ -16,10 +18,10 @@ import BrandLockup from '../components/BrandLockup.jsx';
 // ═══════════════════════════════════════════════════════════════════════════
 
 const ABAS = [
-  { id: 'usuarios', label: 'Usuários', icone: '👥', cap: 'usuarios.ler' },
-  { id: 'vitrine', label: 'Vitrine', icone: '🖼️', cap: 'comunidade.curar' },
-  { id: 'papeis', label: 'Níveis de acesso', icone: '🔑', cap: 'usuarios.ler' },
-  { id: 'auditoria', label: 'Auditoria', icone: '📜', cap: 'sistema.configurar' },
+  { id: 'usuarios', label: 'Usuários', icone: 'usuarios', cap: 'usuarios.ler' },
+  { id: 'vitrine', label: 'Vitrine', icone: 'vitrine', cap: 'comunidade.curar' },
+  { id: 'papeis', label: 'Níveis de acesso', icone: 'chave', cap: 'usuarios.ler' },
+  { id: 'auditoria', label: 'Auditoria', icone: 'lista', cap: 'sistema.configurar' },
 ];
 
 export default function Painel() {
@@ -56,12 +58,14 @@ export default function Painel() {
   if (!estado.podeEntrar) {
     return (
       <div className="max-w-md mx-auto text-center py-20 space-y-3">
-        <div className="text-4xl">🔒</div>
+        <Icon nome="cadeado" tam={40} className="text-[#ff4d8d] mx-auto" />
         <h1 className="font-heading text-xl font-bold">Área restrita</h1>
         <p className="text-white/50 text-sm">
           Seu nível de acesso não inclui o painel de administração. Fale com um administrador se precisar entrar.
         </p>
-        <Link to="/" className="zd-tag rounded-full px-4 py-2 inline-block mt-2">← voltar para a plataforma</Link>
+        <Link to="/" className="hud-botao-vazio px-4 py-2 inline-flex items-center gap-2 mt-2 text-sm">
+          <Icon nome="setaDireita" tam={14} className="rotate-180" /> voltar para a plataforma
+        </Link>
       </div>
     );
   }
@@ -80,28 +84,25 @@ export default function Painel() {
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="font-heading text-2xl font-bold">Painel de <span className="zd-gradient-text">Administração</span></h1>
-            <span className="zd-tag rounded-full px-2.5 py-1">{contexto.papel}</span>
+            <Etiqueta cor={contexto.papel === 'admin' ? '#00ff64' : '#00e5ff'}>{contexto.papel}</Etiqueta>
           </div>
           <p className="text-white/50 text-sm mt-1">
             Sessão aberta como <b className="text-white/75">{contexto.usuario.nome}</b> · expira {new Date(contexto.expiraEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
-        <button onClick={sair} className="rounded-lg border border-white/15 text-white/60 hover:bg-white/5 px-4 py-2 text-xs transition-colors">
-          Fechar painel
-        </button>
+        <Botao variante="vazio" onClick={sair} className="px-4 py-2 text-xs">
+          <Icon nome="cadeado" tam={13} /> Fechar painel
+        </Botao>
       </header>
 
       {erro && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{erro}</div>}
 
-      <nav className="flex gap-1.5 flex-wrap border-b border-white/8 pb-3">
-        {abasVisiveis.map(a => (
-          <button key={a.id} onClick={() => setAba(a.id)}
-            className={`rounded-lg px-3.5 py-2 text-[13px] font-medium transition-all ${
-              abaAtual === a.id ? 'bg-[#00ff6414] text-[#00ff64]' : 'text-white/50 hover:text-white/85 hover:bg-white/5'}`}>
-            {a.icone} {a.label}
-          </button>
-        ))}
-      </nav>
+      <Abas
+        itens={abasVisiveis.map(a => ({ id: a.id, label: a.label, icone: <Icon nome={a.icone} tam={13} /> }))}
+        ativo={abaAtual}
+        onMudar={setAba}
+        className="border-b border-[#00e5ff1f] pb-3"
+      />
 
       {abaAtual === 'usuarios' && <Usuarios contexto={contexto} />}
       {abaAtual === 'vitrine' && <Vitrine />}
@@ -127,17 +128,17 @@ function Cadeado({ user, onEntrou }) {
 
   return (
     <div className="max-w-sm mx-auto py-16">
-      <div className="zd-card-glow rounded-2xl p-7">
+      <Bloco aceso quatroCantos className="p-7">
         <div className="text-center mb-6">
           <BrandLockup symbolSize={40} wordmarkHeight={30} className="justify-center mb-5" />
-          <div className="text-3xl mb-2">🛡️</div>
+          <Icon nome="escudo" tam={34} className="text-[#00ff64] mx-auto mb-2" />
           <h1 className="font-heading text-lg font-bold">Painel de Administração</h1>
           <p className="text-white/50 text-[13px] mt-1.5 leading-relaxed">
             Confirme sua senha para abrir uma sessão administrativa de 30 minutos.
           </p>
         </div>
 
-        <div className="rounded-lg bg-white/[.04] border border-white/8 px-3 py-2 mb-4 text-[11px] text-white/55">
+        <div className="hud-corte bg-white/[.04] px-3 py-2 mb-4 text-[11px] text-white/55" style={{ '--c': '6px' }}>
           Entrando como <b className="text-white/80">{user?.email}</b>
         </div>
 
@@ -146,13 +147,13 @@ function Cadeado({ user, onEntrou }) {
         <form onSubmit={entrar} className="space-y-3">
           <div>
             <label className="text-xs text-white/60 block mb-1.5">Sua senha</label>
-            <input type="password" required autoFocus autoComplete="current-password"
-              className="zd-input w-full rounded-lg px-3 py-2.5 text-sm" placeholder="••••••••"
+            <Campo type="password" required autoFocus autoComplete="current-password"
+              className="w-full px-3 py-2.5 text-sm" placeholder="••••••••"
               value={senha} onChange={e => setSenha(e.target.value)} />
           </div>
-          <button type="submit" disabled={enviando || !senha} className="zd-gradient-btn w-full rounded-lg py-3 text-sm">
-            {enviando ? 'Verificando…' : '🔓 Abrir painel'}
-          </button>
+          <Botao type="submit" disabled={enviando || !senha} className="w-full py-3 text-sm">
+            <Icon nome="cadeadoAberto" tam={15} /> {enviando ? 'Verificando…' : 'Abrir painel'}
+          </Botao>
         </form>
 
         <ul className="mt-5 pt-4 border-t border-white/8 space-y-1.5">
@@ -164,7 +165,7 @@ function Cadeado({ user, onEntrou }) {
             <li key={t} className="text-[10px] text-white/35 flex gap-1.5"><span className="zd-green">·</span>{t}</li>
           ))}
         </ul>
-      </div>
+      </Bloco>
       <div className="text-center mt-4">
         <Link to="/" className="text-[11px] text-white/40 hover:text-white/70 transition-colors">← voltar para a plataforma</Link>
       </div>
@@ -196,20 +197,18 @@ function Usuarios({ contexto }) {
       <div className="flex items-end justify-between gap-3 flex-wrap">
         <div className="flex gap-2 flex-wrap">
           {[
-            ['total', 'no total'], ['admins', 'administradores'],
-            ['editores', 'editores'], ['fundadores', 'fundadores'], ['inativos', 'desativados'],
-          ].map(([k, l]) => (
-            <div key={k} className="zd-stat-card rounded-lg px-3 py-2">
-              <div className="font-heading font-bold text-sm">{dados.resumo[k]}</div>
-              <div className="text-[10px] text-white/40">{l}</div>
-            </div>
+            ['total', 'no total', '#00e5ff'], ['admins', 'administradores', '#00ff64'],
+            ['editores', 'editores', '#00c8ff'], ['fundadores', 'fundadores', '#ffc531'],
+            ['inativos', 'desativados', '#ff4d8d'],
+          ].map(([k, l, c]) => (
+            <Estatistica key={k} valor={dados.resumo[k]} rotulo={l} cor={c} />
           ))}
         </div>
         {podeGerenciar && (
-          <button onClick={() => setNovo(novo ? null : { papel: 'editor', nome: '', email: '', senha: '' })}
-            className="zd-gradient-btn rounded-lg px-4 py-2.5 text-sm">
-            {novo ? 'Cancelar' : '+ Adicionar usuário'}
-          </button>
+          <Botao onClick={() => setNovo(novo ? null : { papel: 'editor', nome: '', email: '', senha: '' })}
+            className="px-4 py-2.5 text-sm">
+            <Icon nome={novo ? 'fechar' : 'mais'} tam={14} />{novo ? 'Cancelar' : 'Adicionar usuário'}
+          </Botao>
         )}
       </div>
 
@@ -238,23 +237,23 @@ function FormNovoUsuario({ valor, onMudar, papeis, atribuiveis, onCriar }) {
   const escolhido = papeis.find(p => p.id === valor.papel);
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onCriar(); }} className="zd-card-glow rounded-2xl p-5 space-y-4">
+    <form onSubmit={(e) => { e.preventDefault(); onCriar(); }} className="hud-painel hud-aceso hud-4 p-5 space-y-4">
       <div className="font-heading font-bold text-sm">Novo acesso à plataforma</div>
 
       <div className="grid sm:grid-cols-3 gap-3">
         <div>
           <label className="text-xs text-white/60 block mb-1.5">Nome</label>
-          <input className="zd-input w-full rounded-lg px-3 py-2.5 text-sm" placeholder="Nome da pessoa"
+          <Campo className="w-full px-3 py-2.5 text-sm" placeholder="Nome da pessoa"
             value={valor.nome} onChange={set('nome')} />
         </div>
         <div>
           <label className="text-xs text-white/60 block mb-1.5">E-mail *</label>
-          <input type="email" required className="zd-input w-full rounded-lg px-3 py-2.5 text-sm" placeholder="pessoa@empresa.com"
+          <Campo type="email" required className="w-full px-3 py-2.5 text-sm" placeholder="pessoa@empresa.com"
             value={valor.email} onChange={set('email')} />
         </div>
         <div>
           <label className="text-xs text-white/60 block mb-1.5">Senha provisória *</label>
-          <input type="text" required minLength={8} className="zd-input w-full rounded-lg px-3 py-2.5 text-sm" placeholder="mínimo 8 caracteres"
+          <Campo type="text" required minLength={8} className="w-full px-3 py-2.5 text-sm" placeholder="mínimo 8 caracteres"
             value={valor.senha} onChange={set('senha')} />
         </div>
       </div>
@@ -264,8 +263,8 @@ function FormNovoUsuario({ valor, onMudar, papeis, atribuiveis, onCriar }) {
         <div className="grid sm:grid-cols-2 gap-3">
           {papeis.filter(p => atribuiveis.includes(p.id)).map(p => (
             <button type="button" key={p.id} onClick={() => onMudar({ ...valor, papel: p.id })}
-              className={`text-left rounded-xl border p-3.5 transition-all ${
-                valor.papel === p.id ? 'border-[#00ff64] bg-[#00ff6410]' : 'border-white/10 bg-white/[.03] hover:border-white/25'}`}>
+              className="hud-painel hud-p text-left p-3.5 transition-all"
+              style={{ '--cor': valor.papel === p.id ? '#00ff64' : 'rgba(255,255,255,.14)' }}>
               <div className="text-sm font-semibold">{p.emoji} {p.nome}</div>
               <div className="text-[11px] text-white/45 mt-1 leading-snug">{p.resumo}</div>
             </button>
@@ -274,7 +273,7 @@ function FormNovoUsuario({ valor, onMudar, papeis, atribuiveis, onCriar }) {
       </div>
 
       {escolhido && (
-        <div className="rounded-xl bg-white/[.03] border border-white/8 p-3.5 grid md:grid-cols-2 gap-4">
+        <div className="hud-painel hud-p p-3.5 grid md:grid-cols-2 gap-4">
           <div>
             <div className="text-[10px] font-bold zd-green uppercase tracking-wider mb-1.5">Vai poder</div>
             <ul className="space-y-1">
@@ -300,7 +299,7 @@ function FormNovoUsuario({ valor, onMudar, papeis, atribuiveis, onCriar }) {
         </div>
       )}
 
-      <button type="submit" className="zd-gradient-btn rounded-lg px-5 py-2.5 text-sm">Criar acesso</button>
+      <Botao type="submit" className="px-5 py-2.5 text-sm"><Icon nome="check" tam={14} />Criar acesso</Botao>
       <p className="text-[10px] text-white/32">
         A pessoa entra com este e-mail e a senha provisória. Recomende que ela troque a senha no primeiro acesso.
       </p>
@@ -314,19 +313,18 @@ function LinhaUsuario({ u, podeGerenciar, euId, atribuiveis, agir }) {
   const cor = COR_PAPEL[u.papel] || '#ffffff55';
 
   return (
-    <div className={`zd-card rounded-xl p-3.5 ${u.ativo ? '' : 'opacity-55'}`}>
+    <Bloco tamanho="p" cor={COR_PAPEL[u.papel] || '#00e5ff'} className={`p-3.5 ${u.ativo ? '' : 'opacity-55'}`}>
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center font-bold text-sm"
-          style={{ background: `${cor}18`, border: `1px solid ${cor}38`, color: cor }}>
+        <div className="w-9 h-9 hud-corte shrink-0 flex items-center justify-center font-bold text-sm"
+          style={{ '--c': '6px', background: `${cor}18`, boxShadow: `inset 0 0 0 1px ${cor}38`, color: cor }}>
           {u.nome.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-sm">{u.nome}</span>
-            <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border"
-              style={{ color: cor, borderColor: `${cor}40`, background: `${cor}12` }}>{u.papel}</span>
-            {u.id === euId && <span className="zd-tag-blue rounded-full px-2 py-0.5">você</span>}
-            {!u.ativo && <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase border border-red-500/30 text-red-400/80">desativado</span>}
+            <Etiqueta cor={cor}>{u.papel}</Etiqueta>
+            {u.id === euId && <Etiqueta cor="#00c8ff">você</Etiqueta>}
+            {!u.ativo && <Etiqueta cor="#ff4d8d">desativado</Etiqueta>}
           </div>
           <div className="text-[11px] text-white/45 mt-0.5 truncate">
             {u.email} · {u.projetos} projeto(s) · {u.publicados} publicado(s)
@@ -358,8 +356,8 @@ function LinhaUsuario({ u, podeGerenciar, euId, atribuiveis, agir }) {
           <div>
             <div className="text-[10px] text-white/45 mb-1.5">Redefinir senha</div>
             <div className="flex gap-1.5">
-              <input type="text" placeholder="nova senha (8+)" value={novaSenha} onChange={e => setNovaSenha(e.target.value)}
-                className="zd-input rounded-lg px-2.5 py-1.5 text-[11px] w-40" />
+              <Campo type="text" placeholder="nova senha (8+)" value={novaSenha} onChange={e => setNovaSenha(e.target.value)}
+                className="px-2.5 py-1.5 text-[11px] w-40" />
               <button disabled={novaSenha.length < 8}
                 onClick={() => agir(async () => { await api.painelAtualizarUsuario(u.id, { senha: novaSenha }); setNovaSenha(''); })}
                 className="rounded-lg px-2.5 py-1.5 text-[11px] border border-white/12 text-white/60 hover:text-white disabled:opacity-40">
@@ -375,7 +373,7 @@ function LinhaUsuario({ u, podeGerenciar, euId, atribuiveis, agir }) {
           </button>
         </div>
       )}
-    </div>
+    </Bloco>
   );
 }
 
@@ -389,8 +387,7 @@ function Papeis({ contexto }) {
       </p>
       <div className="grid md:grid-cols-3 gap-3">
         {contexto.papeis.map(p => (
-          <div key={p.id} className="zd-card-glow rounded-2xl p-4"
-            style={{ borderColor: `${p.cor}2e` }}>
+          <Bloco key={p.id} cor={p.cor} quatroCantos className="p-4">
             <div className="flex items-center gap-2">
               <span className="text-xl">{p.emoji}</span>
               <div>
@@ -411,7 +408,7 @@ function Papeis({ contexto }) {
                 </li>
               ))}
             </ul>
-          </div>
+          </Bloco>
         ))}
       </div>
     </div>
@@ -432,17 +429,17 @@ function Vitrine() {
     <div className="space-y-3">
       {erro && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{erro}</div>}
       {itens.length === 0 && (
-        <div className="zd-card rounded-2xl p-8 text-center text-white/45 text-sm">
+        <Bloco className="p-8 text-center text-white/45 text-sm">
           Nenhum projeto publicado na vitrine ainda.
-        </div>
+        </Bloco>
       )}
       {itens.map(p => (
-        <div key={p.id} className={`zd-card rounded-xl p-3.5 flex items-center gap-3 flex-wrap ${p.oculto ? 'opacity-55' : ''}`}>
+        <Bloco key={p.id} tamanho="p" className={`p-3.5 flex items-center gap-3 flex-wrap ${p.oculto ? 'opacity-55' : ''}`}>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-sm">{p.nome}</span>
-              {p.destaque && <span className="zd-tag rounded-full px-2 py-0.5">★ destaque</span>}
-              {p.oculto && <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase border border-white/15 text-white/45">oculto</span>}
+              {p.destaque && <Etiqueta cor="#ffc531"><Icon nome="trofeu" tam={10} />destaque</Etiqueta>}
+              {p.oculto && <Etiqueta cor="#ffffff66">oculto</Etiqueta>}
             </div>
             <div className="text-[11px] text-white/45 mt-0.5 line-clamp-1">{p.resumo}</div>
             <div className="text-[10px] text-white/30 mt-1">
@@ -460,7 +457,7 @@ function Vitrine() {
               {p.oculto ? 'reexibir' : 'ocultar'}
             </button>
           </div>
-        </div>
+        </Bloco>
       ))}
     </div>
   );
@@ -484,9 +481,9 @@ function Auditoria() {
       <p className="text-white/50 text-sm">
         As 500 ações administrativas mais recentes, com autor, horário e origem. Somente leitura.
       </p>
-      {registros.length === 0 && <div className="zd-card rounded-2xl p-8 text-center text-white/45 text-sm">Nada registrado ainda.</div>}
+      {registros.length === 0 && <Bloco className="p-8 text-center text-white/45 text-sm">Nada registrado ainda.</Bloco>}
       {registros.map(r => (
-        <div key={r.id} className="zd-card rounded-lg px-3.5 py-2.5 flex items-start gap-3">
+        <Bloco key={r.id} tamanho="p" className="px-3.5 py-2.5 flex items-start gap-3">
           <span className="text-sm shrink-0 w-5 text-center">{ICONE_ACAO[r.acao] || '·'}</span>
           <div className="min-w-0 flex-1">
             <div className="text-[12px]">
@@ -499,7 +496,7 @@ function Auditoria() {
             {new Date(r.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
             {r.ip && <div className="text-white/20">{r.ip}</div>}
           </div>
-        </div>
+        </Bloco>
       ))}
     </div>
   );

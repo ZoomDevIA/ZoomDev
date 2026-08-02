@@ -22,6 +22,7 @@ import Compensacao from './pages/Compensacao.jsx';
 import Mundo from './pages/Mundo.jsx';
 import Home from './pages/Home.jsx';
 import Estilo from './pages/Estilo.jsx';
+import Painel from './pages/Painel.jsx';
 
 
 export const UserContext = createContext(null);

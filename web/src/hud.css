@@ -381,3 +381,106 @@
   .hud-vivo:hover { transform: none; }
   .hud-barra > i { transition: none; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RETROFIT DAS CLASSES LEGADAS
+
+   As telas antigas usam .zd-card, .zd-input, .zd-tag e companhia. Em vez de
+   reescrever cada uma à mão, essas classes recebem aqui a mesma geometria do
+   HUD. Uma tela que nunca foi tocada passa a ter chanfro e borda luminosa,
+   e a migração para os componentes React vira melhoria incremental, não
+   pré-requisito.
+
+   O posicionamento vai em :where() pelo mesmo motivo de antes: um .zd-card-glow
+   que também é .fixed (a gaveta do copiloto) não pode virar relative.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:where(.zd-card, .zd-card-glow, .zd-agent-card, .zd-stat-card, .zd-notification) {
+  position: relative;
+}
+
+.zd-card, .zd-card-glow, .zd-agent-card, .zd-stat-card {
+  --c: 10px;
+  --cor: #00e5ff3d;
+  --fundo: #06140d;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  isolation: isolate;
+}
+.zd-card > *, .zd-card-glow > *, .zd-agent-card > *, .zd-stat-card > * {
+  position: relative;
+  z-index: 1;
+}
+.zd-card::before, .zd-card::after,
+.zd-card-glow::before, .zd-card-glow::after,
+.zd-agent-card::before, .zd-agent-card::after,
+.zd-stat-card::before, .zd-stat-card::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  clip-path: polygon(
+    var(--c) 0, 100% 0,
+    100% calc(100% - var(--c)), calc(100% - var(--c)) 100%,
+    0 100%, 0 var(--c)
+  );
+  transition: background .25s ease;
+}
+.zd-card::before, .zd-card-glow::before,
+.zd-agent-card::before, .zd-stat-card::before { inset: 0; background: var(--cor); }
+.zd-card::after, .zd-card-glow::after,
+.zd-agent-card::after, .zd-stat-card::after { inset: 1px; background: var(--fundo); }
+
+.zd-card-glow { --cor: #00e5ff70; box-shadow: 0 0 22px #00e5ff14; }
+.zd-agent-card { --cor: #00ff6440; }
+.zd-agent-card:hover { --cor: #00ff6499; transform: translateY(-2px); box-shadow: 0 10px 30px #00ff6414; }
+.zd-stat-card { --c: 6px; --cor: #00e5ff33; }
+.zd-stat-card:hover { --cor: #00e5ff85; background: transparent !important; }
+
+/* Notificação: barra de acento angular à esquerda */
+.zd-notification {
+  border: 0;
+  border-radius: 0;
+  background: #06140d;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: inset 3px 0 0 #00ff64, inset 0 0 0 1px #00e5ff2e;
+}
+
+/* Botão principal e campos */
+.zd-gradient-btn {
+  border-radius: 0 !important;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  letter-spacing: .03em;
+}
+.zd-input {
+  border: 0 !important;
+  border-radius: 0 !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  background: #07170f;
+  box-shadow: inset 0 0 0 1px #00e5ff3d;
+}
+.zd-input:focus {
+  box-shadow: inset 0 0 0 1px #00e5ff85, 0 0 0 3px #00e5ff14;
+  border-color: transparent;
+}
+
+/* Etiquetas */
+.zd-tag, .zd-tag-blue {
+  border: 0 !important;
+  border-radius: 0 !important;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  letter-spacing: .1em;
+}
+.zd-tag { box-shadow: inset 0 0 0 1px #00ff6440; }
+.zd-tag-blue { box-shadow: inset 0 0 0 1px #00c8ff4d; }
+
+/* Nós da jornada gamificada */
+.journey-node { border-radius: 0 !important; }
+.journey-node.concluida, .journey-node.atual, .journey-node.bloqueada {
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+}
+
+/* Barra de rolagem em bloco, sem raio */
+::-webkit-scrollbar-thumb { border-radius: 0; background: #00e5ff33; }
+::-webkit-scrollbar-thumb:hover { background: #00e5ff66; }
