@@ -49,6 +49,17 @@ export const api = {
   notificacoes: () => req('/notificacoes'),
   editais: () => req('/editais'),
   editalAderencia: (editalId, projetoId) => req(`/editais/${editalId}/aderencia`, { method: 'POST', body: JSON.stringify({ projetoId }) }),
+  // Radar de editais: varredura diária, matches explicáveis e alertas
+  editaisRadar: () => req('/editais/radar'),
+  editaisMatches: (minimo = 0) => req(`/editais/matches?minimo=${minimo}`),
+  editaisMatchesProjeto: (projetoId) => req(`/editais/matches/${projetoId}`),
+  editaisAlertas: () => req('/editais/alertas'),
+  editaisAlertaLido: (id) => req(`/editais/alertas/${id}/lido`, { method: 'POST' }),
+  editaisVarrer: () => req('/editais/varrer', { method: 'POST' }),
+  // Calculadora e plano de compensação
+  carbonPerfis: () => req('/carbon/perfis'),
+  planoCompensacao: (body) => req('/carbon/plano-compensacao', { method: 'POST', body: JSON.stringify(body) }),
+  planosCompensacao: () => req('/carbon/plano-compensacao'),
   analyze: (body) => req('/analyze', { method: 'POST', body: JSON.stringify(body) }),
   chat: (mensagens) => req('/chat', { method: 'POST', body: JSON.stringify({ mensagens }) }),
   chatHistorico: () => req('/chat'),
@@ -84,6 +95,24 @@ export async function abrirRelatorio(relId) {
   if (!res.ok) throw new Error('Falha ao abrir o relatório.');
   const blob = await res.blob();
   window.open(URL.createObjectURL(blob.slice(0, blob.size, 'text/html')), '_blank');
+}
+
+// Baixa ou abre o Plano de Compensação
+export async function baixarPlanoCompensacao(planoId, formato = 'docx') {
+  const res = await fetch(`/api/carbon/plano-compensacao/${planoId}.${formato}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Falha ao gerar o documento.');
+  const blob = await res.blob();
+  if (formato === 'html') {
+    window.open(URL.createObjectURL(blob.slice(0, blob.size, 'text/html')), '_blank');
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `plano-de-compensacao.${formato}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 // SSE da geração do plano (EventSource não envia headers → usa fetch streaming)

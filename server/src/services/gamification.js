@@ -33,6 +33,7 @@ export const XP_EVENTOS = {
   fase_avancada: 120,
   missao_concluida: 30,
   calculo_carbono: 20,
+  plano_compensacao: 70,
   compensacao_carbono: 60,
   streak_diario: 5,
 };
@@ -59,6 +60,7 @@ const CONQUISTAS = {
   primeiro_download: { nome: 'Documentado', emoji: '📄', descricao: 'Baixou um plano em DOCX/PDF' },
   primeira_validacao: { nome: 'Broto Validado', emoji: '🌿', descricao: 'Avançou para a fase de Validação' },
   guardiao_floresta: { nome: 'Guardião da Floresta', emoji: '🛡️', descricao: 'Calculou seu passivo ambiental' },
+  estrategista_clima: { nome: 'Estrategista do Clima', emoji: '🗺️', descricao: 'Criou um plano de compensação com metas de redução' },
   carbono_neutro: { nome: 'Pegada Compensada', emoji: '🍃', descricao: 'Compensou emissões com créditos de carbono' },
 };
 

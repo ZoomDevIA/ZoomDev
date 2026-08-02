@@ -4,8 +4,7 @@ import { Router } from 'express';
 import { store, save } from '../store.js';
 import { config } from '../config.js';
 import { structured, conversar } from '../agents/claude.js';
-import { AGENTES_GERAIS, AGENTES_BIO, EDITAIS_SEED, NOTIFICACOES_SEED } from '../data/seeds.js';
-import { aderenciaHeuristica } from '../services/unicornio.js';
+import { AGENTES_GERAIS, AGENTES_BIO, NOTIFICACOES_SEED } from '../data/seeds.js';
 import { nudgesDoDia, dispensarNudge, aceitarNudge } from '../services/agentBus.js';
 
 export const platformRouter = Router();
@@ -18,62 +17,7 @@ platformRouter.get('/notificacoes', (_req, res) => {
   res.json(NOTIFICACOES_SEED);
 });
 
-platformRouter.get('/editais', (_req, res) => {
-  res.json(EDITAIS_SEED);
-});
-
-// "IA Calcular Aderência" (protótipo): score de compatibilidade projeto × edital
-const ADERENCIA_SCHEMA = {
-  type: 'object',
-  properties: {
-    score: { type: 'integer' },
-    motivo: { type: 'string' },
-    proximosPassos: { type: 'array', items: { type: 'string' } },
-  },
-  required: ['score', 'motivo', 'proximosPassos'],
-  additionalProperties: false,
-};
-
-function aderenciaDemo(edital, projeto) {
-  const bio = projeto.classificacao === 'biostartup';
-  const editalBio = edital.tags.some(t => ['bioeconomia', 'sociobiodiversidade', 'amazônia', 'sustentabilidade'].includes(t));
-  // Mesma régua do Radar Unicórnio/Sexta-Feira — uma verdade só no ecossistema
-  const score = aderenciaHeuristica(edital, projeto);
-  return {
-    score,
-    motivo: bio && editalBio
-      ? 'Projeto de bioeconomia com forte alinhamento temático ao foco do edital.'
-      : 'Compatibilidade com o estágio do projeto; verifique o enquadramento temático no texto do edital.',
-    proximosPassos: ['Ler o edital completo e os critérios de elegibilidade', 'Adaptar o plano de negócios ao formulário', 'Preparar documentação e certidões'],
-  };
-}
-
-platformRouter.post('/editais/:id/aderencia', async (req, res, next) => {
-  try {
-    const edital = EDITAIS_SEED.find(e => e.id === req.params.id);
-    if (!edital) return res.status(404).json({ error: 'Edital não encontrado.' });
-    const proj = store.projects[req.body?.projetoId];
-    if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });
-
-    let resultado;
-    if (!config.hasApiKey) {
-      resultado = aderenciaDemo(edital, proj);
-    } else {
-      try {
-        resultado = await structured({
-          system: 'Você é o Agente Editais da ZoomDev OS. Avalie a aderência de um projeto a um edital brasileiro de fomento e seja realista no score (0-100).',
-          user: `EDITAL: ${edital.nome} (${edital.orgao}) — foco: ${edital.foco}. ${edital.descricao}\nPROJETO: ${proj.nome} (${proj.classificacao}, vertical ${proj.vertical}) — ${proj.descricao}`,
-          schema: ADERENCIA_SCHEMA,
-          effort: 'low',
-          maxTokens: 2000,
-        });
-      } catch {
-        resultado = aderenciaDemo(edital, proj);
-      }
-    }
-    res.json({ edital: edital.id, projeto: proj.id, ...resultado });
-  } catch (e) { next(e); }
-});
+// Editais e aderência migraram para routes/editais.js (radar diário + match explicável).
 
 // Ações rápidas do dashboard (analyzeStartup do protótipo): market | financial | edital | competitor
 const ANALISE_SCHEMA = {

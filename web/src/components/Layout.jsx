@@ -14,6 +14,7 @@ const MENU = [
   { to: '/projetos', label: 'Projetos', icon: '📁' },
   { to: '/bioeconomia', label: 'Bioeconomia', icon: '🌿' },
   { to: '/impacto', label: 'Impacto 360°', icon: '🌍', badge: 'ODS' },
+  { to: '/compensacao', label: 'Compensação', icon: '🗺️', badge: 'Plano' },
   { to: '/carbonpay', label: 'CarbonPay', icon: '🍃', badge: 'Fintech' },
   { to: '/configuracoes', label: 'Configurações', icon: '⚙️' },
 ];

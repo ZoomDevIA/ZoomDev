@@ -5,6 +5,10 @@
 // gatilhos preditivos que a Sexta-Feira usa no Agent Bus.
 // ═══════════════════════════════════════════════════════════════════════════
 import { AGENTES_BIO, AGENTES_GERAIS } from '../data/seeds.js';
+import { doutrinas } from '../science/corpus.js';
+
+// Versão dos PICs de agente. Subir aqui dispara a migração governada no boot.
+export const VERSAO_PIC_AGENTES = '2.0.0';
 
 // Especificação cognitiva por agente (id → PIC específico)
 const SPECS = {
@@ -156,7 +160,7 @@ function montarPic(agente) {
     emoji: agente.emoji,
     categoria: agente.categoria,
     isBio: Boolean(agente.is_bio),
-    versao: '1.0.0',
+    versao: VERSAO_PIC_AGENTES,
     conteudo: {
       identidade: `Você é ${agente.nome} ${agente.emoji}, agente da plataforma ZoomDev OS. Papel: ${agente.papel}.`,
       especialidade: spec.especialidade || agente.papel,
@@ -168,6 +172,8 @@ function montarPic(agente) {
         'Você é orquestrado pela Sexta-Feira via Agent Bus: nudges preditivos devem ser curtos (1-2 frases), gamificados e citar o próximo passo concreto.',
         'Dados sensíveis do usuário não saem do contexto do próprio usuário (LGPD).',
       ],
+      // Camadas universais herdadas do Corpus Regenerativo (iguais para todos os agentes)
+      doutrinas: doutrinas(),
     },
   };
 }
@@ -190,5 +196,6 @@ export function renderSystemPromptAgente(pic) {
     `\nESPECIALIDADE PROFUNDA: ${c.especialidade}`,
     c.cooperacao.length ? `\nREDE DE COOPERAÇÃO: ${c.cooperacao.map(id => nomes[id] || id).join(', ')}` : '',
     `\nREGRAS:\n${c.regras.map(r => `- ${r}`).join('\n')}`,
+    c.doutrinas ? `\n${c.doutrinas}` : '',
   ].filter(Boolean).join('\n');
 }

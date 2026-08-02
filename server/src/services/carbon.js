@@ -59,10 +59,10 @@ export const PROJETOS_CARBONPAY = [
 ];
 
 /**
- * Calcula o passivo (tCO2e/ano) a partir de dados simples da operação.
- * Entradas mensais; saída anualizada por escopo, com transparência de fatores.
+ * @deprecated Substituída por services/passivoAmbiental.js (perfis setoriais,
+ * módulo agro e faixa de incerteza). Mantida apenas para compatibilidade.
  */
-export function calcularPassivo(dados) {
+export function calcularPassivoLegado(dados) {
   const n = (v) => Math.max(0, Number(v) || 0);
   const F = FATORES;
 

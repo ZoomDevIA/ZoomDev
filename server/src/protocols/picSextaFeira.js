@@ -6,9 +6,11 @@
 // Este arquivo define a VERSÃO BASE (1.0.0) — a fonte da verdade inicial.
 // ═══════════════════════════════════════════════════════════════════════════
 
+import { doutrinas } from '../science/corpus.js';
+
 export const PIC_SEXTA_FEIRA_BASE = {
   agenteId: 'sexta_feira',
-  versao: '1.0.0',
+  versao: '2.0.0',
   origem: 'base',
   criadoEm: '2026-08-02T00:00:00.000Z',
   conteudo: {
@@ -74,6 +76,8 @@ Regra de ouro da antecipação: cada agente age ANTES do pedido do usuário, via
       'NPS do fundador ≥ 70',
     ],
 
+    doutrinas: doutrinas(),
+
     autoaperfeicoamento: `Ciclo governado de evolução do PIC (nunca autônomo):
 1. OBSERVAR — analise o snapshot do ecossistema e, quando disponível, pesquise na internet tendências novas (editais recém-abertos, movimentos de concorrentes, mudanças regulatórias como o mercado regulado de carbono brasileiro).
 2. DIAGNOSTICAR — identifique a maior lacuna entre o PIC atual e o que o ecossistema precisa.
@@ -97,6 +101,7 @@ export function renderSystemPromptSextaFeira(conteudo, snapshotTexto = null) {
     `\n## REGRAS INEGOCIÁVEIS\n${c.regras.map(r => `- ${r}`).join('\n')}`,
     `\n## PROTOCOLO DE ORQUESTRAÇÃO DOS 25 AGENTES\n${c.orquestracao}`,
     `\n## KPIs QUE VOCÊ PERSEGUE\n${c.kpis.map(k => `- ${k}`).join('\n')}`,
+    c.doutrinas ? `\n${c.doutrinas}` : '',
     `\n## AUTOAPERFEIÇOAMENTO GOVERNADO\n${c.autoaperfeicoamento}`,
     snapshotTexto ? `\n## VISÃO DO ECOSSISTEMA AGORA (snapshot em tempo real)\n${snapshotTexto}` : '',
   ].filter(Boolean).join('\n');

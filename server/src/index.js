@@ -9,6 +9,9 @@ import { carbonRouter } from './routes/carbon.js';
 import { platformRouter } from './routes/platform.js';
 import { adminRouter } from './routes/admin.js';
 import { impactoRouter } from './routes/impacto.js';
+import { editaisRouter } from './routes/editais.js';
+import { migrarPicAgentes } from './protocols/migracao.js';
+import { agendarPulso } from './services/pulsoDiario.js';
 import { initPic } from './agents/sextaFeira.js';
 import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gamification.js';
 
@@ -46,6 +49,7 @@ app.use('/api/projects', projectsRouter);
 app.use('/api/carbon', carbonRouter);
 app.use('/api/admin', adminMiddleware, adminRouter);
 app.use('/api/impacto', impactoRouter);
+app.use('/api/editais', editaisRouter);
 app.use('/api', platformRouter);
 
 app.use((err, _req, res, _next) => {
@@ -54,8 +58,14 @@ app.use((err, _req, res, _next) => {
   res.status(status).json({ error: err.message || 'Erro interno.', code: err.code });
 });
 
-// Garante o PIC fundador da Sexta-Feira no primeiro boot
+// Protocolos: garante o PIC da Sexta-Feira e migra os PICs dos agentes se a
+// versão base do código evoluiu (histórico preservado, rollback disponível).
 initPic();
+const migracao = migrarPicAgentes();
+if (migracao) console.log(`PIC agentes: v${migracao.de} → v${migracao.para} (${migracao.total} agente(s) atualizado(s))`);
+
+// Pulso diário: varredura de editais, matches, radar e alertas
+agendarPulso();
 
 process.on('SIGINT', () => { save(); process.exit(0); });
 

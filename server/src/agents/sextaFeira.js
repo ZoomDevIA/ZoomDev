@@ -18,6 +18,19 @@ import { FASE_LABEL } from '../services/gamification.js';
 // ── PIC: ciclo de vida versionado ────────────────────────────────────────────
 
 export function initPic() {
+  // Migração governada: se a versão base do código evoluiu, versiona sem apagar histórico
+  if (store.pic && !store.pic.versoes.some(v => v.versao === PIC_SEXTA_FEIRA_BASE.versao)) {
+    const anterior = store.pic.versaoAtual;
+    store.pic.versoes.push({
+      versao: PIC_SEXTA_FEIRA_BASE.versao,
+      criadoEm: new Date().toISOString(),
+      origem: 'migracao',
+      notas: `Migração de v${anterior} para v${PIC_SEXTA_FEIRA_BASE.versao}: visão holística 360° e doutrinas do Corpus Regenerativo.`,
+      conteudo: PIC_SEXTA_FEIRA_BASE.conteudo,
+    });
+    store.pic.versaoAtual = PIC_SEXTA_FEIRA_BASE.versao;
+    save();
+  }
   if (!store.pic) {
     store.pic = {
       versaoAtual: PIC_SEXTA_FEIRA_BASE.versao,
@@ -325,6 +338,8 @@ export function relatorioHtml(rel) {
 
 // ── Autoaperfeiçoamento governado do PIC ─────────────────────────────────────
 
+// `doutrinas` fica FORA das seções editáveis: é a base ética compartilhada com
+// os 27 agentes e só muda por atualização de código, nunca por autoevolução.
 const SECOES_EDITAVEIS = ['identidade', 'missao', 'dominios', 'ferramentas', 'regras', 'orquestracao', 'kpis', 'autoaperfeicoamento'];
 
 function propostaDemo(s, conteudoAtual) {

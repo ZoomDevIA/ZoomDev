@@ -221,123 +221,6 @@ function Simulador({ dossie }) {
   );
 }
 
-// ── Programa INCEMA (dados verificados) ─────────────────────────────────────
-function ProgramaFomento({ selos }) {
-  const [f, setF] = useState(null);
-  const [agregado, setAgregado] = useState(null);
-
-  useEffect(() => {
-    api.fomento().then(setF).catch(() => {});
-    api.simularPrograma().then(setAgregado).catch(() => {});
-  }, []);
-
-  if (!f) return <div className="text-white/40 text-sm">Carregando programa…</div>;
-
-  return (
-    <div className="space-y-5">
-      <div className="zd-card-glow rounded-2xl p-5">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="min-w-0">
-            <h3 className="font-heading font-bold">{f.programa.nome}</h3>
-            <p className="text-xs text-white/50 mt-1">{f.programa.instrumento}</p>
-          </div>
-          <SeloBadge selo={f.programa.selo} selos={selos} />
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-          <Metrica emoji="💵" valor={brl(f.programa.valorGlobal)} unidade="" label="Valor global do fomento" />
-          <Metrica emoji="👨‍👩‍👧" valor={fmt(f.beneficiarios.familias)} unidade="famílias" label={`em ${f.beneficiarios.entidades} entidades`} cor="#00c8ff" />
-          <Metrica emoji="🌾" valor={fmt(f.beneficiarios.hectaresDeclarados)} unidade="ha" label={`${f.cobertura.percentualEstado}% da área agrícola mapeada do AP`} cor="#ffd700" />
-          <Metrica emoji="🛢️" valor={fmt(f.insumo.litrosContratados)} unidade="litros" label={`${f.insumo.litrosPorHectare} L/ha · ${fmt(f.insumo.hectaresAplicacao)} ha-aplicação`} cor="#a855f7" />
-        </div>
-        <div className="text-[11px] text-white/40 mt-3">
-          Verificação: {f.programa.verificacao} · Motivação: {f.programa.motivacao}
-        </div>
-      </div>
-
-      {agregado && (
-        <div className="zd-card-glow rounded-2xl p-5">
-          <h3 className="font-heading font-bold">🌍 Impacto agregado projetado do programa</h3>
-          <p className="text-xs text-white/50 mt-1 mb-4">Cenário conservador aplicado às áreas declaradas no Plano de Trabalho.</p>
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            <Metrica emoji="🍽️" valor={fmt(agregado.agregado.pessoasAlimentadasAno)} unidade="pessoas/ano" label="Segurança alimentar" />
-            <Metrica emoji="⚡" valor={fmt(agregado.agregado.energiaKwhAno)} unidade="kWh/ano" label="Energia limpa potencial" cor="#00c8ff" />
-            <Metrica emoji="🌳" valor={fmt(agregado.agregado.co2eSequestradoTonAno)} unidade="tCO₂e" label="Sequestro adicional" />
-            <Metrica emoji="🚫" valor={fmt(agregado.agregado.co2eEvitadoTonAno)} unidade="tCO₂e" label="Emissão evitada" cor="#00c8ff" />
-            <Metrica emoji="💰" valor={brl(agregado.agregado.impactoEconomicoReais)} unidade="" label="Impacto econômico/ano" cor="#ffd700" />
-          </div>
-          <div className="text-[11px] text-white/40 mt-3">{agregado.aviso}</div>
-        </div>
-      )}
-
-      <Secao titulo="Pilares de impacto (PNDR/MIDR)" sub="Declarados na Nota Informativa nº 4/2024 e no Plano de Trabalho">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {f.pilares.map(p => (
-            <div key={p.id} className="zd-card rounded-xl p-4">
-              <div className="text-sm font-bold">{p.nome}</div>
-              <p className="text-[11px] text-white/55 mt-1 leading-snug">{p.descricao}</p>
-              <div className="text-[10px] text-white/30 mt-2">{p.fonte}</div>
-            </div>
-          ))}
-        </div>
-      </Secao>
-
-      <Secao titulo={`Beneficiários — ${f.entidades.length} entidades`}
-        sub={`${f.cobertura.entidadesQuilombolasIndigenas} quilombolas/indígenas · ${f.cobertura.entidadesExtrativistas} extrativistas`}>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          {f.entidades.map(e => (
-            <div key={e.sigla} className="zd-card rounded-lg px-3 py-2.5 flex items-center gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold truncate">{e.sigla}</div>
-                <div className="text-[10px] text-white/45 truncate">{e.nome}</div>
-              </div>
-              <div className="flex gap-1 shrink-0">
-                {e.quilombola && <span title="Quilombola" className="text-xs">✊🏿</span>}
-                {e.indigena && <span title="Indígena" className="text-xs">🪶</span>}
-                {e.extrativista && <span title="Extrativista" className="text-xs">🌿</span>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Secao>
-
-      <Secao titulo="Monitoramento independente" sub="Credibilidade de MRV exige olhos externos ao fabricante">
-        <div className="zd-card rounded-xl p-5">
-          <div className="flex items-start justify-between gap-3 flex-wrap">
-            <div>
-              <div className="font-bold text-sm">{f.monitoramento.instituicao}</div>
-              <div className="text-xs text-white/50 mt-0.5">{f.monitoramento.programa}</div>
-            </div>
-            <SeloBadge selo={f.monitoramento.selo} selos={selos} />
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-            <Metrica emoji="🎓" valor={f.monitoramento.estudantes} unidade="estudantes" label="de agronomia em campo" cor="#00c8ff" />
-            <Metrica emoji="🏢" valor={f.monitoramento.cooperativasMonitoradas} unidade="cooperativas" label="monitoradas" />
-            <Metrica emoji="📍" valor={f.monitoramento.municipios} unidade="municípios" label="cobertos" cor="#ffd700" />
-            <Metrica emoji="👥" valor={`${f.monitoramento.estudantesCapacitadosPrograma}+`} unidade="" label="capacitados no programa" cor="#a855f7" />
-          </div>
-          <p className="text-[11px] text-white/45 mt-3 leading-relaxed">{f.monitoramento.metodo}</p>
-          <p className="text-[11px] zd-green mt-1.5">{f.monitoramento.relevancia}</p>
-        </div>
-      </Secao>
-
-      {f.inconsistencias?.length > 0 && (
-        <Secao titulo="⚠️ Divergências documentais detectadas" sub="A plataforma nunca escolhe um número em silêncio">
-          {f.inconsistencias.map(i => (
-            <div key={i.id} className="rounded-xl border border-[#ff9f4344] bg-[#ff9f430d] p-4">
-              <div className="text-sm font-bold text-[#ff9f43]">{i.campo}</div>
-              <div className="text-xs text-white/65 mt-1.5">
-                Declarado na fonte: <b>{fmt(i.declarado)} {i.unidade}</b> · Soma dos itens listados: <b>{fmt(i.calculado)} {i.unidade}</b>
-              </div>
-              <div className="text-[11px] text-white/50 mt-2 leading-relaxed">{i.tratamento}</div>
-              <div className="text-[10px] text-white/30 mt-1.5">Fonte: {i.fonte}</div>
-            </div>
-          ))}
-        </Secao>
-      )}
-    </div>
-  );
-}
-
 // ── Dossiê científico ───────────────────────────────────────────────────────
 function Dossie({ dossie }) {
   const [filtro, setFiltro] = useState('todas');
@@ -349,7 +232,7 @@ function Dossie({ dossie }) {
   const LABEL = { todas: 'Todas', regulatorio: 'Regulatório', institucional: 'Institucional', agronomico: 'Agronômico', ambiental: 'Ambiental', modelo: 'Modelo de negócio', mecanismo: 'Mecanismo' };
 
   if (!dossie) return <div className="text-white/40 text-sm">Carregando dossiê…</div>;
-  const lista = filtro === 'todas' ? dossie.evidencias : dossie.evidencias.filter(e => e.categoria === filtro);
+  const lista = filtro === 'todas' ? dossie.efeitos : dossie.efeitos.filter(e => e.categoria === filtro);
 
   return (
     <div className="space-y-5">
@@ -404,17 +287,11 @@ function Dossie({ dossie }) {
         {lista.map(e => (
           <div key={e.id} className="zd-card rounded-xl p-4">
             <div className="flex items-start justify-between gap-3 flex-wrap">
-              <p className="text-sm text-white/85 flex-1 min-w-[240px] leading-relaxed">{e.alegacao}</p>
+              <p className="text-sm text-white/85 flex-1 min-w-[240px] leading-relaxed">{e.efeito}</p>
               <SeloBadge selo={e.selo} selos={selos} />
             </div>
-            <div className="text-[11px] text-white/45 mt-2.5"><b className="text-white/60">Fonte:</b> {e.fonte}</div>
-            <div className="text-[11px] text-white/45 mt-1"><b className="text-white/60">Verificação:</b> {e.verificacao}</div>
-            {e.contexto && (
-              <div className="text-[11px] text-white/55 mt-2 rounded-lg bg-white/[.04] border border-white/8 px-3 py-2 leading-relaxed">
-                💡 {e.contexto}
-              </div>
-            )}
-          </div>
+            <div className="text-[11px] text-white/45 mt-2.5"><b className="text-white/60">Relevância:</b> {e.relevancia}</div>
+                      </div>
         ))}
       </div>
     </div>
@@ -524,7 +401,6 @@ export default function Impacto() {
 
   const TABS = [
     ['simulador', '🌍 Simulador 360°'],
-    ['programa', '🏛️ Programa INCEMA'],
     ['dossie', '🔬 Dossiê científico'],
     ['biogen', '🪙 BIOGEN'],
   ];
@@ -551,7 +427,6 @@ export default function Impacto() {
       </div>
 
       {tab === 'simulador' && <Simulador dossie={dossie} />}
-      {tab === 'programa' && <ProgramaFomento selos={dossie?.selos} />}
       {tab === 'dossie' && <Dossie dossie={dossie} />}
       {tab === 'biogen' && <Biogen selos={dossie?.selos} />}
     </div>

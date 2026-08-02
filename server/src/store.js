@@ -5,7 +5,11 @@ import { config } from './config.js';
 
 const DB_FILE = path.join(config.dataDir, 'db.json');
 
-const empty = () => ({ users: {}, projects: {}, sessions: {}, carbonOrders: {}, pic: null, nudges: {}, reports: {} });
+const empty = () => ({
+  users: {}, projects: {}, sessions: {}, carbonOrders: {},
+  pic: null, picAgentes: null, nudges: {}, reports: {},
+  radar: null, pulso: null, planosCompensacao: {},
+});
 
 let db = empty();
 
@@ -44,6 +48,16 @@ export const store = {
   get nudges() { return db.nudges; },
   // Relatórios do ecossistema gerados pela Sexta-Feira
   get reports() { return db.reports; },
+  // PICs versionados dos agentes da plataforma
+  get picAgentes() { return db.picAgentes; },
+  set picAgentes(v) { db.picAgentes = v; },
+  // Radar de editais (descobertas e execuções) e pulso diário
+  get radar() { return db.radar; },
+  set radar(v) { db.radar = v; },
+  get pulso() { return db.pulso; },
+  set pulso(v) { db.pulso = v; },
+  // Planos de compensação salvos por usuário
+  get planosCompensacao() { return db.planosCompensacao; },
 };
 
 export function id(prefix) {

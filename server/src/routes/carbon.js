@@ -3,9 +3,12 @@ import { Router } from 'express';
 import crypto from 'node:crypto';
 import { store, save, id } from '../store.js';
 import {
-  calcularPassivo, PROJETOS_CARBONPAY, FATORES,
+  PROJETOS_CARBONPAY, FATORES as FATORES_LEGADO,
   sequestroBiogenesis, CULTURAS_BIOGENESIS, CENARIOS_BIOGENESIS,
 } from '../services/carbon.js';
+import { calcularPassivo, benchmark, PERFIS, CAMPOS, FATORES } from '../services/passivoAmbiental.js';
+import { montarPlano } from '../services/planoCompensacao.js';
+import { planoCompensacaoHtml, planoCompensacaoDocx } from '../services/exportPlanoCompensacao.js';
 import { awardXP } from '../services/gamification.js';
 import { CARBONPAY_ITENS, SEQUESTRO_BIOMAS, SEQUESTRO_TIPOS } from '../data/seeds.js';
 
@@ -110,11 +113,71 @@ carbonRouter.post('/biogenesis', (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// Perfis setoriais e campos da calculadora
+carbonRouter.get('/perfis', (_req, res) => {
+  res.json({ perfis: Object.values(PERFIS), campos: CAMPOS });
+});
+
 carbonRouter.post('/calcular', (req, res) => {
   const resultado = calcularPassivo(req.body || {});
+  resultado.benchmark = benchmark(resultado.totalTco2eAno, req.body?.perfil);
   const gam = awardXP(req.user, 'calculo_carbono', { total: resultado.totalTco2eAno });
   save();
   res.json({ resultado, gamificacao: gam });
+});
+
+// ── Plano de Compensação: Medir → Reduzir → Compensar ─────────────────────
+carbonRouter.post('/plano-compensacao', (req, res, next) => {
+  try {
+    const { dados, horizonteAnos, metaReducaoPercentual, areaPropria } = req.body || {};
+    if (!dados) return res.status(400).json({ error: 'Envie os dados do inventário em "dados".' });
+    const inventario = calcularPassivo(dados);
+    inventario.benchmark = benchmark(inventario.totalTco2eAno, dados.perfil);
+    if (inventario.totalTco2eAno <= 0) {
+      return res.status(400).json({ error: 'Informe ao menos uma fonte de emissão para gerar o plano.' });
+    }
+    const plano = montarPlano(inventario, { horizonteAnos, metaReducaoPercentual, areaPropria });
+
+    const planoId = id('pcz');
+    const registro = { id: planoId, userId: req.user.id, criadoEm: new Date().toISOString(), entrada: dados, inventario, plano };
+    store.planosCompensacao[planoId] = registro;
+    const gam = awardXP(req.user, 'plano_compensacao', { total: inventario.totalTco2eAno });
+    save();
+    res.json({ id: planoId, inventario, plano, gamificacao: gam });
+  } catch (e) { next(e); }
+});
+
+carbonRouter.get('/plano-compensacao', (req, res) => {
+  res.json(Object.values(store.planosCompensacao)
+    .filter(p => p.userId === req.user.id)
+    .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
+    .map(p => ({ id: p.id, criadoEm: p.criadoEm, total: p.inventario.totalTco2eAno, meta: p.plano.reduzir.metaPercentual })));
+});
+
+// As rotas de download vêm ANTES da rota genérica :id — senão "abc.docx" é
+// interpretado como um id e nunca chega aqui.
+carbonRouter.get('/plano-compensacao/:id.html', (req, res) => {
+  const p = store.planosCompensacao[req.params.id];
+  if (!p || p.userId !== req.user.id) return res.status(404).json({ error: 'Plano não encontrado.' });
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(planoCompensacaoHtml(p, req.user));
+});
+
+carbonRouter.get('/plano-compensacao/:id.docx', async (req, res, next) => {
+  try {
+    const p = store.planosCompensacao[req.params.id];
+    if (!p || p.userId !== req.user.id) return res.status(404).json({ error: 'Plano não encontrado.' });
+    const buf = await planoCompensacaoDocx(p, req.user);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', 'attachment; filename="plano-de-compensacao.docx"');
+    res.send(buf);
+  } catch (e) { next(e); }
+});
+
+carbonRouter.get('/plano-compensacao/:id', (req, res) => {
+  const p = store.planosCompensacao[req.params.id];
+  if (!p || p.userId !== req.user.id) return res.status(404).json({ error: 'Plano não encontrado.' });
+  res.json(p);
 });
 
 // Pedido de compensação (demo: registra a intenção; produção integraria API de

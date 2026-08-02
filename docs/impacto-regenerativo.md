@@ -1,116 +1,126 @@
-# Motor de Impacto Regenerativo 360°
+# Corpus Regenerativo, Calculadora e Radar de Editais
 
-Traduz a aplicação prática do Biogenesis COT BioTechnology em impacto real e mensurável.
-Cada número carrega o Selo de Evidência que o sustenta e o cenário é **conservador por padrão**.
+## 1. Corpus Regenerativo — conhecimento interno, não conteúdo
 
----
+`server/src/science/corpus.js` é a camada **interna** que destila o acervo documental
+do fundador em parâmetros, protocolos e doutrinas operacionais.
 
-## As cinco dimensões
+**Não é servido por nenhuma rota pública** e não contém — nem pode receber:
+nomes de entidades, cooperativas, pessoas ou instituições; CNPJs; valores de contrato;
+códigos de processo; contagens de beneficiários; ou localidades específicas de ensaio.
 
-```
-                    ┌─────────────────────────┐
-                    │  BIOGENESIS COT em campo │
-                    └────────────┬─────────────┘
-                                 ↓
-                    ganho de biomassa / área foliar
-                                 ↓
-   ┌──────────────┬──────────────┼──────────────┬──────────────┐
-   ↓              ↓              ↓              ↓              ↓
-🍽️ ALIMENTAR  ⚡ ENERGIA    🌳 CARBONO    💰 ECONOMIA    🇺🇳 ODS
- produção      resíduo →      sequestro      renda +        Agenda
- adicional     biodigestor    adicional      energia +      2030
-    ↓          → biogás           ↓          crédito           ↓
- kcal →        → kWh          tCO₂e          R$/ano        13 ODS
- pessoas/ano   comunidade                                  justificados
-```
+O que ele carrega é **conhecimento**: como a tecnologia se comporta, em que condições,
+com que confiança. O usuário sente a qualidade do dado sem nunca ver a fonte.
 
-## 1. Segurança alimentar
-Produção adicional → kcal → **pessoas-ano em equivalente calórico** (referência FAO: 2.100 kcal/dia).
-Métrica declarada como *equivalente calórico*, nunca como "alimenta X pessoas" — honestidade metodológica.
+### O achado que organiza tudo
+A resposta do Biogenesis é **inversamente proporcional à qualidade inicial do solo**:
 
-## 2. Transição energética verde justa — o elo que ninguém conecta
+| Condição do solo | Ganho de produtividade | Confiança | Faixa |
+|---|---|---|---|
+| Degradado (ácido, sem correção) | **+200%** | 🌱 Laudo | 120–200% |
+| Em recuperação | +80% | 🌾 Campo | 40–110% |
+| Corrigido e manejado | +30% | 🌱 Laudo | 15–45% |
 
-Este é o diferencial. A cadeia completa:
+Isso inverte a lógica do agro convencional e transforma a tecnologia em **instrumento de
+justiça social**: entrega mais onde a agricultura familiar mais sofre.
 
-```
-biomassa extra → resíduo agrícola → biodigestão anaeróbia → biogás
-                                                              ↓
-                            ┌─────────────────────────────────┴──────────────┐
-                            ↓                                                ↓
-                  🔥 ROTA TÉRMICA                                  💡 ROTA ELÉTRICA
-                  cocção comunitária                               motor-gerador
-                  substitui GLP (botijão P13)                      substitui diesel
-                            ↓                                                ↓
-                  famílias com fogão limpo                          domicílios com energia
-```
-
-**Balanço fechado — regra inegociável:** cada m³ de biogás segue **uma** rota. O mesmo
-conteúdo energético **nunca** é contabilizado como GLP e diesel ao mesmo tempo. A divisão
-é explícita (padrão 50/50) e aparece na interface. Dupla contagem é o erro que destrói a
-credibilidade de qualquer projeto de carbono — o motor é arquitetado para torná-la impossível.
-
-**Por que "justa"** (definição OIT): a energia é gerada e gerida **pela própria comunidade**.
-Quem regenera o território é dono da energia e da renda que produz — não fornecedor de
-matéria-prima barata para terceiros. Isso responde à dependência de diesel transportado por
-longas distâncias fluviais na Amazônia.
-
-### Parâmetros (selo 📄 Pesquisa)
-| Parâmetro | Valor |
-|---|---|
-| Biogás por tonelada de sólidos voláteis | 350 m³ |
-| Matéria seca do resíduo fresco | 35% |
-| Sólidos voláteis / matéria seca | 80% |
-| Metano no biogás | 60% |
-| Energia do biogás | 6,0 kWh/m³ |
-| Eficiência do motor-gerador | 35% |
-| Botijão P13 evitado | 175 kWh · 37,4 kgCO₂e |
-| Diesel evitado | 3,4 kWh/L · 2,6 kgCO₂e/L |
-| Domicílio rural amazônico | 1.800 kWh/ano |
-
-## 3. Carbono e ecossistemas
-Sequestro adicional pelo ganho de biomassa: matéria seca × 47% (fração de carbono, IPCC) × 3,667 (CO₂/C).
-**Sempre em modo `ESTIMATIVA`.** Vira crédito apenas com MRV instrumentado, verificação por
-terceira parte acreditada, aposentadoria em registro público e avaliação de adicionalidade e permanência.
-
-## 4. Economia / bioeconomia
-Receita agrícola adicional + economia de energia (impacto direto) apresentadas **separadamente**
-do potencial de crédito de carbono — que só se realiza após verificação e nunca é somado como certo.
-
-## 5. ODS — justificados, não declarados
-Até 13 ODS, cada um com o número da simulação que o sustenta. ODS 2, 7, 13 e 15 são o núcleo;
-ODS 10 e 17 vêm da estrutura do programa (quilombolas, indígenas, PNDR, IFAP).
+### As três doutrinas (injetadas em TODOS os PICs)
+1. **Doutrina de Evidência** — escala de selos, regra do elo mais fraco, mecanismo ≠ resultado, balanço físico fechado, divergência se expõe.
+2. **Doutrina Regenerativa** — visão 360°, hierarquia de mitigação, transição justa (OIT), ODS com número.
+3. **Confidencialidade do Acervo** — o que nunca pode ser citado ao usuário; ao ser questionado sobre origem, responder pelo **nível de evidência**, nunca pelo documento.
 
 ---
 
-## Programa INCEMA/MIDR — o caso-âncora real
+## 2. PICs 2.0 governados — 27 agentes + Sexta-Feira
 
-| | |
-|---|---|
-| Instrumento | Termo de Fomento, Lei 13.019/2014 art. 51 |
-| Valor global | **R$ 3.798.400,00** |
-| Executor | INCEMA (OSC, CNPJ 05.480.483/0001-92) |
-| Concedente | Secretaria da Pesca e Aquicultura do Amapá |
-| Execução financeira | OCB — Sistema de Cooperativas do Amapá |
-| Política pública | PNDR — Política Nacional de Desenvolvimento Regional |
-| Beneficiários | 17 entidades · 732 famílias · 1.148 ha declarados |
-| Insumo | 17.220 L a R$ 140/L · 5 L/ha · 3.444 ha-aplicação |
-| Motivação | Decreto estadual nº 6.621/AP — emergência fitossanitária na mandioca |
-| Verificação | SEI/MIDR 5205257 · CRC 83DFD260 |
+| | Antes | Agora |
+|---|---|---|
+| Sexta-Feira | v1.x, versionada no banco | **v2.0.0** com visão 360° e doutrinas |
+| 27 agentes | v1.0.0 estáticos no código | **v2.0.0 versionados**, com histórico e rollback |
 
-Perfil dos beneficiários: **4 entidades quilombolas/indígenas** e **5 extrativistas** entre as 17.
+**Migração automática e não destrutiva** (`protocols/migracao.js`): quando a versão base do
+código evolui, o sistema versiona no boot, calcula o **diff por agente** (quais campos mudaram)
+e preserva o histórico. O administrador vê o que mudou e pode reverter.
 
-### Divergência documental detectada
-O Plano de Trabalho declara **1.148 ha**, mas a soma das culturas listadas resulta em **1.508 ha**.
-A plataforma **expõe o conflito e adota o valor mais conservador** (1.148 ha), sinalizando a
-necessidade de reconciliação com o concedente antes de qualquer uso em MRV ou emissão de crédito.
+As **doutrinas ficam fora das seções editáveis** pela autoevolução — são a base ética
+compartilhada e só mudam por atualização de código, nunca por decisão autônoma da IA.
 
-> Princípio: a plataforma nunca escolhe um número em silêncio.
+---
+
+## 3. Calculadora de Passivo Ambiental
+
+`server/src/services/passivoAmbiental.js`
+
+**Perfis setoriais** — cada um pergunta só o que importa:
+`digital` · `agro` · `industria` · `comercio` · `evento`
+
+**Módulo agro** (novo): N₂O de fertilizante nitrogenado (4,29 kgCO₂e/kg N, IPCC 2019),
+calcário agrícola, fermentação entérica, queima de resíduo em campo, defensivos, frete fluvial.
+
+**Faixa de incerteza** em vez de número único — propagação em quadratura com incerteza por
+escopo (E1 10%, E2 7%, E3 30%). *Um inventário honesto declara sua margem; número único é
+falsa precisão.*
+
+**Benchmark** por porte e setor para dar contexto ao resultado.
+
+---
+
+## 4. Plano de Compensação
+
+`server/src/services/planoCompensacao.js` · exportável em **DOCX** e **HTML diagramado**
+
+```
+   MEDIR  →  REDUZIR  →  COMPENSAR
+```
+
+**Compensar antes de reduzir é greenwashing.** O motor força a ordem:
+
+- **Medir**: inventário por escopo, maiores fontes, incerteza, metodologia
+- **Reduzir**: 13 oportunidades catalogadas, priorizadas por `impacto ÷ custo`, com "ganhos rápidos" (baixo custo + economia financeira) destacados, e roadmap plurianual com curva acelerada no início
+- **Compensar**: apenas o residual, com margem de 20%. Duas rotas comparadas — **área própria regenerada** (mantém o valor no território) vs **crédito verificado** (efeito imediato)
+
+**Conformidade explícita** no documento: o que você **pode** e **não pode** afirmar
+publicamente (ISO 14068-1 / CONAR). Mais alinhamento ODS justificado por número.
+
+---
+
+## 5. Radar de Editais + Pulso Diário
+
+`server/src/services/radarEditais.js` e `pulsoDiario.js`
+
+**Varredura diária.** Com `ANTHROPIC_API_KEY`, a Sexta-Feira busca na internet chamadas
+abertas (FINEP, FAPs, Sebrae, BNDES, CNPq, Embrapii, CONFAP, MCTI), estrutura os dados e
+descarta o que não tem prazo futuro ou fonte verificável. Sem chave, opera sobre a base
+curada recalculando prazos e matches.
+
+**Match multi-sinal explicável** (0–100), nunca um número solto:
+
+| Sinal | Peso | O que avalia |
+|---|---|---|
+| Tema | 35 | Alinhamento bio × foco socioambiental da chamada |
+| Estágio | 25 | Fase do projeto vs estágio esperado |
+| Maturidade | 20 | Plano pronto e missões de validação concluídas |
+| Prazo | 20 | Janela ideal (20 pts em 8–30 dias; penaliza < 7 dias) |
+
+**Pulso Diário** — a plataforma trabalha enquanto o fundador dorme. A cada ciclo:
+varre editais → recalcula matches de todos os projetos → atualiza o Radar Unicórnio →
+gera alertas de novo match e de prazo curto (≤ 15 dias com score ≥ 70) → publica no app.
+
+Agendamento: dispara no boot (se atrasado) e verifica a janela a cada 6h. Idempotente por dia.
 
 ## Endpoints
 
 ```
-POST /api/impacto/simular            simulação 360° (culturaId, hectares, cenarioId)
-GET  /api/impacto/simular-programa   impacto agregado do programa INCEMA
-GET  /api/impacto/fomento            dados verificados do programa
-GET  /api/impacto/biogen             conceito da criptomoeda BIOGEN
+GET  /api/carbon/perfis                        perfis setoriais e campos
+POST /api/carbon/calcular                      inventário com incerteza e benchmark
+POST /api/carbon/plano-compensacao             gera o plano completo
+GET  /api/carbon/plano-compensacao/:id.docx    documento Word
+GET  /api/carbon/plano-compensacao/:id.html    versão diagramada
+
+GET  /api/editais                              chamadas abertas com dias restantes
+GET  /api/editais/radar                        estado do radar e cobertura
+GET  /api/editais/matches                      melhores matches do usuário
+GET  /api/editais/matches/:projetoId           matches com decomposição explicável
+GET  /api/editais/alertas                      alertas gerados pelo pulso
+POST /api/editais/varrer                       varredura sob demanda (admin)
 ```
