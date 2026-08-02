@@ -8,6 +8,8 @@ import { awardXP, FASES, FASE_LABEL, NIVEL_STARTUP, missoesValidacaoPadrao } fro
 import { planoParaDocx } from '../services/exportDocx.js';
 import { planoParaPdf } from '../services/exportPdf.js';
 import { paginaHtml } from '../services/exportHtml.js';
+import { construirMvp, PECAS } from '../agents/mvpBuilder.js';
+import JSZip from 'jszip';
 
 export const projectsRouter = Router();
 
@@ -214,4 +216,91 @@ projectsRouter.get('/:id/plano.html', (req, res) => {
   if (!proj?.plano || proj.userId !== req.user.id) return res.status(404).json({ error: 'Plano não encontrado.' });
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(paginaHtml(proj));
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MVP BUILDER — do plano ao produto navegável (SSE, preview e ZIP)
+// ═══════════════════════════════════════════════════════════════════════════
+projectsRouter.get('/:id/mvp/construir', async (req, res) => {
+  const proj = store.projects[req.params.id];
+  if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });
+  if (!proj.plano) return res.status(409).json({ error: 'Gere o plano de negócios antes de construir o MVP.' });
+
+  const custo = config.credits.mvpBuild;
+  if (req.user.creditos < custo) {
+    return res.status(402).json({ error: `Seiva insuficiente: construir o MVP custa ${custo} 🌿.` });
+  }
+
+  res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+  const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+
+  req.user.creditos -= custo;
+  proj.mvp = { status: 'construindo', iniciadoEm: new Date().toISOString(), pecas: {} };
+  save();
+  send('inicio', { custo, pecas: PECAS });
+
+  try {
+    const { arquivos, modo } = await construirMvp(proj, (pecaId, status, arquivo) => {
+      proj.mvp.pecas[pecaId] = { status, arquivo };
+      send('peca', { peca: pecaId, status, arquivo });
+    });
+
+    proj.mvp = {
+      status: 'pronto', modo,
+      construidoEm: new Date().toISOString(),
+      arquivos,
+      pecas: proj.mvp.pecas,
+    };
+    const gam = awardXP(req.user, 'mvp_construido', { projeto: proj.id });
+    save();
+    send('concluido', {
+      arquivos: arquivos.map(a => ({ arquivo: a.arquivo, bytes: Buffer.byteLength(a.conteudo, 'utf8') })),
+      modo, creditosRestantes: req.user.creditos, gamificacao: gam,
+    });
+  } catch (e) {
+    // Estorno: falha na construção não queima seiva
+    req.user.creditos += custo;
+    proj.mvp = { status: 'erro', erro: e.message };
+    save();
+    send('erro', { error: e.message, estornado: true, creditosRestantes: req.user.creditos });
+  } finally {
+    res.end();
+  }
+});
+
+// Preview: serve cada arquivo do MVP com o content-type certo
+projectsRouter.get('/:id/mvp/preview/:arquivo', (req, res) => {
+  const proj = store.projects[req.params.id];
+  if (!proj?.mvp?.arquivos || proj.userId !== req.user.id) return res.status(404).json({ error: 'MVP não encontrado.' });
+  const arq = proj.mvp.arquivos.find(a => a.arquivo === req.params.arquivo);
+  if (!arq) return res.status(404).json({ error: 'Arquivo não encontrado.' });
+  const tipos = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.md': 'text/markdown' };
+  const ext = arq.arquivo.slice(arq.arquivo.lastIndexOf('.'));
+  res.setHeader('Content-Type', `${tipos[ext] || 'text/plain'}; charset=utf-8`);
+  res.send(arq.conteudo);
+});
+
+projectsRouter.get('/:id/mvp', (req, res) => {
+  const proj = store.projects[req.params.id];
+  if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });
+  if (!proj.mvp) return res.json({ status: 'nao_iniciado' });
+  res.json({
+    status: proj.mvp.status, modo: proj.mvp.modo, construidoEm: proj.mvp.construidoEm,
+    arquivos: (proj.mvp.arquivos || []).map(a => ({ arquivo: a.arquivo, bytes: Buffer.byteLength(a.conteudo, 'utf8'), conteudo: a.conteudo })),
+  });
+});
+
+// Download do MVP completo em ZIP
+projectsRouter.get('/:id/mvp.zip', async (req, res, next) => {
+  try {
+    const proj = store.projects[req.params.id];
+    if (!proj?.mvp?.arquivos || proj.userId !== req.user.id) return res.status(404).json({ error: 'MVP não encontrado.' });
+    const zip = new JSZip();
+    for (const a of proj.mvp.arquivos) zip.file(a.arquivo, a.conteudo);
+    const buf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+    const slug = proj.nome.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mvp';
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${slug}-mvp.zip"`);
+    res.send(buf);
+  } catch (e) { next(e); }
 });

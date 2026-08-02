@@ -35,6 +35,7 @@ export const XP_EVENTOS = {
   calculo_carbono: 20,
   plano_compensacao: 70,
   conselho_realizado: 50,
+  mvp_construido: 150,
   compensacao_carbono: 60,
   streak_diario: 5,
 };
@@ -62,6 +63,7 @@ const CONQUISTAS = {
   primeira_validacao: { nome: 'Broto Validado', emoji: '🌿', descricao: 'Avançou para a fase de Validação' },
   guardiao_floresta: { nome: 'Guardião da Floresta', emoji: '🛡️', descricao: 'Calculou seu passivo ambiental' },
   estrategista_clima: { nome: 'Estrategista do Clima', emoji: '🗺️', descricao: 'Criou um plano de compensação com metas de redução' },
+  mvp_publicado: { nome: 'Construtor de Produto', emoji: '📦', descricao: 'Transformou o plano em um MVP navegável' },
   conselho_convocado: { nome: 'Voz do Conselho', emoji: '⚖️', descricao: 'Convocou o Conselho dos Agentes para deliberar' },
   carbono_neutro: { nome: 'Pegada Compensada', emoji: '🍃', descricao: 'Compensou emissões com créditos de carbono' },
 };
@@ -91,6 +93,7 @@ export function awardXP(user, evento, detalhe = {}) {
     compensacao_carbono: 'carbono_neutro',
     plano_compensacao: 'estrategista_clima',
     conselho_realizado: 'conselho_convocado',
+    mvp_construido: 'mvp_publicado',
   };
   const cid = conquistaPorEvento[evento];
   if (cid && !g.conquistas.includes(cid)) {

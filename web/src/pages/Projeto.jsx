@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { api, gerarPlanoSSE, baixarPlano } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import Conselho from '../components/Conselho.jsx';
+import MvpBuilder from '../components/MvpBuilder.jsx';
 import JourneyBar from '../components/JourneyBar.jsx';
 import PlanoView from '../components/PlanoView.jsx';
 
@@ -212,6 +213,8 @@ export default function Projeto() {
           <PlanoView projeto={proj} />
         </>
       )}
+      {projeto.plano && <MvpBuilder projetoId={projeto.id} />}
+
       {projeto.plano && <Conselho projetoId={projeto.id} />}
 
     </div>

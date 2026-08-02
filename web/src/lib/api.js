@@ -75,6 +75,18 @@ export const api = {
   conselhoConvocacao: (projId) => req(`/projects/${projId}/conselho/convocacao`),
   realizarConselho: (projId) => req(`/projects/${projId}/conselho`, { method: 'POST' }),
   conselhos: (projId) => req(`/projects/${projId}/conselho`),
+  // MVP Builder
+  mvp: (projId) => req(`/projects/${projId}/mvp`),
+  // Pagamentos
+  pagamentosStatus: () => req('/pagamentos/status'),
+  pagamentosPacotes: () => req('/pagamentos/pacotes'),
+  pagamentosPlanos: () => req('/pagamentos/planos'),
+  transacoes: () => req('/pagamentos/transacoes'),
+  assinar: (planoId) => req('/pagamentos/assinar', { method: 'POST', body: JSON.stringify({ planoId }) }),
+  comprarSeiva: (pacoteId) => req('/pagamentos/seiva', { method: 'POST', body: JSON.stringify({ pacoteId }) }),
+  pixCarbono: (pedidoId) => req(`/pagamentos/carbono/${pedidoId}`, { method: 'POST' }),
+  confirmarPagamento: (txId) => req(`/pagamentos/transacoes/${txId}/confirmar`, { method: 'POST' }),
+  cancelarPagamento: (txId) => req(`/pagamentos/transacoes/${txId}/cancelar`, { method: 'POST' }),
   adminOverview: () => req('/admin/overview'),
   adminChat: (mensagens) => req('/admin/chat', { method: 'POST', body: JSON.stringify({ mensagens }) }),
   adminChatHistorico: () => req('/admin/chat'),
@@ -118,6 +130,45 @@ export async function baixarPlanoCompensacao(planoId, formato = 'docx') {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `plano-de-compensacao.${formato}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// SSE da construção do MVP
+export async function construirMvpSSE(projId, handlers) {
+  const res = await fetch(`/api/projects/${projId}/mvp/construir`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || `Erro ${res.status}`);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const blocks = buffer.split('\n\n');
+    buffer = blocks.pop();
+    for (const block of blocks) {
+      const ev = block.match(/^event: (.+)$/m);
+      const dt = block.match(/^data: (.+)$/m);
+      if (ev && dt) { try { await handlers[ev[1]]?.(JSON.parse(dt[1])); } catch { /* ignore */ } }
+    }
+  }
+}
+
+export const mvpPreviewUrl = (projId, arquivo) => `/api/projects/${projId}/mvp/preview/${arquivo}`;
+
+export async function baixarMvpZip(projId) {
+  const res = await fetch(`/api/projects/${projId}/mvp.zip`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Falha ao gerar o ZIP do MVP.');
+  const blob = await res.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mvp.zip';
   a.click();
   URL.revokeObjectURL(a.href);
 }

@@ -9,7 +9,7 @@ const empty = () => ({
   users: {}, projects: {}, sessions: {}, carbonOrders: {},
   pic: null, picAgentes: null, nudges: {}, reports: {},
   radar: null, pulso: null, planosCompensacao: {},
-  elenco: null, conselhos: {},
+  elenco: null, conselhos: {}, transacoes: {},
 });
 
 let db = empty();
@@ -63,6 +63,9 @@ export const store = {
   get elenco() { return db.elenco; },
   set elenco(v) { db.elenco = v; },
   get conselhos() { return db.conselhos; },
+  // Transações de pagamento (Stripe e PIX)
+  get transacoes() { return db.transacoes; },
+  set transacoes(v) { db.transacoes = v; },
 };
 
 export function id(prefix) {

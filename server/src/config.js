@@ -12,6 +12,7 @@ export const config = {
   credits: {
     initial: 500,
     planGeneration: 60,      // custo da geração completa do plano (5 agentes)
+    mvpBuild: 90,            // construção do MVP navegável (5 peças)
     classification: 0,       // classificação é gratuita (parte da ideação)
     missionReward: 10,
     streakReward: 5,

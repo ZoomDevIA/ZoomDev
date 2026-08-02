@@ -44,6 +44,13 @@ dão carrega o grau de confiança da fonte.
 | [ZDG-000](ZDG-000-documentation-standard.md) | ZoomDev Documentation Standard | Kernel | Approved |
 | [ZDG-001](ZDG-001-constituicao.md) | Constituição da ZoomDev | Foundation | Approved |
 | [ZDG-002](ZDG-002-arquitetura-cognitiva.md) | Arquitetura Cognitiva | Cognition | Approved |
+| [ZDG-003](ZDG-003-manual-da-maia.md) | Manual da Maiá | Cognition | Approved |
+| [ZDG-004](ZDG-004-corpus-cientifico.md) | Corpus Científico | Science | Approved |
+| [ZDG-005](ZDG-005-elenco-de-agentes.md) | Elenco de Agentes | Agents | Approved |
+| [ZDG-006](ZDG-006-venture-builder.md) | Venture Builder | Venture | Approved |
+| [ZDG-007](ZDG-007-framework-esg.md) | Framework ESG Cognitivo | ESG | Approved |
+| [ZDG-008](ZDG-008-plataforma.md) | Plataforma e Jornada | Platform | Approved |
+| [ZDG-009](ZDG-009-governanca.md) | Governança | Governance | Approved |
 
 ## Documentos vivos fora da Genesis
 

@@ -11,6 +11,8 @@ import { adminRouter } from './routes/admin.js';
 import { impactoRouter } from './routes/impacto.js';
 import { editaisRouter } from './routes/editais.js';
 import { elencoRouter } from './routes/elencoConselho.js';
+import { pagamentosRouter } from './routes/pagamentos.js';
+import { processarWebhookStripe } from './services/pagamentos.js';
 import { migrarPicAgentes } from './protocols/migracao.js';
 import { agendarPulso } from './services/pulsoDiario.js';
 import { initPic } from './agents/sextaFeira.js';
@@ -18,6 +20,18 @@ import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gam
 
 const app = express();
 app.use(cors());
+// Webhook do Stripe exige o corpo BRUTO para validar a assinatura — por isso
+// vem antes do parser JSON.
+app.post('/api/pagamentos/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const r = await processarWebhookStripe(req.body, req.headers['stripe-signature']);
+    res.json({ recebido: true, ...r });
+  } catch (e) {
+    console.error('webhook stripe:', e.message);
+    res.status(e.status || 400).json({ error: e.message });
+  }
+});
+
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_req, res) => res.json({
@@ -51,6 +65,7 @@ app.use('/api/carbon', carbonRouter);
 app.use('/api/admin', adminMiddleware, adminRouter);
 app.use('/api/impacto', impactoRouter);
 app.use('/api/editais', editaisRouter);
+app.use('/api/pagamentos', pagamentosRouter);
 app.use('/api', elencoRouter);
 app.use('/api', platformRouter);
 
