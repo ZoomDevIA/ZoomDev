@@ -92,7 +92,7 @@ function texturaNome(nome, cor) {
  * a mesma arte que aparece nos cards, agora em 3D. Sem avatar, o emoji assume
  * o rosto e o PNG é adotado sozinho assim que o arquivo existir.
  */
-function criarAgenteVoxel(cor, { avatar, emoji, nome } = {}) {
+function criarAgenteVoxel(cor, { avatar, face, emoji, nome } = {}) {
   const g = new THREE.Group();
   const corBase = new THREE.Color(cor);
 
@@ -114,15 +114,16 @@ function criarAgenteVoxel(cor, { avatar, emoji, nome } = {}) {
   cabeca.castShadow = true;
   g.add(cabeca);
 
-  // Avatar oficial substitui o rosto assim que a imagem carrega
-  if (avatar) {
+  // A arte oficial substitui o rosto assim que carrega.
+  // Quando existe recorte quadrado do rosto (agents/faces/), ele entra inteiro.
+  // Quando só há o retrato, enquadro o terço superior, onde fica o rosto.
+  const fonte = face || avatar;
+  if (fonte) {
     new THREE.TextureLoader().load(
-      avatar,
+      fonte,
       (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
-        // enquadra o topo da arte (é onde está o rosto nos avatares)
-        tex.repeat.set(1, 0.62);
-        tex.offset.set(0, 0.38);
+        if (!face) { tex.repeat.set(1, 0.62); tex.offset.set(0, 0.38); }
         rosto.map = tex;
         rosto.needsUpdate = true;
       },
@@ -367,7 +368,7 @@ export default function Mundo() {
     // ── Agentes ──
     const agentes = [];
     for (const h of cena.habitantes) {
-      const mesh = criarAgenteVoxel(h.cor, { avatar: h.avatar, emoji: h.emoji, nome: h.nome });
+      const mesh = criarAgenteVoxel(h.cor, { avatar: h.retrato, face: h.rosto, emoji: h.emoji, nome: h.nome });
       // escala generosa: o avatar é o protagonista da cena, precisa ser legível
       mesh.scale.setScalar(1.6);
       mesh.position.set(h.x, 0.5, h.z);
@@ -388,7 +389,7 @@ export default function Mundo() {
         let obj = hits[0].object;
         while (obj.parent && !agentes.some(a => a.mesh === obj)) obj = obj.parent;
         const ag = agentes.find(a => a.mesh === obj);
-        if (ag) setSelecionado({ id: ag.id, nome: ag.nome, emoji: ag.emoji, fala: ag.fala, estacao: ag.estacaoNome, cor: ag.cor, casta: ag.casta });
+        if (ag) setSelecionado({ id: ag.id, nome: ag.nome, emoji: ag.emoji, fala: ag.fala, estacao: ag.estacaoNome, cor: ag.cor, casta: ag.casta, avatar: ag.avatar, rosto: ag.rosto });
       } else setSelecionado(null);
     };
     renderer.domElement.addEventListener('pointerdown', aoClicar);
@@ -542,8 +543,10 @@ export default function Mundo() {
             <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-md zd-card-glow rounded-2xl p-4 flex gap-3">
               <div className="w-11 h-11 rounded-xl overflow-hidden border shrink-0 flex items-center justify-center text-xl"
                 style={{ borderColor: `${selecionado.cor}55`, background: `${selecionado.cor}18` }}>
-                <img src={`/assets/agents/${selecionado.id}.png`} alt="" className="w-full h-full object-cover object-top"
-                  onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.append(selecionado.emoji); }} />
+                {selecionado.avatar
+                  ? <img src={selecionado.avatar} alt={selecionado.nome}
+                      className={`w-full h-full object-cover ${selecionado.rosto ? 'object-center' : 'object-top'}`} />
+                  : <span>{selecionado.emoji}</span>}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -582,7 +585,7 @@ export default function Mundo() {
                         <span key={h.id} className="flex items-center gap-1 text-[9px] rounded-full pl-0.5 pr-2 py-0.5 border"
                           style={{ borderColor: `${h.cor}44`, color: h.cor }} title={h.avatar ? h.nome : `${h.nome} — avatar em produção`}>
                           {h.avatar ? (
-                            <img src={h.avatar} alt="" className="w-4 h-4 rounded-full object-cover object-top" />
+                            <img src={h.avatar} alt="" className={`w-4 h-4 rounded-full object-cover ${h.rosto ? 'object-center' : 'object-top'}`} />
                           ) : (
                             <span className="w-4 h-4 rounded-full flex items-center justify-center text-[8px]"
                               style={{ background: `${h.cor}22` }}>{h.emoji}</span>

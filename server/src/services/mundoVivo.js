@@ -5,10 +5,9 @@
 // ecossistema do usuário. Não é decoração: quando Curupira fala de área
 // degradada, é porque existe um projeto de bioeconomia sem linha de base.
 // ═══════════════════════════════════════════════════════════════════════════
-import fs from 'node:fs';
-import path from 'node:path';
 import { store } from '../store.js';
 import { agentesAtivos } from './elenco.js';
+import { imagensDe } from './avatares.js';
 import { radarProjeto } from './unicornio.js';
 import { matchesDoProjeto } from './radarEditais.js';
 import { FASE_LABEL } from './gamification.js';
@@ -24,42 +23,6 @@ export const ESTACOES = [
 ];
 
 const rnd = (seed) => { const x = Math.sin(seed) * 10000; return x - Math.floor(x); };
-
-// ── Avatares ──────────────────────────────────────────────────────────────
-// O rosto do personagem voxel usa o avatar oficial do agente. Enquanto a arte
-// de um agente não existe, o emoji vira o rosto — e o PNG é adotado sozinho
-// assim que o arquivo aparecer, sem mexer em código.
-// Caminhos resolvidos a partir DESTE módulo, nunca de process.cwd(): em
-// produção o `npm start -w server` roda com o diretório de trabalho em
-// server/, e um caminho relativo ao cwd apontaria para o lugar errado.
-const DIRS_AVATARES = [
-  new URL('../../../web/dist/assets/agents/', import.meta.url).pathname,   // build de produção
-  new URL('../../../web/public/assets/agents/', import.meta.url).pathname, // desenvolvimento
-];
-
-let cacheAvatares = null;
-function avataresDisponiveis() {
-  try {
-    const dir = DIRS_AVATARES.find(d => fs.existsSync(d));
-    if (!dir) return new Set();
-    const mtime = fs.statSync(dir).mtimeMs;
-    if (!cacheAvatares || cacheAvatares.dir !== dir || cacheAvatares.mtime !== mtime) {
-      cacheAvatares = {
-        dir, mtime,
-        ids: new Set(fs.readdirSync(dir)
-          .filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
-          .map(f => f.replace(/\.[^.]+$/, ''))),
-      };
-    }
-    return cacheAvatares.ids;
-  } catch {
-    return new Set();
-  }
-}
-
-export function avatarDe(agenteId) {
-  return avataresDisponiveis().has(agenteId) ? `/assets/agents/${agenteId}.png` : null;
-}
 
 /**
  * Monta a cena: agentes ativos posicionados em suas estações, com falas
@@ -119,7 +82,7 @@ export function cena(user) {
       const seed = aid.charCodeAt(0) * 37 + i * 13;
       habitantes.push({
         id: ag.id, nome: ag.nome, emoji: ag.emoji, cor: ag.cor || '#00ff64', casta: ag.casta,
-        avatar: avatarDe(ag.id),
+        ...imagensDe(ag.id),
         estacao: est.id, estacaoNome: est.nome,
         // posição base ao redor da estação
         x: est.x + (i % 3 - 1) * 2.4 + (rnd(seed) - 0.5),

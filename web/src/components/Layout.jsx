@@ -66,8 +66,8 @@ export default function Layout({ children }) {
         </nav>
         <div className="p-4 border-t border-white/5">
           <div className="zd-card rounded-xl p-3.5 flex items-center gap-3">
-            <img src="/assets/site/copiloto-avatar.png" alt="Maiá"
-              className="w-10 h-10 rounded-full object-cover object-top border border-[#00ff6433] shrink-0" />
+            <img src="/assets/agents/faces/maia.png" alt="Maiá"
+              className="w-10 h-10 rounded-full object-cover object-center border border-[#00ff6433] shrink-0" />
             <div className="min-w-0">
               <div className="text-xs font-bold truncate">Maiá 🌸</div>
               <div className="text-[10px] text-white/45">Inteligência Regenerativa</div>

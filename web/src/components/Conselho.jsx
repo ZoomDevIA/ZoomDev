@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
+import AgentAvatar from './AgentAvatar.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSELHO DOS AGENTES — órgão colegiado, não um chat com personagens.
@@ -117,11 +118,7 @@ export default function Conselho({ projetoId }) {
                 <div key={p.agenteId} className="rounded-xl bg-white/[.04] border border-white/8 overflow-hidden">
                   <button onClick={() => setExpandido(x => x === p.agenteId ? null : p.agenteId)}
                     className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/[.03] transition-colors">
-                    <div className="w-9 h-9 rounded-lg overflow-hidden border shrink-0 flex items-center justify-center text-base"
-                      style={{ borderColor: `${p.cor}44`, background: `${p.cor}14` }}>
-                      <img src={`/assets/agents/${p.agenteId}.png`} alt="" className="w-full h-full object-cover object-top"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.append(p.emoji); }} />
-                    </div>
+                    <AgentAvatar agente={p} size="w-9 h-9" rounded="rounded-lg" emojiSize="text-base" centralizar={false} />
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-bold">{p.nome}</div>
                       <div className="text-[11px] text-white/50 line-clamp-1">{p.parecer}</div>

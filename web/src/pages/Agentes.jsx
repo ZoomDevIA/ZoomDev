@@ -1,22 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
+import AgentAvatar from '../components/AgentAvatar.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ELENCO — 35 agentes em 4 castas.
 // Núcleo Internacional e Conselho Amazônico são a identidade da plataforma e
 // não podem ser desligados. A Reserva o administrador ativa quando precisa.
 // ═══════════════════════════════════════════════════════════════════════════
-
-function Avatar({ a, size = 'w-12 h-12' }) {
-  return (
-    <div className={`${size} rounded-xl overflow-hidden border shrink-0 flex items-center justify-center text-xl`}
-      style={{ borderColor: `${a.cor}44`, background: `${a.cor}14` }}>
-      <img src={`/assets/agents/${a.id}.png`} alt={a.nome} className="w-full h-full object-cover object-top"
-        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.append(a.emoji); }} />
-    </div>
-  );
-}
 
 export default function Agentes() {
   const { user } = useUser();
@@ -69,7 +60,7 @@ export default function Agentes() {
                 className={`zd-agent-card rounded-2xl p-4 transition-opacity ${a.ativo ? '' : 'opacity-55'}`}
                 style={a.ativo ? { borderColor: `${a.cor}2e` } : undefined}>
                 <div className="flex items-start gap-3">
-                  <Avatar a={a} />
+                  <AgentAvatar agente={a} size="w-12 h-12" rounded="rounded-xl" emojiSize="text-xl" centralizar={false} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-heading font-bold text-sm">{a.nome}</span>

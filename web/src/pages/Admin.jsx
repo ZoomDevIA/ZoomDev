@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api, abrirRelatorio } from '../lib/api.js';
 import { useToast } from '../components/GamificationToasts.jsx';
+import AgentAvatar from '../components/AgentAvatar.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SUPER DASHBOARD DO ECOSSISTEMA — comandado pela Sexta-Feira 🕶️
@@ -376,10 +377,7 @@ function PicsAgentes() {
         <button key={p.agenteId} onClick={() => setAberto(a => a === p.agenteId ? null : p.agenteId)}
           className={`zd-card rounded-xl p-4 text-left hover:border-[#00ff6444] transition-colors ${p.isBio ? 'border-[#00ff6426]' : ''}`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/5 border border-white/10 shrink-0 flex items-center justify-center text-lg">
-              <img src={`/assets/agents/${p.agenteId}.png`} alt={p.nome} className="w-full h-full object-cover object-top"
-                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.append(p.emoji); }} />
-            </div>
+            <AgentAvatar agente={{ id: p.agenteId, nome: p.nome, emoji: p.emoji }} size="w-10 h-10" rounded="rounded-lg" emojiSize="text-lg" centralizar={false} />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold">{p.nome} <span className="text-[10px] text-white/35 font-normal">PIC v{p.versao}</span></div>
               <div className="text-[11px] text-white/45">{p.categoria}{p.isBio ? ' · 🌿 bio' : ''}</div>

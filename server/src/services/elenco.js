@@ -9,6 +9,7 @@ import { AGENTES_BIO, AGENTES_GERAIS } from '../data/seeds.js';
 import { AGENTES_NUCLEO, CASTAS, castaDe } from '../data/nucleoInternacional.js';
 import { PICS_AGENTES } from '../protocols/picAgentes.js';
 import { PICS_NUCLEO } from '../protocols/picNucleo.js';
+import { imagensDe } from './avatares.js';
 
 /** Catálogo completo, com casta atribuída. */
 export const CATALOGO = [
@@ -47,6 +48,7 @@ export function elencoCompleto() {
     const pic = TODOS_PICS.find(p => p.agenteId === a.id);
     porCasta[a.casta].agentes.push({
       ...a,
+      ...imagensDe(a.id),
       ativo: Boolean(e.ativacao[a.id]),
       especialidade: pic?.conteudo?.especialidade || a.papel,
       cooperacao: pic?.conteudo?.cooperacao || [],

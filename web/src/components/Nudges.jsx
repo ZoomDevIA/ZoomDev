@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
+import AgentAvatar from './AgentAvatar.jsx';
 
 // Nudges do Agent Bus — os agentes (orquestrados pela Sexta-Feira) antecipam
 // os próximos passos do fundador. Máx. 2/dia; dispensado não volta.
@@ -32,11 +33,7 @@ export default function Nudges() {
           <div key={n.id} className="zd-card-glow rounded-xl p-4 flex gap-3 relative">
             <button onClick={() => dispensar(n)} title="Dispensar"
               className="absolute top-2.5 right-3 text-white/30 hover:text-white/70 text-sm transition-colors">✕</button>
-            <div className="w-11 h-11 rounded-xl overflow-hidden border border-[#00ff6433] bg-white/5 shrink-0 flex items-center justify-center text-xl">
-              <img src={`/assets/agents/${n.agenteId}.png`} alt={n.agenteNome}
-                className="w-full h-full object-cover object-top"
-                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.append(n.agenteEmoji); }} />
-            </div>
+            <AgentAvatar agente={{ id: n.agenteId, nome: n.agenteNome, emoji: n.agenteEmoji }} size="w-11 h-11" rounded="rounded-xl" emojiSize="text-xl" centralizar={false} />
             <div className="min-w-0 pr-4">
               <div className="text-[10px] zd-green font-semibold">{n.agenteEmoji} {n.agenteNome} antecipou:</div>
               <div className="text-sm font-bold mt-0.5">{n.titulo}</div>
