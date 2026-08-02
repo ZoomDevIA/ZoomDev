@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api, setToken } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
 
 export default function Login() {
   const { refreshUser } = useUser();
-  const [tab, setTab] = useState('entrar');
+  const [params] = useSearchParams();
+  // Quem veio da caixa de ideação da home chega em "criar conta" e com a
+  // ideia guardada — depois de entrar, a Home retoma o rascunho sozinha.
+  const veioDaIdeacao = params.get('proximo') === 'construir';
+  const [tab, setTab] = useState(
+    params.get('modo') === 'cadastro' || veioDaIdeacao ? 'criar' : 'entrar');
   const [form, setForm] = useState({ email: '', password: '', nome: '' });
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
@@ -62,6 +68,14 @@ export default function Login() {
         </div>
 
         <div className="zd-card-glow rounded-2xl p-6 md:p-8 w-full max-w-md mx-auto">
+          {veioDaIdeacao && (
+            <div className="rounded-xl border border-[#00ff6433] bg-[#00ff640d] px-3.5 py-2.5 mb-5">
+              <div className="text-xs zd-green font-semibold">✦ Sua ideia está guardada</div>
+              <p className="text-[11px] text-white/55 mt-0.5 leading-snug">
+                Crie a conta e voltamos exatamente de onde você parou — sem digitar de novo.
+              </p>
+            </div>
+          )}
           <div className="flex rounded-full bg-white/5 p-1 mb-6">
             {['entrar', 'criar'].map(t => (
               <button key={t} onClick={() => setTab(t)}
@@ -120,6 +134,11 @@ export default function Login() {
             ))}
           </div>
           <p className="text-[11px] text-white/35 mt-5">🔒 Seus dados estão protegidos com criptografia de ponta a ponta.</p>
+          <div className="text-center mt-4 pt-4 border-t border-white/8">
+            <Link to="/" className="text-[11px] text-white/40 hover:text-white/70 transition-colors">
+              ← voltar para a home
+            </Link>
+          </div>
         </div>
       </div>
     </div>

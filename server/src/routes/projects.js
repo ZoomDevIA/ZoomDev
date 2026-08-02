@@ -2,13 +2,15 @@
 import { Router } from 'express';
 import { store, save, id } from '../store.js';
 import { config } from '../config.js';
-import { classificarIdeia } from '../agents/classifier.js';
+import { classificarIdeia, tituloDeIdeia } from '../agents/classifier.js';
 import { gerarPlano, AGENTES } from '../agents/planoDeNegocios.js';
 import { awardXP, FASES, FASE_LABEL, NIVEL_STARTUP, missoesValidacaoPadrao } from '../services/gamification.js';
 import { planoParaDocx } from '../services/exportDocx.js';
 import { planoParaPdf } from '../services/exportPdf.js';
 import { paginaHtml } from '../services/exportHtml.js';
 import { construirMvp, PECAS } from '../agents/mvpBuilder.js';
+import { publicar, projetarProjeto } from '../services/vitrine.js';
+import { exigir } from '../auth.js';
 import JSZip from 'jszip';
 
 export const projectsRouter = Router();
@@ -30,17 +32,34 @@ projectsRouter.get('/:id', (req, res) => {
 // Ideação: recebe a descrição + tipo (startup | biostartup | auto)
 projectsRouter.post('/ideacao', async (req, res, next) => {
   try {
-    const { descricao, tipo = 'auto', nome } = req.body || {};
+    const { descricao, tipo = 'auto', nome, modulos = {} } = req.body || {};
     if (!descricao || String(descricao).trim().length < 20) {
       return res.status(400).json({ error: 'Descreva sua ideia com pelo menos 20 caracteres.' });
     }
 
-    let classificacao, classificadorInfo = null;
-    if (tipo === 'startup' || tipo === 'biostartup') {
-      classificacao = tipo;
-      classificadorInfo = { origem: 'usuario', justificativa: 'Selecionado manualmente pelo fundador.' };
+    // Os seletores da home mandam mais que o tipo: ligar BioStartups é uma
+    // escolha explícita do fundador e dispensa o classificador.
+    const modulosAtivos = { carbono: Boolean(modulos.carbono), bio: Boolean(modulos.bio) };
+    const tipoEfetivo = modulosAtivos.bio ? 'biostartup' : tipo;
+
+    // O classificador também é quem batiza o projeto. Se o fundador escolheu o
+    // tipo mas não deu nome, ainda vale chamá-lo — só a sugestão de nome é
+    // aproveitada, a classificação continua sendo a escolha dele.
+    const tipoExplicito = tipoEfetivo === 'startup' || tipoEfetivo === 'biostartup';
+    const r = (!tipoExplicito || !nome) ? await classificarIdeia(String(descricao)) : null;
+
+    let classificacao, classificadorInfo;
+    if (tipoExplicito) {
+      classificacao = tipoEfetivo;
+      classificadorInfo = {
+        origem: 'usuario',
+        justificativa: modulosAtivos.bio
+          ? 'Módulo BioStartups ligado na home pelo fundador.'
+          : 'Selecionado manualmente pelo fundador.',
+        nomeSugerido: r?.nomeSugerido || '',
+        vertical: r?.vertical,
+      };
     } else {
-      const r = await classificarIdeia(String(descricao));
       classificacao = r.classificacao;
       classificadorInfo = r;
     }
@@ -49,11 +68,14 @@ projectsRouter.post('/ideacao', async (req, res, next) => {
     const projeto = {
       id: projId,
       userId: req.user.id,
-      nome: (nome || classificadorInfo?.nomeSugerido || 'Projeto sem nome').slice(0, 80),
+      nome: (nome || classificadorInfo?.nomeSugerido || tituloDeIdeia(descricao)).slice(0, 80),
       descricao: String(descricao).trim(),
       classificacao,
       vertical: classificadorInfo?.vertical || (classificacao === 'biostartup' ? 'Bioeconomia' : 'Outra'),
       classificador: classificadorInfo,
+      modulos: modulosAtivos,
+      publicado: false,
+      curtidas: [],
       fase: 'ideacao',
       fasesConcluidas: [],
       jornada: FASES.map(f => ({ fase: f, label: FASE_LABEL[f], nivel: NIVEL_STARTUP[f], status: f === 'ideacao' ? 'atual' : 'bloqueada' })),
@@ -133,6 +155,46 @@ projectsRouter.get('/:id/gerar-plano', async (req, res) => {
   } finally {
     res.end();
   }
+});
+
+// ── Vitrine da comunidade ──────────────────────────────────────────────────
+// Publicar é do dono do projeto e exige a capacidade comunidade.publicar.
+projectsRouter.post('/:id/publicar', exigir('comunidade.publicar'), (req, res) => {
+  const proj = store.projects[req.params.id];
+  if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });
+  if (!proj.plano && req.body?.publicado !== false) {
+    return res.status(409).json({ error: 'Gere o plano de negócios antes de publicar na comunidade.' });
+  }
+  publicar(proj, req.body?.publicado !== false);
+  res.json({
+    publicado: proj.publicado,
+    publicadoEm: proj.publicadoEm,
+    vitrine: proj.publicado ? projetarProjeto(proj, req.user) : null,
+  });
+});
+
+// Curtida de um projeto da vitrine (um voto por pessoa, alterna)
+projectsRouter.post('/:id/curtir', (req, res) => {
+  const proj = store.projects[req.params.id];
+  if (!proj?.publicado) return res.status(404).json({ error: 'Projeto não encontrado na vitrine.' });
+  proj.curtidas = proj.curtidas || [];
+  const idx = proj.curtidas.indexOf(req.user.id);
+  if (idx >= 0) proj.curtidas.splice(idx, 1); else proj.curtidas.push(req.user.id);
+  save();
+  res.json({ curtidas: proj.curtidas.length, curtido: idx < 0 });
+});
+
+// Ligar/desligar os módulos de um projeto já criado
+projectsRouter.post('/:id/modulos', (req, res) => {
+  const proj = store.projects[req.params.id];
+  if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });
+  const { carbono, bio } = req.body || {};
+  proj.modulos = {
+    carbono: carbono === undefined ? Boolean(proj.modulos?.carbono) : Boolean(carbono),
+    bio: bio === undefined ? Boolean(proj.modulos?.bio) : Boolean(bio),
+  };
+  save();
+  res.json({ modulos: proj.modulos });
 });
 
 // Conclusão de missão (gamificação de validação)

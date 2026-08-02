@@ -10,6 +10,7 @@ const empty = () => ({
   pic: null, picAgentes: null, nudges: {}, reports: {},
   radar: null, pulso: null, planosCompensacao: {},
   elenco: null, conselhos: {}, transacoes: {},
+  sessoesPainel: {}, auditoria: [], vitrine: null,
 });
 
 let db = empty();
@@ -66,6 +67,14 @@ export const store = {
   // Transações de pagamento (Stripe e PIX)
   get transacoes() { return db.transacoes; },
   set transacoes(v) { db.transacoes = v; },
+  // Sessões elevadas do painel de administração (token curto por acesso)
+  get sessoesPainel() { return db.sessoesPainel; },
+  // Trilha de auditoria das ações administrativas (500 mais recentes)
+  get auditoria() { return db.auditoria; },
+  set auditoria(v) { db.auditoria = v; },
+  // Curadoria da vitrine da comunidade (destaques e ocultações)
+  get vitrine() { return db.vitrine; },
+  set vitrine(v) { db.vitrine = v; },
 };
 
 export function id(prefix) {

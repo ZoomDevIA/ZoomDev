@@ -13,6 +13,8 @@ import { adminRouter } from './routes/admin.js';
 import { impactoRouter } from './routes/impacto.js';
 import { editaisRouter } from './routes/editais.js';
 import { diagnosticoRouter } from './routes/diagnostico.js';
+import { homeRouter } from './routes/home.js';
+import { painelRouter } from './routes/painel.js';
 import { elencoRouter } from './routes/elencoConselho.js';
 import { pagamentosRouter } from './routes/pagamentos.js';
 import { processarWebhookStripe } from './services/pagamentos.js';
@@ -43,6 +45,9 @@ app.get('/api/health', (_req, res) => res.json({
 }));
 
 app.use('/api', diagnosticoRouter);
+// Home pública: a caixa de ideação, os módulos e a vitrine da comunidade
+// carregam antes de qualquer login — é a porta de entrada do site.
+app.use('/api', homeRouter);
 
 app.get('/api/planos', (_req, res) => res.json(config.plans));
 
@@ -56,6 +61,13 @@ app.post('/api/auth/login', (req, res, next) => {
 app.use('/api', authMiddleware);
 
 app.get('/api/me', (req, res) => {
+  // Último acesso com granularidade de hora: serve ao painel sem transformar
+  // cada carregamento de página numa escrita em disco.
+  const agora = new Date().toISOString();
+  if (!req.user.ultimoAcesso || req.user.ultimoAcesso.slice(0, 13) !== agora.slice(0, 13)) {
+    req.user.ultimoAcesso = agora;
+    save();
+  }
   const u = publicUser(req.user);
   res.json({
     ...u,
@@ -68,6 +80,7 @@ app.get('/api/me', (req, res) => {
 app.use('/api/projects', projectsRouter);
 app.use('/api/carbon', carbonRouter);
 app.use('/api/admin', adminMiddleware, adminRouter);
+app.use('/api/painel', painelRouter);
 app.use('/api/impacto', impactoRouter);
 app.use('/api/editais', editaisRouter);
 app.use('/api/pagamentos', pagamentosRouter);

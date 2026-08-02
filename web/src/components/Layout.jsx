@@ -8,8 +8,9 @@ import Copiloto from './Copiloto.jsx';
 
 // Sidebar de 7 itens — clone do protótipo Base44
 const MENU = [
+  { to: '/', label: 'Home', icon: '🏠' },
   { to: '/strategy', label: 'Strategy Core', icon: '🧠', badge: 'IA' },
-  { to: '/', label: 'Dashboard', icon: '◈' },
+  { to: '/dashboard', label: 'Dashboard', icon: '◈' },
   { to: '/agentes', label: 'Agentes', icon: '🤖' },
   { to: '/mundo', label: 'Vale ZoomDev', icon: '🌍', badge: '3D' },
   { to: '/projetos', label: 'Projetos', icon: '📁' },
@@ -22,7 +23,8 @@ const MENU = [
 
 // Tabs da topbar do protótipo
 const TABS = [
-  { to: '/', label: 'Plataforma' },
+  { to: '/', label: 'Home' },
+  { to: '/dashboard', label: 'Plataforma' },
   { to: '/agentes', label: 'Agentes' },
   { to: '/projetos', label: 'Projetos' },
   { to: '/bioeconomia', label: 'Bio Startups' },
@@ -34,6 +36,9 @@ const TABS = [
 
 export default function Layout({ children }) {
   const { user, setUser } = useUser();
+  // O painel aparece para quem tem porta lá: administrador e editor.
+  const podeAbrirPainel = (user.capacidades || []).includes('usuarios.ler')
+    || (user.capacidades || []).includes('comunidade.curar');
   const nav = useNavigate();
   const [notifAbertas, setNotifAbertas] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
@@ -55,7 +60,11 @@ export default function Layout({ children }) {
           <BrandLockup symbolSize={40} wordmarkHeight={32} />
         </div>
         <nav className="flex-1 mt-1">
-          {[...MENU, ...(user.isAdmin ? [{ to: '/admin', label: 'Sexta-Feira', icon: '🕶️', badge: 'Admin' }] : [])].map(m => (
+          {[
+            ...MENU,
+            ...(podeAbrirPainel ? [{ to: '/painel', label: 'Administração', icon: '🛡️', badge: 'Painel' }] : []),
+            ...(user.isAdmin ? [{ to: '/admin', label: 'Sexta-Feira', icon: '🕶️', badge: 'Admin' }] : []),
+          ].map(m => (
             <NavLink key={m.to} to={m.to} end={m.to === '/'}
               className={({ isActive }) => `zd-menu-item ${isActive ? 'active' : ''} flex items-center gap-3 px-5 py-3 text-sm font-medium`}>
               <span className="text-base w-5 text-center">{m.icon}</span>

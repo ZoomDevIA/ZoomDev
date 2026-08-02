@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { store, save, id } from './store.js';
 import { config } from './config.js';
 import { newUserGamification } from './services/gamification.js';
+import { PAPEIS, capacidadesDe, pode as podeCap } from './services/permissoes.js';
 
 function hash(password, salt = crypto.randomBytes(16).toString('hex')) {
   const h = crypto.scryptSync(password, salt, 64).toString('hex');
@@ -10,10 +11,16 @@ function hash(password, salt = crypto.randomBytes(16).toString('hex')) {
 }
 
 function verify(password, stored) {
-  const [salt, h] = stored.split(':');
+  const [salt, h] = String(stored || '').split(':');
+  if (!salt || !h) return false;
   const candidate = crypto.scryptSync(password, salt, 64).toString('hex');
-  return crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(candidate, 'hex'));
+  const a = Buffer.from(h, 'hex');
+  const b = Buffer.from(candidate, 'hex');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
+
+export function hashSenha(senha) { return hash(senha); }
+export function conferirSenha(senha, hashArmazenado) { return verify(String(senha || ''), hashArmazenado); }
 
 export function register({ email, password, nome }) {
   email = String(email || '').trim().toLowerCase();
@@ -29,6 +36,10 @@ export function register({ email, password, nome }) {
     email,
     nome: nome || email.split('@')[0],
     passwordHash: hash(password),
+    // Sem papel gravado: quem se cadastra sozinho é fundador, salvo a regra de
+    // bootstrap (primeiro usuário / ZOOMDEV_ADMIN_EMAIL) resolvida em papelDe().
+    papel: null,
+    ativo: true,
     plano: 'free',
     creditos: config.credits.initial,
     criadoEm: new Date().toISOString(),
@@ -38,11 +49,41 @@ export function register({ email, password, nome }) {
   return createSession(userId);
 }
 
+/** Criação por um administrador: papel explícito, sem sessão automática. */
+export function criarUsuario({ email, nome, senha, papel }) {
+  email = String(email || '').trim().toLowerCase();
+  if (!email.includes('@')) throw Object.assign(new Error('E-mail inválido.'), { status: 400 });
+  if (String(senha || '').length < 8) throw Object.assign(new Error('A senha precisa de pelo menos 8 caracteres.'), { status: 400 });
+  if (!PAPEIS[papel]) throw Object.assign(new Error('Papel inválido.'), { status: 400 });
+  if (Object.values(store.users).some(u => u.email === email)) {
+    throw Object.assign(new Error('Já existe uma conta com este e-mail.'), { status: 409 });
+  }
+  consolidarBootstrap();
+  const userId = id('usr');
+  store.users[userId] = {
+    id: userId,
+    email,
+    nome: nome || email.split('@')[0],
+    passwordHash: hash(senha),
+    papel,
+    ativo: true,
+    plano: 'free',
+    creditos: config.credits.initial,
+    criadoEm: new Date().toISOString(),
+    gamification: newUserGamification(),
+  };
+  save();
+  return publicUser(store.users[userId]);
+}
+
 export function login({ email, password }) {
   email = String(email || '').trim().toLowerCase();
   const user = Object.values(store.users).find(u => u.email === email);
   if (!user || !verify(String(password || ''), user.passwordHash)) {
     throw Object.assign(new Error('E-mail ou senha inválidos.'), { status: 401 });
+  }
+  if (user.ativo === false) {
+    throw Object.assign(new Error('Esta conta está desativada. Fale com o administrador.'), { status: 403 });
   }
   return createSession(user.id);
 }
@@ -54,17 +95,63 @@ function createSession(userId) {
   return { token, user: publicUser(store.users[userId]) };
 }
 
-export function publicUser(u) {
-  const { passwordHash, ...rest } = u;
-  return { ...rest, isAdmin: isAdmin(u) };
+/** Encerra todas as sessões de um usuário (usado ao desativar ou trocar papel). */
+export function encerrarSessoesDe(userId) {
+  for (const [tok, s] of Object.entries(store.sessions)) {
+    if (s.userId === userId) delete store.sessions[tok];
+  }
 }
 
-// Admin do ecossistema: e-mail definido em ZOOMDEV_ADMIN_EMAIL ou, sem env, o primeiro usuário registrado
+export function publicUser(u) {
+  const { passwordHash, ...rest } = u;
+  const papel = papelDe(u);
+  return {
+    ...rest,
+    papel,
+    papelInfo: PAPEIS[papel],
+    capacidades: capacidadesDe(papel),
+    isAdmin: papel === 'admin' && u.ativo !== false,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Papel efetivo
+//
+// Instalação nova não tem administrador gravado. Nesse caso vale a regra de
+// bootstrap: ZOOMDEV_ADMIN_EMAIL, ou o primeiro usuário registrado. Assim que
+// alguém recebe papel 'admin' de verdade, a regra se aposenta — por isso
+// consolidarBootstrap() grava o papel antes de qualquer mudança no quadro.
+// ═══════════════════════════════════════════════════════════════════════════
+function bootstrapAdminId() {
+  if (Object.values(store.users).some(u => u.papel === 'admin')) return null;
+  if (config.adminEmail) {
+    return Object.values(store.users).find(u => u.email === config.adminEmail)?.id || null;
+  }
+  return Object.values(store.users).sort((a, b) => a.criadoEm.localeCompare(b.criadoEm))[0]?.id || null;
+}
+
+export function papelDe(user) {
+  if (!user) return null;
+  if (PAPEIS[user.papel]) return user.papel;
+  return bootstrapAdminId() === user.id ? 'admin' : 'fundador';
+}
+
+/** Grava o papel de quem é admin só pela regra de bootstrap, antes de mudar o quadro. */
+export function consolidarBootstrap() {
+  const alvo = bootstrapAdminId();
+  if (alvo && store.users[alvo]) {
+    store.users[alvo].papel = 'admin';
+    store.users[alvo].ativo = store.users[alvo].ativo !== false;
+    save();
+  }
+}
+
 export function isAdmin(user) {
-  if (!user) return false;
-  if (config.adminEmail) return user.email === config.adminEmail;
-  const primeiro = Object.values(store.users).sort((a, b) => a.criadoEm.localeCompare(b.criadoEm))[0];
-  return primeiro?.id === user.id;
+  return Boolean(user) && user.ativo !== false && papelDe(user) === 'admin';
+}
+
+export function pode(user, capacidade) {
+  return podeCap({ ...user, papel: papelDe(user) }, capacidade);
 }
 
 export function authMiddleware(req, res, next) {
@@ -73,7 +160,12 @@ export function authMiddleware(req, res, next) {
   if (!session || !store.users[session.userId]) {
     return res.status(401).json({ error: 'Não autenticado.' });
   }
-  req.user = store.users[session.userId];
+  const user = store.users[session.userId];
+  if (user.ativo === false) {
+    return res.status(403).json({ error: 'Conta desativada.' });
+  }
+  req.user = user;
+  req.sessionToken = token;
   next();
 }
 
@@ -82,4 +174,17 @@ export function adminMiddleware(req, res, next) {
     return res.status(403).json({ error: 'Acesso restrito ao administrador do ecossistema.' });
   }
   next();
+}
+
+/** Fábrica de middleware por capacidade — o jeito preferido de proteger rotas. */
+export function exigir(capacidade) {
+  return (req, res, next) => {
+    if (!pode(req.user, capacidade)) {
+      return res.status(403).json({
+        error: 'Seu nível de acesso não permite esta ação.',
+        capacidadeNecessaria: capacidade,
+      });
+    }
+    next();
+  };
 }

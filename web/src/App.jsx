@@ -20,6 +20,8 @@ import Admin from './pages/Admin.jsx';
 import Impacto from './pages/Impacto.jsx';
 import Compensacao from './pages/Compensacao.jsx';
 import Mundo from './pages/Mundo.jsx';
+import Home from './pages/Home.jsx';
+import Painel from './pages/Painel.jsx';
 
 export const UserContext = createContext(null);
 export const useUser = () => useContext(UserContext);
@@ -72,13 +74,19 @@ export default function App() {
     <UserContext.Provider value={{ user, setUser, refreshUser, celebrar }}>
       <ToastContext.Provider value={{ toasts, notify }}>
         {!user ? (
+          /* Visitante: a home é pública — escreve a ideia primeiro, cria conta depois. */
           <Routes>
-            <Route path="*" element={<Login />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/entrar" element={<Login />} />
+            <Route path="*" element={<Navigate to="/entrar" replace />} />
           </Routes>
         ) : (
           <Layout>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/entrar" element={<Navigate to="/" replace />} />
+              <Route path="/painel" element={<Painel />} />
               <Route path="/strategy" element={<StrategyCore />} />
               <Route path="/ideacao" element={<Ideacao />} />
               <Route path="/agentes" element={<Agentes />} />

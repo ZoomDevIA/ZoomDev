@@ -93,12 +93,19 @@ export default function Projeto() {
               <span className="zd-tag-blue rounded-full px-2.5 py-1">{proj.vertical}</span>
             </div>
             <p className="text-sm text-white/55 mt-2 max-w-2xl">{proj.descricao}</p>
+            {(proj.modulos?.carbono || proj.modulos?.bio) && (
+              <div className="flex gap-1.5 mt-2 flex-wrap">
+                {proj.modulos.carbono && <span className="zd-tag-blue rounded-full px-2.5 py-1">🍃 Módulo de carbono</span>}
+                {proj.modulos.bio && <span className="zd-tag rounded-full px-2.5 py-1">🌿 Trilha bioeconomia</span>}
+              </div>
+            )}
             {proj.classificador?.origem !== 'usuario' && proj.classificador?.justificativa && (
               <p className="text-[11px] text-white/40 mt-2">
                 🤖 Classificação automática ({proj.classificador.origem === 'ia' ? 'IA' : 'análise de termos'}): {proj.classificador.justificativa}
               </p>
             )}
           </div>
+          {proj.plano && <BotaoPublicar projeto={proj} />}
         </div>
         <div className="mt-4">
           <div className="text-xs text-white/45 mb-1.5 font-semibold uppercase tracking-wider">Sua jornada</div>
@@ -217,6 +224,40 @@ export default function Projeto() {
 
       {projeto.plano && <Conselho projetoId={projeto.id} />}
 
+    </div>
+  );
+}
+
+// ── Publicação na vitrine da comunidade ────────────────────────────────────
+// Publicar mostra nome, resumo e sinais de maturidade na home. Nunca expõe
+// e-mail nem contato: o autor aparece só pelo primeiro nome.
+function BotaoPublicar({ projeto }) {
+  const [publicado, setPublicado] = useState(Boolean(projeto.publicado));
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState(null);
+
+  const alternar = async () => {
+    setOcupado(true); setErro(null);
+    try {
+      const r = await api.publicarProjeto(projeto.id, !publicado);
+      setPublicado(r.publicado);
+    } catch (e) { setErro(e.message); }
+    finally { setOcupado(false); }
+  };
+
+  return (
+    <div className="shrink-0 text-right">
+      <button onClick={alternar} disabled={ocupado}
+        className={`rounded-xl px-4 py-2.5 text-xs font-semibold border transition-all ${
+          publicado
+            ? 'border-[#00ff6455] bg-[#00ff6414] text-[#00ff64]'
+            : 'border-white/15 text-white/65 hover:border-[#00ff6455] hover:text-[#00ff64]'}`}>
+        {ocupado ? 'aguarde…' : publicado ? '✓ na vitrine da comunidade' : '🖼️ publicar na comunidade'}
+      </button>
+      <div className="text-[10px] text-white/32 mt-1.5 max-w-[190px] ml-auto leading-snug">
+        {publicado ? 'Visível na home. Clique para retirar.' : 'Aparece na home para quem visita a ZoomDev.'}
+      </div>
+      {erro && <div className="text-[10px] text-red-400 mt-1">{erro}</div>}
     </div>
   );
 }

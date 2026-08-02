@@ -9,12 +9,25 @@ export function setToken(t) {
 
 export function getToken() { return token; }
 
+// Token da sessão elevada do painel. Fica em sessionStorage de propósito:
+// fechou a aba, a janela administrativa se fecha junto.
+let painelToken = sessionStorage.getItem('zd_painel') || null;
+
+export function setPainelToken(t) {
+  painelToken = t;
+  if (t) sessionStorage.setItem('zd_painel', t);
+  else sessionStorage.removeItem('zd_painel');
+}
+
+export function getPainelToken() { return painelToken; }
+
 async function req(path, opts = {}) {
   const res = await fetch(`/api${path}`, {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(painelToken ? { 'x-zd-painel': painelToken } : {}),
       ...(opts.headers || {}),
     },
   });
@@ -100,10 +113,36 @@ export const api = {
   adminPicsAgentes: () => req('/admin/pics-agentes'),
   // Impacto Regenerativo 360° · Biogenesis COT BioTechnology
   biogenesis: () => req('/impacto/biogenesis'),
-  fomento: () => req('/impacto/fomento'),
   biogen: () => req('/impacto/biogen'),
   simularImpacto: (body) => req('/impacto/simular', { method: 'POST', body: JSON.stringify(body) }),
   simularPrograma: (cenario = 'conservador') => req(`/impacto/simular-programa?cenario=${cenario}`),
+
+  // ── Home pública: módulos, estatísticas e vitrine da comunidade ──────────
+  home: (filtro = 'todos') => req(`/home?filtro=${filtro}`),
+  vitrine: (filtro = 'todos') => req(`/home/vitrine?filtro=${filtro}`),
+  publicarProjeto: (id, publicado = true) => req(`/projects/${id}/publicar`, { method: 'POST', body: JSON.stringify({ publicado }) }),
+  curtirProjeto: (id) => req(`/projects/${id}/curtir`, { method: 'POST' }),
+  projetoModulos: (id, modulos) => req(`/projects/${id}/modulos`, { method: 'POST', body: JSON.stringify(modulos) }),
+
+  // ── Painel de administração (sessão elevada) ─────────────────────────────
+  painelEstado: () => req('/painel/sessao'),
+  painelEntrar: async (senha) => {
+    const r = await req('/painel/sessao', { method: 'POST', body: JSON.stringify({ senha }) });
+    setPainelToken(r.token);
+    return r;
+  },
+  painelSair: async () => {
+    try { await req('/painel/sessao', { method: 'DELETE' }); } finally { setPainelToken(null); }
+  },
+  painelContexto: () => req('/painel/contexto'),
+  painelUsuarios: () => req('/painel/usuarios'),
+  painelCriarUsuario: (body) => req('/painel/usuarios', { method: 'POST', body: JSON.stringify(body) }),
+  painelAtualizarUsuario: (id, body) => req(`/painel/usuarios/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  painelDesativarUsuario: (id) => req(`/painel/usuarios/${id}`, { method: 'DELETE' }),
+  painelVitrine: () => req('/painel/vitrine'),
+  painelDestacar: (id, destacar) => req(`/painel/vitrine/${id}/destaque`, { method: 'POST', body: JSON.stringify({ destacar }) }),
+  painelOcultar: (id, ocultar) => req(`/painel/vitrine/${id}/ocultar`, { method: 'POST', body: JSON.stringify({ ocultar }) }),
+  painelAuditoria: (limite = 100) => req(`/painel/auditoria?limite=${limite}`),
 };
 
 // Abre o relatório do ecossistema (HTML autenticado) em nova aba

@@ -22,6 +22,42 @@ const BIO_TERMOS = [
   'pesca', 'manejo', 'sociobiodiversidade', 'regenerativ', 'resíduo', 'reciclag', 'energia limpa',
 ];
 
+// Aberturas de intenção que não dizem nada sobre a ideia. Cada termo exige o
+// espaço seguinte para não devorar a primeira letra de uma palavra legítima
+// ("a " sim, o "A" de "Assistente" não).
+const ABERTURAS = /^\s*(?:(?:eu\s+)?(?:quero|queria|gostaria\s+de|pretendo|preciso|penso\s+em|vou|estou|estamos|queremos)\s+)?(?:(?:criar|construir|desenvolver|fazer|montar|lançar|abrir)\s+)?(?:(?:uma|um|os|as|o|a)\s+)?/i;
+
+// Conectivo sozinho no fim vira gagueira: "Rede de microusinas de" → corta.
+const CONECTIVO_FINAL = /\s+(?:que|de|do|da|dos|das|com|para|por|em|no|na|nos|nas|e|ou|a|o|as|os|ao|aos)$/i;
+
+const LIMITE_TITULO = 46;
+const MAX_PALAVRAS = 7;
+
+/**
+ * Nome de trabalho a partir da descrição, para quando o fundador não nomeia o
+ * projeto e o classificador não sugere nada (modo demo). É um rascunho — a
+ * ideia é o fundador renomear, não acertar um nome de marca.
+ */
+export function tituloDeIdeia(descricao) {
+  const primeira = String(descricao || '').split(/[.!?\n]/)[0].trim();
+  const semAbertura = primeira.replace(ABERTURAS, '').trim() || primeira;
+
+  // Corta em palavra inteira: um título truncado no meio de "satelital" fica pior
+  // do que um título mais curto.
+  let titulo = '';
+  for (const palavra of semAbertura.split(/\s+/).filter(Boolean)) {
+    if (titulo && titulo.length + 1 + palavra.length > LIMITE_TITULO) break;
+    titulo = titulo ? `${titulo} ${palavra}` : palavra;
+    if (titulo.split(' ').length >= MAX_PALAVRAS) break;
+  }
+
+  while (CONECTIVO_FINAL.test(titulo)) titulo = titulo.replace(CONECTIVO_FINAL, '');
+  titulo = titulo.replace(/[\s,;:–-]+$/, '');
+
+  if (!titulo) return 'Nova ideia';
+  return titulo.charAt(0).toUpperCase() + titulo.slice(1);
+}
+
 export function classificarHeuristica(descricao) {
   const t = descricao.toLowerCase();
   const hits = BIO_TERMOS.filter(term => t.includes(term));
@@ -33,7 +69,7 @@ export function classificarHeuristica(descricao) {
     justificativa: bio
       ? `Detectados termos ligados à bioeconomia/impacto ambiental: ${hits.slice(0, 4).join(', ')}.`
       : 'Nenhum sinal de bioeconomia/impacto ambiental detectado na descrição.',
-    nomeSugerido: '',
+    nomeSugerido: tituloDeIdeia(descricao),
   };
 }
 
