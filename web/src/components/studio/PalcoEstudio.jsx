@@ -4,6 +4,7 @@ import { Botao, Etiqueta } from '../hud/index.jsx';
 import { api, baixarMvpZip, construirMvpSSE, previaMvp } from '../../lib/api.js';
 import { MolduraPalco, PalcoVazio } from './Palco.jsx';
 import Editor from './Editor.jsx';
+import Publicacao from './Publicacao.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PALCO DO MVP — o estúdio de código.
@@ -34,6 +35,7 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
   const [arvoreAberta, setArvoreAberta] = useState(true);
   const [chavePrevia, setChavePrevia] = useState(0);   // força um bilhete novo
   const [designAberto, setDesignAberto] = useState(false);
+  const [publicacaoAberta, setPublicacaoAberta] = useState(false);
   const [urlPrevia, setUrlPrevia] = useState(null);
 
   const carregar = useCallback(async () => {
@@ -191,6 +193,10 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
                         : <><Icon nome="check" tam={12} /> Salvar {sujos.length}</>}
             </Botao>
           )}
+          <Botao onClick={() => setPublicacaoAberta(true)} className="px-2.5 py-1 text-[10px]"
+            title="Publicar o site num endereço próprio e ver os contatos recebidos">
+            <Icon nome="foguete" tam={12} /> Publicar
+          </Botao>
           <BotaoVista atual={vista} onMudar={setVista} />
           {mvp?.design && (
             <button onClick={() => setDesignAberto(v => !v)} title="Direção de UX/UI deste MVP"
@@ -212,6 +218,11 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
     >
       {designAberto && mvp?.design && (
         <DirecaoDesign design={mvp.design} onFechar={() => setDesignAberto(false)} />
+      )}
+
+      {publicacaoAberta && (
+        <Publicacao projeto={projeto} onAviso={onAviso}
+          onFechar={() => setPublicacaoAberta(false)} />
       )}
 
       <div className="h-full flex min-h-0">

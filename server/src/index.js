@@ -3,9 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import { config } from './config.js';
-import { cabecalhos, cors, POLITICA_PREVIA } from './services/blindagem.js';
+import { cabecalhos, cors, POLITICA_PREVIA, POLITICA_SITE } from './services/blindagem.js';
 import { lerPrevia, montarPrevia } from './services/previa.js';
 import { migrarConteudo } from './services/conteudo.js';
+import { siteDoSlug, montarPagina, registrarLead, registrarVisita, paginaObrigado, PREFIXO } from './services/publicacao.js';
 import { register, login, authMiddleware, adminMiddleware, publicUser } from './auth.js';
 import { save, store } from './store.js';
 import { projectsRouter } from './routes/projects.js';
@@ -35,10 +36,17 @@ import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gam
 const app = express();
 app.disable('x-powered-by');
 
-// Blindagem de transporte antes de tudo: cabeçalhos em toda resposta e CORS
-// por lista, no lugar do `cors()` que aceitava qualquer origem da internet.
+// Cabeçalhos de segurança em toda resposta, inclusive nos sites publicados.
 app.use(cabecalhos);
-app.use(cors);
+
+// A política de origem protege a API, e SÓ a API.
+//
+// Aplicada globalmente, ela quebrava os sites publicados pelos fundadores:
+// eles rodam em origem opaca por causa do `sandbox`, e o navegador manda
+// `Origin: null` no envio do formulário. O middleware via uma origem estranha
+// e devolvia 403, então nenhum contato entrava. Um site na internet não é
+// chamada de API, e a política de origem não tem o que dizer sobre ele.
+app.use('/api', cors);
 
 // ── Prévia do MVP ──────────────────────────────────────────────────────────
 // Fora de /api e antes da autenticação de propósito: o iframe não carrega
@@ -72,6 +80,63 @@ app.post('/api/pagamentos/webhook/stripe', express.raw({ type: 'application/json
     console.error('webhook stripe:', e.message);
     res.status(e.status || 400).json({ error: e.message });
   }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SITES PUBLICADOS PELOS FUNDADORES
+//
+// Público, fora de /api e antes da autenticação: é um site na internet, aberto
+// a quem receber o link. A política de conteúdo é própria e começa com
+// `sandbox`, o que joga o documento numa origem opaca: código gerado por IA
+// não alcança o armazenamento da plataforma nem o token de quem estiver
+// logado na mesma aba.
+//
+// O formulário chega aqui por POST de formulário comum, não por fetch. Em
+// origem opaca um fetch seria requisição de outra origem e esbarraria em CORS;
+// o envio nativo funciona, e ainda funciona com o JavaScript desligado.
+// ═══════════════════════════════════════════════════════════════════════════
+const formulario = express.urlencoded({ extended: false, limit: '64kb' });
+
+app.post(`${PREFIXO}/:slug/lead`,
+  limitar({ max: 20, janelaSeg: 3600, mensagem: 'Muitos envios deste endereço. Tente mais tarde.' }),
+  formulario,
+  async (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Security-Policy', POLITICA_SITE);
+    try {
+      const site = siteDoSlug(req.params.slug);
+      await registrarLead(req.params.slug, req.body, { ip: req.ip });
+      res.send(paginaObrigado(site?.proj?.nome));
+    } catch (e) {
+      res.status(e.status || 500).send(
+        '<!doctype html><meta charset="utf-8">'
+        + '<body style="font:15px system-ui;background:#06140d;color:#dff6ec;padding:32px">'
+        + `Não consegui registrar seu contato: ${String(e.message).slice(0, 160)}`);
+    }
+  });
+
+app.get(`${PREFIXO}/:slug/:pagina?`, (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Content-Security-Policy', POLITICA_SITE);
+  res.setHeader('X-Frame-Options', 'DENY');
+
+  const site = siteDoSlug(req.params.slug);
+  if (!site) {
+    return res.status(404).send(
+      '<!doctype html><meta charset="utf-8"><title>Site não encontrado</title>'
+      + '<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;'
+      + 'background:#06140d;color:#9fb8ad;font:16px system-ui;padding:24px;text-align:center">'
+      + '<div>Este endereço não está publicado.<br><span style="font-size:12px;opacity:.6">ZoomDev OS</span></div>');
+  }
+
+  const pagina = req.params.pagina || 'index.html';
+  if (!/^[A-Za-z0-9._-]+\.html?$/.test(pagina)) return res.status(404).send('Página não encontrada.');
+
+  const html = montarPagina(site.arquivos, pagina, req.params.slug);
+  if (!html) return res.status(404).send('Página não encontrada.');
+
+  registrarVisita(site.proj);
+  res.send(html);
 });
 
 app.use(express.json({ limit: '1mb' }));

@@ -134,3 +134,28 @@ export const POLITICA_PREVIA = [
   "form-action 'none'",
   "frame-ancestors 'self'",
 ].join('; ');
+
+/**
+ * Política dos sites publicados pelos fundadores.
+ *
+ * Mais permissiva que a da prévia por dentro, porque é um site de verdade que
+ * precisa navegar e enviar formulário, e igualmente isolada por fora: o
+ * `sandbox` sem `allow-same-origin` joga o documento numa origem opaca, então
+ * o código gerado não alcança o armazenamento da plataforma nem o token de
+ * quem estiver logado na mesma aba.
+ *
+ * `allow-top-navigation-by-user-activation` existe para os links entre as
+ * páginas do próprio site funcionarem no clique. Sem ele, o site publicado
+ * seria uma página só, sem saída.
+ */
+export const POLITICA_SITE = [
+  'sandbox allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation',
+  "default-src 'none'",
+  "script-src 'unsafe-inline'",
+  "style-src 'unsafe-inline'",
+  'img-src data: blob: https:',
+  'font-src data:',
+  "connect-src 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ');

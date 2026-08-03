@@ -11,6 +11,7 @@ const empty = () => ({
   radar: null, pulso: null, planosCompensacao: {},
   elenco: null, conselhos: {}, transacoes: {},
   sessoesPainel: {}, auditoria: [], vitrine: null, recuperacoes: {},
+  sites: {},
 });
 
 let db = empty();
@@ -77,6 +78,10 @@ export const store = {
   set vitrine(v) { db.vitrine = v; },
   // Pedidos de redefinição de senha, indexados pelo hash do token
   get recuperacoes() { return db.recuperacoes; },
+  // Sites publicados: { [slug]: { projetoId, userId, publicadoEm } }.
+  // Índice separado porque a busca é pelo endereço, não pelo projeto: varrer
+  // todos os projetos a cada visita de um site publicado seria absurdo.
+  get sites() { return db.sites; },
 };
 
 export function id(prefix) {

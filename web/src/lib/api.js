@@ -107,6 +107,10 @@ export const api = {
   conselhos: (projId) => req(`/projects/${projId}/conselho`),
   // MVP Builder
   mvp: (projId) => req(`/projects/${projId}/mvp`),
+  // Site publicado: endereço próprio e contatos recebidos pelo formulário
+  site: (projId) => req(`/projects/${projId}/site`),
+  publicarSite: (projId, slug) => req(`/projects/${projId}/site`, { method: 'POST', body: JSON.stringify({ slug }) }),
+  despublicarSite: (projId) => req(`/projects/${projId}/site`, { method: 'DELETE' }),
   // Pagamentos
   pagamentosStatus: () => req('/pagamentos/status'),
   pagamentosPacotes: () => req('/pagamentos/pacotes'),

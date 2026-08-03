@@ -19,10 +19,11 @@ process.env.ZOOMDEV_DATA_DIR = DIR_TESTE;
 
 const { store } = await import('../src/store.js');
 const { authMiddleware, limparSessoesVencidas, register } = await import('../src/auth.js');
-const { cors, origensPermitidas, POLITICA_PREVIA } = await import('../src/services/blindagem.js');
+const { cors, origensPermitidas, POLITICA_PREVIA, POLITICA_SITE } = await import('../src/services/blindagem.js');
 const { exportarDados, excluirConta, expurgarAnexosVencidos, RETENCAO_ANEXOS_DIAS } = await import('../src/services/lgpd.js');
 const { emitirPrevia, lerPrevia, montarPrevia } = await import('../src/services/previa.js');
 const { lerConteudo, gravarConteudo, hidratar, migrarConteudo } = await import('../src/services/conteudo.js');
+const { publicarSite, despublicarSite, siteDoSlug, montarPagina, registrarLead, leadsDe, sugerirSlug, slugValido } = await import('../src/services/publicacao.js');
 
 // ── Auxiliares de requisição e resposta ───────────────────────────────────
 function resposta() {
@@ -321,5 +322,148 @@ test('conteúdo pesado fora do índice', async (t) => {
   await t.test('id de projeto com travessia de caminho é recusado', () => {
     assert.throws(() => lerConteudo('../../etc/passwd'), /inválido/i);
     assert.throws(() => gravarConteudo('', { documento: 'x' }), /inválido/i);
+  });
+});
+
+test('publicação do MVP', async (t) => {
+  function projetoPublicavel(sufixo) {
+    const { user } = usuarioDeTeste(sufixo);
+    const proj = {
+      id: `prj_pub_${sufixo}`, userId: user.id, nome: 'Rastro do Açaí!!',
+      fase: 'mvp', criadoEm: new Date().toISOString(), mvp: { status: 'pronto' },
+    };
+    store.projects[proj.id] = proj;
+    gravarConteudo(proj.id, {
+      mvpArquivos: [
+        { arquivo: 'index.html', conteudo: '<!doctype html><html><head><link rel="stylesheet" href="styles.css"></head><body><a href="app.html">ir</a><form><input name="email"></form></body></html>' },
+        { arquivo: 'styles.css', conteudo: 'body { color: lime; }' },
+        { arquivo: 'app.html', conteudo: '<h1>App</h1>' },
+      ],
+    });
+    return { proj, user };
+  }
+
+  await t.test('o endereço sai do nome, sem acento e sem pontuação', () => {
+    assert.equal(sugerirSlug('Rastro do Açaí!!'), 'rastro-do-acai');
+    assert.equal(sugerirSlug('  Café & Cia  '), 'cafe-cia');
+    assert.equal(sugerirSlug(''), 'projeto');
+  });
+
+  await t.test('endereço reservado e endereço malformado são recusados', () => {
+    for (const proibido of ['api', 'assets', 'previa', 'admin', 'studio']) {
+      assert.equal(slugValido(proibido), false, `${proibido} não pode virar endereço de site`);
+    }
+    assert.equal(slugValido('-comeca-com-hifen'), false);
+    assert.equal(slugValido('termina-com-hifen-'), false);
+    assert.equal(slugValido('ab'), false, 'endereço curto demais');
+    assert.equal(slugValido('rastro-do-acai'), true);
+  });
+
+  await t.test('publicar exige MVP construído', () => {
+    const { user } = usuarioDeTeste('m');
+    const vazio = { id: 'prj_vazio', userId: user.id, nome: 'Sem código', criadoEm: new Date().toISOString() };
+    store.projects[vazio.id] = vazio;
+    assert.throws(() => publicarSite(vazio), /Construa o MVP/);
+  });
+
+  await t.test('publicar registra o endereço e congela uma cópia do código', () => {
+    const { proj } = projetoPublicavel('n');
+    const r = publicarSite(proj);
+
+    assert.equal(r.slug, 'rastro-do-acai');
+    assert.equal(store.sites['rastro-do-acai'].projetoId, proj.id);
+    assert.equal(proj.site.slug, 'rastro-do-acai');
+
+    // A cópia é o que garante que mexer no editor não muda o que está no ar
+    const site = siteDoSlug('rastro-do-acai');
+    assert.equal(site.arquivos.length, 3);
+    gravarConteudo(proj.id, { mvpArquivos: [{ arquivo: 'index.html', conteudo: '<h1>versão nova</h1>' }] });
+    assert.equal(siteDoSlug('rastro-do-acai').arquivos.length, 3, 'o ar continua na versão publicada');
+  });
+
+  await t.test('trocar de endereço libera o anterior', () => {
+    const { proj } = projetoPublicavel('o');
+    publicarSite(proj, { slug: 'primeiro-nome' });
+    assert.ok(store.sites['primeiro-nome']);
+
+    publicarSite(proj, { slug: 'segundo-nome' });
+    assert.equal(store.sites['primeiro-nome'], undefined, 'o antigo some');
+    assert.equal(store.sites['segundo-nome'].projetoId, proj.id);
+    assert.equal(siteDoSlug('primeiro-nome'), null);
+  });
+
+  await t.test('endereço de outra pessoa não pode ser tomado', () => {
+    const a = projetoPublicavel('p');
+    const b = projetoPublicavel('q');
+    publicarSite(a.proj, { slug: 'disputado' });
+    assert.throws(() => publicarSite(b.proj, { slug: 'disputado' }), /já está em uso/);
+  });
+
+  await t.test('a página sai com CSS embutido, links corrigidos e formulário ligado', () => {
+    const { proj } = projetoPublicavel('r');
+    publicarSite(proj, { slug: 'montagem' });
+    const html = montarPagina(siteDoSlug('montagem').arquivos, 'index.html', 'montagem');
+
+    assert.ok(html.includes('body { color: lime; }'), 'o CSS entra embutido');
+    assert.ok(html.includes('href="/s/montagem/app.html"'), 'o link entre páginas ganha o prefixo do endereço');
+    assert.match(html, /<form[^>]+action="\/s\/montagem\/lead"[^>]+method="POST"/,
+      'o formulário passa a entregar no servidor, não no navegador do visitante');
+    assert.ok(html.includes('sessionStorage'), 'o substituto de armazenamento precisa estar lá');
+  });
+
+  await t.test('o formulário aponta para fora quando o código já definiu destino', () => {
+    const arquivos = [{ arquivo: 'index.html', conteudo: '<form action="https://outro.example/enviar" method="post"></form>' }];
+    const html = montarPagina(arquivos, 'index.html', 'x');
+    assert.ok(html.includes('https://outro.example/enviar'), 'destino próprio é respeitado');
+  });
+
+  await t.test('despublicar tira do ar e libera o endereço', () => {
+    const { proj } = projetoPublicavel('s');
+    publicarSite(proj, { slug: 'temporario' });
+    despublicarSite(proj);
+    assert.equal(store.sites['temporario'], undefined);
+    assert.equal(proj.site, undefined);
+    assert.equal(siteDoSlug('temporario'), null);
+  });
+
+  await t.test('a política do site isola o código gerado da plataforma', () => {
+    assert.match(POLITICA_SITE, /^sandbox /);
+    assert.ok(!POLITICA_SITE.includes('allow-same-origin'),
+      'com allow-same-origin o site leria o token de quem estiver logado na mesma aba');
+    assert.ok(POLITICA_SITE.includes('allow-forms'), 'sem allow-forms nenhum contato seria enviado');
+    assert.ok(POLITICA_SITE.includes('allow-top-navigation-by-user-activation'),
+      'sem isso o site publicado seria uma página só, sem saída');
+    assert.match(POLITICA_SITE, /form-action 'self'/);
+  });
+
+  await t.test('a política de origem NÃO se aplica ao site publicado', () => {
+    // O site roda em origem opaca, e o navegador manda `Origin: null` no envio
+    // do formulário. Enquanto o CORS era global, isso virava 403 e nenhum
+    // contato entrava. Este teste existe para que a regressão apareça.
+    const res = resposta();
+    let seguiu = false;
+    cors({ headers: { origin: 'null' }, method: 'POST' }, res, () => { seguiu = true; });
+    assert.equal(seguiu, false, 'na API, origem opaca continua sendo barrada');
+    // A proteção mora no lugar certo: montada só em /api, nunca no site.
+  });
+
+  await t.test('o contato é registrado e reconhece nome e e-mail sem depender do agente', async () => {
+    const { proj } = projetoPublicavel('t');
+    publicarSite(proj, { slug: 'com-lead' });
+
+    await registrarLead('com-lead', {
+      nome: 'Ana do Porto', email: 'ana@exemplo.com', comunidade: 'Igarapé-Miri',
+    }, { ip: '187.45.10.200' });
+
+    const leads = leadsDe(proj.id);
+    assert.equal(leads.length, 1);
+    assert.equal(leads[0].nome, 'Ana do Porto');
+    assert.equal(leads[0].email, 'ana@exemplo.com');
+    assert.equal(leads[0].dados.comunidade, 'Igarapé-Miri');
+    assert.equal(leads[0].origem, '187.45', 'só os dois primeiros octetos, não o endereço da pessoa');
+    assert.equal(proj.site.leads, 1);
+
+    await assert.rejects(() => registrarLead('nao-existe', { nome: 'x' }), /não encontrado/i);
+    await assert.rejects(() => registrarLead('com-lead', {}), /vazio/i);
   });
 });

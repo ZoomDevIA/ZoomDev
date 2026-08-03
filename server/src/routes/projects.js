@@ -12,6 +12,7 @@ import { construirMvp, PECAS, ETAPA_DESIGN } from '../agents/mvpBuilder.js';
 import { publicar, projetarProjeto } from '../services/vitrine.js';
 import { emitirPrevia } from '../services/previa.js';
 import { hidratar, gravarConteudo, arquivosMvp, apagarConteudo } from '../services/conteudo.js';
+import { publicarSite, despublicarSite, sugerirSlug, urlPublica, leadsDe, PREFIXO } from '../services/publicacao.js';
 import { exigir } from '../auth.js';
 import JSZip from 'jszip';
 
@@ -408,4 +409,54 @@ projectsRouter.get('/:id/mvp.zip', async (req, res, next) => {
     res.setHeader('Content-Disposition', `attachment; filename="${slug}-mvp.zip"`);
     res.send(buf);
   } catch (e) { next(e); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SITE PUBLICADO
+//
+// Entre "tenho um ZIP" e "mandei o link no WhatsApp" existe um abismo de
+// fricção que derruba a maioria dos projetos. Estas três rotas são a ponte.
+// ═══════════════════════════════════════════════════════════════════════════
+
+function meuProjetoOuNulo(req, res) {
+  const proj = store.projects[req.params.id];
+  if (!proj || proj.userId !== req.user.id) {
+    res.status(404).json({ error: 'Projeto não encontrado.' });
+    return null;
+  }
+  return proj;
+}
+
+projectsRouter.get('/:id/site', (req, res) => {
+  const proj = meuProjetoOuNulo(req, res);
+  if (!proj) return;
+
+  const leads = leadsDe(proj.id);
+  res.json({
+    publicado: Boolean(proj.site),
+    site: proj.site
+      ? { ...proj.site, caminho: `${PREFIXO}/${proj.site.slug}`, url: urlPublica(proj.site.slug) }
+      : null,
+    sugestao: sugerirSlug(proj.nome),
+    // O código no ar pode estar atrás do que está no editor: quem publicou
+    // ontem e mexeu hoje precisa ver isso antes de mandar o link para alguém.
+    desatualizado: Boolean(proj.site) && proj.mvp?.editadoEm > proj.site.atualizadoEm,
+    leads,
+  });
+});
+
+projectsRouter.post('/:id/site', exigir('comunidade.publicar'), (req, res, next) => {
+  const proj = meuProjetoOuNulo(req, res);
+  if (!proj) return;
+  try {
+    const r = publicarSite(proj, { slug: req.body?.slug });
+    res.json({ ...r, site: proj.site });
+  } catch (e) { next(e); }
+});
+
+projectsRouter.delete('/:id/site', (req, res) => {
+  const proj = meuProjetoOuNulo(req, res);
+  if (!proj) return;
+  despublicarSite(proj);
+  res.json({ publicado: false });
 });
