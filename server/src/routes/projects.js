@@ -8,7 +8,7 @@ import { awardXP, FASES, FASE_LABEL, NIVEL_STARTUP, missoesValidacaoPadrao } fro
 import { planoParaDocx } from '../services/exportDocx.js';
 import { planoParaPdf } from '../services/exportPdf.js';
 import { paginaHtml } from '../services/exportHtml.js';
-import { construirMvp, PECAS } from '../agents/mvpBuilder.js';
+import { construirMvp, PECAS, ETAPA_DESIGN } from '../agents/mvpBuilder.js';
 import { publicar, projetarProjeto } from '../services/vitrine.js';
 import { exigir } from '../auth.js';
 import JSZip from 'jszip';
@@ -299,16 +299,18 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
   req.user.creditos -= custo;
   proj.mvp = { status: 'construindo', iniciadoEm: new Date().toISOString(), pecas: {} };
   save();
-  send('inicio', { custo, pecas: PECAS });
+  // A direção de UX/UI aparece como primeira etapa: o fundador precisa ver
+  // que existe uma decisão de design antes do código, e não só arquivos saindo.
+  send('inicio', { custo, pecas: [ETAPA_DESIGN, ...PECAS] });
 
   try {
-    const { arquivos, modo } = await construirMvp(proj, (pecaId, status, arquivo) => {
+    const { arquivos, modo, design } = await construirMvp(proj, (pecaId, status, arquivo) => {
       proj.mvp.pecas[pecaId] = { status, arquivo };
       send('peca', { peca: pecaId, status, arquivo });
     });
 
     proj.mvp = {
-      status: 'pronto', modo,
+      status: 'pronto', modo, design,
       construidoEm: new Date().toISOString(),
       arquivos,
       pecas: proj.mvp.pecas,
@@ -348,6 +350,7 @@ projectsRouter.get('/:id/mvp', (req, res) => {
   if (!proj.mvp) return res.json({ status: 'nao_iniciado' });
   res.json({
     status: proj.mvp.status, modo: proj.mvp.modo, construidoEm: proj.mvp.construidoEm,
+    design: proj.mvp.design || null,
     arquivos: (proj.mvp.arquivos || []).map(a => ({ arquivo: a.arquivo, bytes: Buffer.byteLength(a.conteudo, 'utf8'), conteudo: a.conteudo })),
   });
 });

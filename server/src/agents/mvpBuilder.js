@@ -11,6 +11,21 @@
 import { config } from '../config.js';
 import { structured } from './claude.js';
 
+/**
+ * A direção de design vem antes do código.
+ *
+ * Sem ela, cada arquivo inventava a própria aparência e o resultado eram cinco
+ * arquivos que não se pareciam com nada, muito menos entre si. Aqui um passe
+ * decide conceito, paleta, tipografia, densidade, arquitetura de informação e
+ * estados da interface; os cinco arquivos seguintes obedecem a essa decisão.
+ *
+ * É a diferença entre um MVP que parece um exercício e um que parece produto.
+ */
+export const ETAPA_DESIGN = {
+  id: 'design', nome: 'Direção de UX/UI', emoji: '🎯', arquivo: 'design.json',
+  papel: 'Conceito, paleta, tipografia e arquitetura de informação',
+};
+
 /** As peças que compõem o MVP, na ordem em que são construídas. */
 export const PECAS = [
   { id: 'identidade', nome: 'Identidade visual', emoji: '🎨', arquivo: 'styles.css', papel: 'Paleta, tipografia e sistema de componentes' },
@@ -481,6 +496,173 @@ ${ctx.stack.length ? `**Stack sugerida para a v2:** ${lista(ctx.stack, []).join(
   };
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// DIREÇÃO DE UX/UI
+// ═══════════════════════════════════════════════════════════════════════════
+
+const str = { type: 'string' };
+const arrStr = { type: 'array', items: str };
+const objeto = (props) => ({
+  type: 'object', properties: props,
+  required: Object.keys(props), additionalProperties: false,
+});
+
+const DESIGN_SCHEMA = objeto({
+  conceito: str,
+  personalidade: arrStr,
+  paleta: objeto({
+    fundo: str, superficie: str, marca: str, acento: str,
+    texto: str, textoFraco: str, sucesso: str, alerta: str, erro: str,
+  }),
+  contraste: str,
+  tipografia: objeto({
+    familiaTitulo: str, familiaCorpo: str,
+    escala: str, pesoTitulo: str, alturaLinha: str,
+  }),
+  forma: objeto({ raio: str, densidade: str, sombra: str, borda: str }),
+  arquiteturaInformacao: { type: 'array', items: objeto({ tela: str, objetivo: str, elementos: arrStr }) },
+  fluxoPrincipal: { type: 'array', items: objeto({ passo: str, oQueVe: str, oQueFaz: str, comoSabeQueDeuCerto: str }) },
+  estados: { type: 'array', items: objeto({ estado: str, comoAparece: str }) },
+  microinteracoes: arrStr,
+  acessibilidade: arrStr,
+  oQueNaoFazer: arrStr,
+});
+
+const BRIEFING_UX = `Você é o Diretor de UX/UI da ZoomDev OS. Você não desenha telas bonitas: você decide como o produto se comporta e por quê, e essa decisão vira código logo depois.
+
+Escreva a DIREÇÃO DE DESIGN deste MVP.
+
+conceito
+  Uma frase que amarra o produto a uma sensação. "Painel de missão de controle
+  para quem tem trinta segundos entre uma entrega e outra" serve. "Design
+  moderno e intuitivo" não serve para nada.
+
+personalidade
+  Três a cinco adjetivos que se contradizem menos do que parecem: escolha o eixo
+  (sóbrio ou expressivo, denso ou arejado, técnico ou acolhedor) em vez de pedir
+  tudo ao mesmo tempo.
+
+paleta
+  Hexadecimais concretos. Tema escuro. A cor de marca precisa conversar com o
+  SETOR, não com a moda: saúde não é a mesma coisa que logística, e nenhuma das
+  duas é roxo de startup genérica. Diga em "contraste" qual é a razão de
+  contraste do texto sobre o fundo e confirme que passa de 4,5:1.
+
+tipografia
+  Só fontes de sistema ou seguras na web: não há CDN neste MVP. Diga a escala
+  em números (ex.: 13 / 15 / 20 / 28 / 40) em vez de "hierarquia clara".
+
+forma
+  Raio da borda, densidade do espaçamento, uso de sombra e de borda. Coerência
+  aqui é o que faz cinco arquivos parecerem um produto só.
+
+arquiteturaInformacao
+  Landing e aplicação. Para cada tela: o objetivo único dela e os elementos, na
+  ordem vertical em que aparecem.
+
+fluxoPrincipal
+  Do primeiro clique até o momento em que a pessoa percebe o valor. Cada passo
+  diz o que ela VÊ, o que ela FAZ e como ela SABE que deu certo. Esse último
+  campo é o mais importante e o mais esquecido.
+
+estados
+  Vazio, carregando, erro, sucesso e primeira visita. Interface só com o estado
+  cheio desenhado quebra no primeiro uso real, que é justamente o estado vazio.
+
+microinteracoes
+  Poucas e com propósito: confirmação, transição de contexto, feedback de ação.
+  Animação que não comunica nada é ruído com custo de bateria.
+
+acessibilidade
+  Foco visível, alvo de toque de no mínimo 44px, rótulo em todo campo, ordem de
+  tabulação, e nunca cor como único portador de informação.
+
+oQueNaoFazer
+  O que este produto especificamente NÃO deve ter. Carrossel, splash screen,
+  modal de boas-vindas, gradiente arco-íris: diga o que está proibido aqui e por
+  quê, para que a decisão não volte disfarçada no próximo arquivo.
+
+Escreva em pt-BR. Específico deste negócio: se a frase serviria para qualquer
+produto, ela está errada.`;
+
+async function dirigirDesign(ctx) {
+  return structured({
+    system: BRIEFING_UX,
+    user: `PROJETO: ${ctx.nome} (${ctx.bio ? 'biostartup, bioeconomia' : 'startup'}, ${ctx.vertical})
+PROPOSTA DE VALOR: ${ctx.proposta}
+PÚBLICO: ${ctx.publico}
+CONTEXTO DE USO: ${ctx.descricao}
+DORES: ${lista(ctx.dores, ['–']).join(' · ')}
+FUNCIONALIDADES DO MVP: ${lista(ctx.funcionalidades, ['–']).join(' · ')}
+MODELO DE RECEITA: ${ctx.modelo}
+${ctx.impacto ? `IMPACTO: ${ctx.impacto}` : ''}
+
+Restrição técnica que muda o desenho: HTML, CSS e JavaScript puros, sem
+framework, sem CDN, sem fonte externa, sem imagem hospedada. Tudo que for
+decidido aqui precisa caber nessas regras.`,
+    schema: DESIGN_SCHEMA,
+    effort: 'high',
+    maxTokens: 10000,
+  });
+}
+
+/** Direção determinística, para o modo demo e para quando a IA falha. */
+function designPadrao(ctx) {
+  const marca = ctx.bio ? '#00ff64' : '#00c8ff';
+  return {
+    conceito: `Painel direto ao ponto para ${ctx.publico}: abrir, ver o que mudou e agir sem treinamento.`,
+    personalidade: ['sóbrio', 'denso', 'técnico', 'sem cerimônia'],
+    paleta: {
+      fundo: '#06140d', superficie: '#0b1f16', marca, acento: '#ffc531',
+      texto: '#dff6ec', textoFraco: '#9fb8ad', sucesso: '#00ff64', alerta: '#ffc531', erro: '#ff4d8d',
+    },
+    contraste: 'Texto #dff6ec sobre fundo #06140d passa de 13:1, bem acima do mínimo de 4,5:1.',
+    tipografia: {
+      familiaTitulo: 'system-ui, -apple-system, Segoe UI, sans-serif',
+      familiaCorpo: 'system-ui, -apple-system, Segoe UI, sans-serif',
+      escala: '13 / 15 / 20 / 28 / 40', pesoTitulo: '700', alturaLinha: '1.55',
+    },
+    forma: { raio: '0 (cantos retos)', densidade: 'compacta, base de 8px', sombra: 'só em elemento flutuante', borda: '1px sólida a 12% de opacidade' },
+    arquiteturaInformacao: [
+      { tela: 'Landing', objetivo: 'Fazer entrar na lista de espera', elementos: ['cabeçalho', 'proposta de valor', 'problema', 'solução', 'preço', 'formulário'] },
+      { tela: 'Aplicação', objetivo: 'Registrar e acompanhar', elementos: ['menu lateral', 'métricas', 'formulário', 'tabela'] },
+    ],
+    fluxoPrincipal: [
+      { passo: 'Chegada', oQueVe: 'A proposta de valor em uma frase', oQueFaz: 'Rola até o formulário', comoSabeQueDeuCerto: 'O campo recebe foco visível' },
+      { passo: 'Cadastro', oQueVe: 'Um campo só', oQueFaz: 'Digita o e-mail e envia', comoSabeQueDeuCerto: 'Mensagem de confirmação no lugar do formulário' },
+      { passo: 'Primeiro registro', oQueVe: 'Estado vazio explicando o que fazer', oQueFaz: 'Cria o primeiro item', comoSabeQueDeuCerto: 'O item aparece na tabela e a métrica sobe' },
+    ],
+    estados: [
+      { estado: 'vazio', comoAparece: 'Texto explicando o que aparecerá ali e o botão da ação' },
+      { estado: 'carregando', comoAparece: 'Esqueleto do conteúdo, nunca a tela em branco' },
+      { estado: 'erro', comoAparece: 'Mensagem em pt-BR dizendo o que fazer, não o código do erro' },
+      { estado: 'sucesso', comoAparece: 'Confirmação curta que some sozinha em 4 segundos' },
+    ],
+    microinteracoes: ['Realce da linha ao passar o ponteiro', 'Confirmação ao salvar', 'Transição de 150ms na troca de seção'],
+    acessibilidade: ['Foco visível em tudo que recebe teclado', 'Alvo de toque de 44px', 'Rótulo em todo campo', 'Cor nunca é o único sinal'],
+    oQueNaoFazer: ['Carrossel', 'Modal de boas-vindas', 'Animação sem função', 'Texto abaixo de 13px'],
+  };
+}
+
+function resumirDesign(d) {
+  if (!d) return '';
+  const p = d.paleta || {};
+  const t = d.tipografia || {};
+  const f = d.forma || {};
+  return `DIREÇÃO DE DESIGN (obedeça a ela, não invente outra)
+Conceito: ${d.conceito}
+Personalidade: ${(d.personalidade || []).join(', ')}
+Paleta: fundo ${p.fundo} · superfície ${p.superficie} · marca ${p.marca} · acento ${p.acento} · texto ${p.texto} · texto fraco ${p.textoFraco} · sucesso ${p.sucesso} · alerta ${p.alerta} · erro ${p.erro}
+Tipografia: título ${t.familiaTitulo}, corpo ${t.familiaCorpo}, escala ${t.escala}, peso do título ${t.pesoTitulo}, altura de linha ${t.alturaLinha}
+Forma: raio ${f.raio} · densidade ${f.densidade} · sombra ${f.sombra} · borda ${f.borda}
+Telas: ${(d.arquiteturaInformacao || []).map(a => `${a.tela} (${a.objetivo}): ${(a.elementos || []).join(', ')}`).join(' | ')}
+Fluxo: ${(d.fluxoPrincipal || []).map(x => `${x.passo}: vê ${x.oQueVe}, faz ${x.oQueFaz}, confirma por ${x.comoSabeQueDeuCerto}`).join(' | ')}
+Estados obrigatórios: ${(d.estados || []).map(e => `${e.estado} (${e.comoAparece})`).join(' | ')}
+Microinterações: ${(d.microinteracoes || []).join('; ')}
+Acessibilidade: ${(d.acessibilidade || []).join('; ')}
+PROIBIDO neste produto: ${(d.oQueNaoFazer || []).join('; ')}`;
+}
+
 // ── Geração por IA ────────────────────────────────────────────────────────
 const ARQUIVO_SCHEMA = {
   type: 'object',
@@ -489,7 +671,7 @@ const ARQUIVO_SCHEMA = {
   additionalProperties: false,
 };
 
-async function gerarPecaIA(peca, ctx, jaGerado) {
+async function gerarPecaIA(peca, ctx, jaGerado, design) {
   const base = `PROJETO: ${ctx.nome} (${ctx.bio ? 'biostartup' : 'startup'}, ${ctx.vertical})
 PROPOSTA DE VALOR: ${ctx.proposta}
 PÚBLICO: ${ctx.publico}
@@ -500,18 +682,21 @@ ESCOPO DO MVP: ${lista(ctx.mvpEscopo, ['–']).join(' · ')}
 ${ctx.impacto ? `IMPACTO: ${ctx.impacto}` : ''}`;
 
   const instrucoes = {
-    identidade: 'Escreva o arquivo styles.css completo: variáveis CSS, reset, tipografia, botões, cards, grid responsivo, formulários, tabela e um shell de aplicação com sidebar. Tema escuro, moderno, com uma cor de marca coerente com o setor. Sem frameworks, sem imports externos.',
-    landing: 'Escreva o index.html completo: header fixo, hero com proposta de valor, seção de problema, seção de solução com as funcionalidades, seção de preços, formulário de lista de espera e footer. Use as classes do styles.css. HTML semântico e acessível.',
-    app: 'Escreva o app.html completo: shell com sidebar de navegação, cabeçalho, linha de cards de métricas, formulário de criação e tabela de registros. Deve parecer o produto real descrito no plano.',
-    logica: 'Escreva o app.js completo em JavaScript puro (sem frameworks): captura do formulário da landing, CRUD de registros no localStorage, cálculo das métricas e renderização da tabela. Código limpo, comentado em pt-BR, IIFE, sem dependências.',
-    entrega: 'Escreva o README.md: o que é, como rodar, como publicar (Netlify/Vercel/GitHub Pages), estrutura dos arquivos, onde trocar localStorage por API, escopo desta versão e próximos passos de validação.',
+    identidade: 'Escreva o arquivo styles.css completo, implementando a direção de design acima: variáveis CSS com a paleta exata, reset, a escala tipográfica declarada, botões (com estado de foco visível e de desabilitado), cards, grid responsivo, formulários com rótulo, tabela, shell de aplicação com barra lateral, e as classes dos estados vazio, carregando, erro e sucesso. Nenhuma cor fora da paleta.',
+    landing: 'Escreva o index.html completo, seguindo a arquitetura de informação da tela de Landing na ordem declarada. HTML semântico, um h1 só, todo campo com <label>, e o fluxo principal precisa terminar no sinal de confirmação descrito. Use apenas as classes do styles.css.',
+    app: 'Escreva o app.html completo, seguindo a arquitetura de informação da tela de Aplicação. Deve incluir o estado VAZIO desenhado no HTML, porque é o primeiro estado que qualquer pessoa vê. Deve parecer o produto real descrito no plano, não um esqueleto.',
+    logica: 'Escreva o app.js completo em JavaScript puro (sem frameworks): captura do formulário da landing, CRUD de registros no localStorage, cálculo das métricas, renderização da tabela e a troca entre os estados vazio, carregando, erro e sucesso conforme a direção de design. Código limpo, comentado em pt-BR, IIFE, sem dependências.',
+    entrega: 'Escreva o README.md: o que é, como rodar, como publicar (Netlify/Vercel/GitHub Pages), estrutura dos arquivos, a direção de design em uma seção curta (conceito, paleta e o que não fazer), onde trocar localStorage por API, escopo desta versão e próximos passos de validação.',
   };
 
   const r = await structured({
     system: `Você é o Dev Master da ZoomDev OS, engenheiro de produto sênior. Você escreve MVPs que FUNCIONAM: código real, sem placeholder, sem "TODO", sem dependência externa. O usuário vai abrir o arquivo no navegador e usar.
-Regras: HTML/CSS/JS puro, sem CDN, sem framework, sem import externo. Responsivo. Tema escuro. Texto da interface em pt-BR.
+Regras: HTML/CSS/JS puro, sem CDN, sem framework, sem import externo. Responsivo. Texto da interface em pt-BR.
+A direção de design não é sugestão: ela já foi decidida e este arquivo a implementa. Cor, fonte, espaçamento e estados vêm de lá.
 Retorne APENAS o conteúdo do arquivo, sem cercas de markdown e sem explicação.`,
     user: `${base}
+
+${resumirDesign(design)}
 
 ARQUIVO A ESCREVER: ${peca.arquivo}
 ${instrucoes[peca.id]}
@@ -532,17 +717,31 @@ export async function construirMvp(projeto, onProgress = () => {}) {
   const demo = gerarDemo(ctx);
 
   if (!config.hasApiKey) {
+    onProgress(ETAPA_DESIGN.id, 'concluido', ETAPA_DESIGN.arquivo);
     for (const p of PECAS) {
       onProgress(p.id, 'concluido', demo[p.id].arquivo);
     }
-    return { arquivos: PECAS.map(p => demo[p.id]), modo: 'demo' };
+    return { arquivos: PECAS.map(p => demo[p.id]), modo: 'demo', design: designPadrao(ctx) };
+  }
+
+  // A direção vem primeiro e alimenta todos os arquivos. Se ela falhar, a
+  // direção determinística entra no lugar: melhor um MVP coerente com regras
+  // simples do que cinco arquivos cada um com a sua própria estética.
+  onProgress(ETAPA_DESIGN.id, 'executando', ETAPA_DESIGN.arquivo);
+  let design;
+  try {
+    design = await dirigirDesign(ctx);
+    onProgress(ETAPA_DESIGN.id, 'concluido', ETAPA_DESIGN.arquivo);
+  } catch {
+    design = designPadrao(ctx);
+    onProgress(ETAPA_DESIGN.id, 'fallback', ETAPA_DESIGN.arquivo);
   }
 
   const gerado = {};
   for (const p of PECAS) {
     onProgress(p.id, 'executando', p.arquivo);
     try {
-      gerado[p.id] = await gerarPecaIA(p, ctx, gerado);
+      gerado[p.id] = await gerarPecaIA(p, ctx, gerado, design);
       onProgress(p.id, 'concluido', p.arquivo);
     } catch (e) {
       // Falha em uma peça não derruba o MVP: entra a versão determinística
@@ -550,5 +749,5 @@ export async function construirMvp(projeto, onProgress = () => {}) {
       onProgress(p.id, 'fallback', p.arquivo);
     }
   }
-  return { arquivos: PECAS.map(p => gerado[p.id]), modo: 'ia' };
+  return { arquivos: PECAS.map(p => gerado[p.id]), modo: 'ia', design };
 }

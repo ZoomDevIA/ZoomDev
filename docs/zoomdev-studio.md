@@ -211,7 +211,40 @@ escreveu à mão. Se nenhum trecho casar, o documento não é tocado.
 
 ## 7. Palco do MVP
 
-`web/src/components/studio/PalcoEstudio.jsx`
+`web/src/components/studio/PalcoEstudio.jsx` · `server/src/agents/mvpBuilder.js`
+
+### A direção de UX/UI vem antes do código
+
+Sem ela, cada arquivo inventava a própria aparência e o resultado eram cinco
+arquivos que não se pareciam com nada, muito menos entre si.
+
+Agora a construção começa por um passe do **Diretor de UX/UI**, que decide e
+registra:
+
+| Bloco | O que resolve |
+|---|---|
+| Conceito | uma frase que amarra o produto a uma sensação, não "moderno e intuitivo" |
+| Personalidade | três a cinco adjetivos num eixo escolhido, não tudo ao mesmo tempo |
+| Paleta | hexadecimais concretos, com a razão de contraste declarada e conferida |
+| Tipografia | fontes de sistema e escala em números, porque não há CDN neste MVP |
+| Forma | raio, densidade, sombra e borda: é o que faz cinco arquivos virarem um produto |
+| Arquitetura de informação | cada tela com um objetivo único e os elementos em ordem |
+| Fluxo principal | cada passo diz o que a pessoa vê, faz e **como sabe que deu certo** |
+| Estados | vazio, carregando, erro, sucesso e primeira visita |
+| Microinterações | poucas e com propósito |
+| Acessibilidade | foco visível, alvo de 44px, rótulo em todo campo, cor nunca sozinha |
+| O que não fazer | o proibido neste produto, para a decisão não voltar disfarçada |
+
+Os cinco arquivos seguintes recebem essa direção como restrição, não como
+sugestão. Se o passe de direção falhar, entra uma direção determinística: um
+MVP coerente com regras simples é melhor que cinco arquivos com estéticas
+diferentes.
+
+O briefing fica visível no Studio pelo botão da gota, e um resumo dele entra no
+README que sai no ZIP. Quando o fundador pedir uma mudança visual, ele fala a
+partir de uma decisão escrita, e não de "deixa mais bonito".
+
+### O editor
 
 - Árvore de arquivos recolhível, com marca de alterado e não salvo.
 - CodeMirror 6 com destaque para HTML, CSS e JavaScript.

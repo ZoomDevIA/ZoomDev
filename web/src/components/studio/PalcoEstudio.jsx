@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '../Icon.jsx';
-import { Botao } from '../hud/index.jsx';
+import { Botao, Etiqueta } from '../hud/index.jsx';
 import { api, baixarMvpZip, construirMvpSSE } from '../../lib/api.js';
 import { MolduraPalco, PalcoVazio } from './Palco.jsx';
 import Editor from './Editor.jsx';
@@ -33,6 +33,7 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
   const [vista, setVista] = useState('codigo');
   const [arvoreAberta, setArvoreAberta] = useState(true);
   const [chavePrevia, setChavePrevia] = useState(0);
+  const [designAberto, setDesignAberto] = useState(false);
 
   const carregar = useCallback(async () => {
     try {
@@ -63,7 +64,7 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
       await construirMvpSSE(projeto.id, {
         inicio: (d) => setPecas((d.pecas || []).map(p => ({ ...p, estado: 'espera' }))),
         peca: (d) => setPecas(ps => ps.map(p => (p.id === d.peca ? { ...p, estado: d.status } : p))),
-        fim: async () => { await carregar(); onMarco?.('MVP construído'); },
+        concluido: async () => { await carregar(); onMarco?.('MVP construído'); },
         erro: (d) => onAviso?.(d.error || 'A construção falhou.'),
       });
     } catch (e) { onAviso?.(e.message); } finally { setConstruindo(false); }
@@ -163,6 +164,12 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
             </Botao>
           )}
           <BotaoVista atual={vista} onMudar={setVista} />
+          {mvp?.design && (
+            <button onClick={() => setDesignAberto(v => !v)} title="Direção de UX/UI deste MVP"
+              className={`p-1.5 transition-colors ${designAberto ? 'text-[#a855f7]' : 'text-white/40 hover:text-[#a855f7]'}`}>
+              <Icon nome="gota" tam={15} />
+            </button>
+          )}
           <button onClick={() => baixarMvpZip(projeto.id).catch(e => onAviso?.(e.message))}
             title="Baixar o projeto em ZIP"
             className="p-1.5 text-white/40 hover:text-[#00ff64] transition-colors">
@@ -175,6 +182,10 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
         </>
       }
     >
+      {designAberto && mvp?.design && (
+        <DirecaoDesign design={mvp.design} onFechar={() => setDesignAberto(false)} />
+      )}
+
       <div className="h-full flex min-h-0">
         {/* Árvore de arquivos */}
         <aside className={`shrink-0 border-r border-[#00e5ff1f] bg-[#07120e] flex flex-col transition-[width] ${
@@ -260,6 +271,115 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
         </div>
       )}
     </MolduraPalco>
+  );
+}
+
+// ── Direção de UX/UI ──────────────────────────────────────────────────────
+// O briefing que os cinco arquivos obedeceram, legível. Mostrar isso não é
+// enfeite: quando o fundador pedir uma mudança visual, é daqui que ele fala,
+// e um pedido feito contra uma decisão escrita vale mais que "deixa mais bonito".
+function DirecaoDesign({ design, onFechar }) {
+  const d = design || {};
+  const p = d.paleta || {};
+  const cores = [
+    ['fundo', p.fundo], ['superfície', p.superficie], ['marca', p.marca], ['acento', p.acento],
+    ['texto', p.texto], ['sucesso', p.sucesso], ['alerta', p.alerta], ['erro', p.erro],
+  ].filter(([, v]) => v);
+
+  return (
+    // Fundo opaco de propósito: com o código transparecendo por trás, os dois
+    // textos brigam e não se lê nenhum dos dois.
+    <div className="absolute inset-0 z-20 overflow-y-auto p-5"
+      style={{ background: '#04100b', backdropFilter: 'blur(4px)' }}>
+      <div className="max-w-2xl mx-auto space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="hud-caps text-[9px] text-[#a855f7] mb-1">direção de ux/ui</div>
+            <p className="text-[14px] leading-relaxed">{d.conceito}</p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {(d.personalidade || []).map((x, i) => <Etiqueta key={i} cor="#a855f7">{x}</Etiqueta>)}
+            </div>
+          </div>
+          <button onClick={onFechar} title="Fechar" className="text-white/40 hover:text-white shrink-0 p-1">
+            <Icon nome="fechar" tam={16} />
+          </button>
+        </div>
+
+        {cores.length > 0 && (
+          <Bloco titulo="Paleta">
+            <div className="flex flex-wrap gap-2">
+              {cores.map(([nome, hex]) => (
+                <div key={nome} className="flex items-center gap-1.5">
+                  <span className="w-5 h-5 hud-corte shrink-0"
+                    style={{ '--c': '4px', background: hex, boxShadow: 'inset 0 0 0 1px #ffffff22' }} />
+                  <span className="hud-tec text-[9px] text-white/45">{nome} {hex}</span>
+                </div>
+              ))}
+            </div>
+            {d.contraste && <p className="text-[11px] text-white/45 mt-2.5 leading-relaxed">{d.contraste}</p>}
+          </Bloco>
+        )}
+
+        {d.fluxoPrincipal?.length > 0 && (
+          <Bloco titulo="Fluxo principal">
+            {d.fluxoPrincipal.map((f, i) => (
+              <div key={i} className="flex gap-2.5 py-1.5">
+                <span className="hud-tec text-[10px] text-[#a855f7] shrink-0 w-4">{i + 1}</span>
+                <div className="min-w-0">
+                  <div className="text-[12px] font-bold">{f.passo}</div>
+                  <div className="text-[11px] text-white/50 leading-relaxed">
+                    vê {f.oQueVe} · faz {f.oQueFaz}
+                  </div>
+                  <div className="text-[11px] text-[#00ff64] leading-relaxed mt-0.5">
+                    sabe que deu certo quando {f.comoSabeQueDeuCerto}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </Bloco>
+        )}
+
+        {d.estados?.length > 0 && (
+          <Bloco titulo="Estados da interface">
+            {d.estados.map((e, i) => (
+              <div key={i} className="text-[11.5px] text-white/55 py-1 leading-relaxed">
+                <span className="hud-caps text-[9px] text-white/35 mr-2">{e.estado}</span>
+                {e.comoAparece}
+              </div>
+            ))}
+          </Bloco>
+        )}
+
+        {d.oQueNaoFazer?.length > 0 && (
+          <Bloco titulo="Proibido neste produto" cor="#ff4d8d">
+            {d.oQueNaoFazer.map((x, i) => (
+              <div key={i} className="text-[11.5px] text-white/55 py-0.5 flex gap-2">
+                <Icon nome="fechar" tam={11} className="text-[#ff4d8d] shrink-0 mt-1" />{x}
+              </div>
+            ))}
+          </Bloco>
+        )}
+
+        {d.acessibilidade?.length > 0 && (
+          <Bloco titulo="Acessibilidade">
+            {d.acessibilidade.map((x, i) => (
+              <div key={i} className="text-[11.5px] text-white/55 py-0.5 flex gap-2">
+                <Icon nome="check" tam={11} className="text-[#00ff64] shrink-0 mt-1" />{x}
+              </div>
+            ))}
+          </Bloco>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Bloco({ titulo, cor = '#00e5ff', children }) {
+  return (
+    <div className="hud-corte p-3.5" style={{ '--c': '7px', background: '#00e5ff08', boxShadow: `inset 0 0 0 1px ${cor}2e` }}>
+      <div className="hud-caps text-[9px] mb-2" style={{ color: cor }}>{titulo}</div>
+      {children}
+    </div>
   );
 }
 
