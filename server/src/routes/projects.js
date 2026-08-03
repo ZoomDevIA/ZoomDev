@@ -93,6 +93,11 @@ projectsRouter.post('/ideacao', async (req, res, next) => {
 });
 
 // Geração do plano pelos 5 agentes: SSE com progresso por agente.
+//
+// Rota de compatibilidade. A interface gera o plano pelo Studio
+// (GET /api/studio/:id/documento/gerar), que roda a metodologia ZoomDev de
+// quatorze seções com pesquisa na internet e devolve o documento do ZoomDoc.
+// Esta continua no ar para integrações que já a chamavam.
 projectsRouter.get('/:id/gerar-plano', async (req, res) => {
   const proj = store.projects[req.params.id];
   if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });

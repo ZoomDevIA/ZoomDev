@@ -120,6 +120,7 @@ export const api = {
   // ── Home pública: módulos, estatísticas e vitrine da comunidade ──────────
   home: (filtro = 'todos') => req(`/home?filtro=${filtro}`),
   vitrine: (filtro = 'todos') => req(`/home/vitrine?filtro=${filtro}`),
+  custos: () => req('/custos'),
   publicarProjeto: (id, publicado = true) => req(`/projects/${id}/publicar`, { method: 'POST', body: JSON.stringify({ publicado }) }),
   curtirProjeto: (id) => req(`/projects/${id}/curtir`, { method: 'POST' }),
   projetoModulos: (id, modulos) => req(`/projects/${id}/modulos`, { method: 'POST', body: JSON.stringify(modulos) }),

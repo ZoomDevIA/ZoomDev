@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { api, gerarPlanoSSE, baixarPlano } from '../lib/api.js';
+import { Link, useParams } from 'react-router-dom';
+import { api, baixarPlano } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import Conselho from '../components/Conselho.jsx';
 import MvpBuilder from '../components/MvpBuilder.jsx';
@@ -12,38 +12,14 @@ export default function Projeto() {
   const { celebrar, refreshUser } = useUser();
   const [proj, setProj] = useState(null);
   const [erro, setErro] = useState(null);
-  const [gerando, setGerando] = useState(false);
-  const [agentes, setAgentes] = useState([]);
-  const [statusAgentes, setStatusAgentes] = useState({});
+  const [custoPlano, setCustoPlano] = useState(null);
   const [baixando, setBaixando] = useState(null);
   const [avisoPdf, setAvisoPdf] = useState(false);
 
   useEffect(() => { api.projeto(id).then(setProj).catch(e => setErro(e.message)); }, [id]);
-
-  const gerar = async () => {
-    setGerando(true);
-    setErro(null);
-    setStatusAgentes({});
-    try {
-      await gerarPlanoSSE(id, {
-        inicio: (d) => setAgentes(d.agentes),
-        agente: (d) => setStatusAgentes(s => ({ ...s, [d.agente]: d.status })),
-        concluido: async (d) => {
-          setProj(d.projeto);
-          celebrar(d.gamificacao);
-          await refreshUser();
-        },
-        erro: (d) => {
-          setErro(`${d.error}${d.estornado ? ' (sua seiva foi estornada 🌿)' : ''}`);
-          refreshUser();
-        },
-      });
-    } catch (e) {
-      setErro(e.message);
-    } finally {
-      setGerando(false);
-    }
-  };
+  // O preço do plano vem do servidor: escrever o número à mão aqui garantiria
+  // que ele ficasse desatualizado na primeira recalibragem.
+  useEffect(() => { api.custos().then(c => setCustoPlano(c.planoNegocios)).catch(() => {}); }, []);
 
   const concluirMissao = async (mid) => {
     try {
@@ -123,41 +99,20 @@ export default function Projeto() {
 
       {!proj.plano && (
         <section className="zd-card rounded-2xl p-6">
-          <h2 className="font-heading text-lg font-bold">📐 Gerar Plano de Negócios Qualificado</h2>
-          <p className="text-sm text-white/55 mt-1">
-            Os 5 agentes ZoomDev trabalham em paralelo: Produto, Negócio, Engenharia, Impacto e Editais.
-            Custo: <b className="zd-green">60 🌿</b>, com estorno automático se a geração falhar.
+          <h2 className="font-heading text-lg font-bold">📐 Plano de Negócios ZoomDev</h2>
+          <p className="text-sm text-white/55 mt-1 leading-relaxed">
+            O plano é escrito no Studio, dentro do ZoomDoc, em quatorze seções pela metodologia ZoomDev.
+            Antes de escrever, os agentes pesquisam mercado, concorrência e regulação na internet, e
+            consideram o território onde o negócio vai operar. Você recebe um documento editável, com
+            selo de evidência em cada afirmação, e não um resumo.
           </p>
-          {gerando && agentes.length > 0 && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
-              {agentes.map(a => {
-                const st = statusAgentes[a.id];
-                return (
-                  <div key={a.id} className={`zd-agent-card rounded-xl p-3.5 ${st === 'executando' ? 'zd-pulse' : ''}`}>
-                    <div className="text-lg">{a.emoji}</div>
-                    <div className="text-sm font-semibold mt-1">{a.nome}</div>
-                    <div className="text-[11px] text-white/45">{a.papel}</div>
-                    <div className={`text-[11px] mt-1.5 font-semibold ${st === 'concluido' ? 'zd-green' : st === 'erro' ? 'text-red-400' : 'zd-blue'}`}>
-                      {st === 'concluido' ? '✓ concluído' : st === 'erro' ? '✗ erro' : st === 'executando' ? '● trabalhando…' : '○ aguardando'}
-                    </div>
-                  </div>
-                );
-              })}
-              {statusAgentes.missoes && (
-                <div className="zd-agent-card rounded-xl p-3.5">
-                  <div className="text-lg">🎯</div>
-                  <div className="text-sm font-semibold mt-1">Missões de Validação</div>
-                  <div className="text-[11px] text-white/45">Derivadas do seu plano</div>
-                  <div className={`text-[11px] mt-1.5 font-semibold ${statusAgentes.missoes === 'concluido' ? 'zd-green' : 'zd-blue'}`}>
-                    {statusAgentes.missoes === 'concluido' ? '✓ prontas' : '● gerando…'}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <button onClick={gerar} disabled={gerando} className="zd-gradient-btn rounded-xl px-6 py-3 text-sm mt-4">
-            {gerando ? 'Os agentes estão construindo seu plano…' : '⚡ Gerar plano com os 5 agentes'}
-          </button>
+          <p className="text-sm text-white/45 mt-2">
+            Custo: <b className="zd-green">{custoPlano ?? '—'} 🌿</b>, com estorno automático se a geração falhar.
+          </p>
+          <Link to={`/studio/${proj.id}`}
+            className="zd-gradient-btn rounded-xl px-6 py-3 text-sm mt-4 inline-flex items-center gap-2">
+            ⚡ Abrir o Studio e gerar o plano
+          </Link>
         </section>
       )}
 
@@ -220,9 +175,12 @@ export default function Projeto() {
           <PlanoView projeto={proj} />
         </>
       )}
-      {projeto.plano && <MvpBuilder projetoId={projeto.id} />}
+      {/* `projeto` nunca existiu neste componente: a variável se chama `proj`.
+          Como a expressão é avaliada em todo render, a ficha do projeto
+          derrubava a página inteira antes de desenhar qualquer coisa. */}
+      {proj.plano && <MvpBuilder projetoId={proj.id} />}
 
-      {projeto.plano && <Conselho projetoId={projeto.id} />}
+      {proj.plano && <Conselho projetoId={proj.id} />}
 
     </div>
   );

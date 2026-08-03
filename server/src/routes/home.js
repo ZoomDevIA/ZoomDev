@@ -7,6 +7,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';
 import { listarVitrine, estatisticasPublicas } from '../services/vitrine.js';
+import { config } from '../config.js';
 
 export const homeRouter = Router();
 
@@ -69,4 +70,21 @@ homeRouter.get('/home', (req, res) => {
 
 homeRouter.get('/home/vitrine', (req, res) => {
   res.json(listarVitrine({ filtro: req.query.filtro || 'todos', limite: req.query.limite }));
+});
+
+// ── Tabela de custos ───────────────────────────────────────────────────────
+// Pública e sem segredo nenhum: o preço em seiva de cada operação sai daqui
+// para a interface. Escrever o número à mão no frontend garantiria que ele
+// ficasse desatualizado na primeira recalibragem.
+homeRouter.get('/custos', (_req, res) => {
+  const c = config.credits;
+  res.json({
+    planoNegocios: c.planGeneration,
+    mvp: c.mvpBuild,
+    revisaoDocumento: c.documentoRevisao,
+    conversaStudio: c.studioTurno,
+    transcricao: c.transcricao,
+    gratuitos: ['classificação da ideia', 'leitura antecipada da caixa de contexto'],
+    creditosIniciais: c.initial,
+  });
 });
