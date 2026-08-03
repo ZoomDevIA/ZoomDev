@@ -1,12 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../App.jsx';
 import { api, setToken } from '../lib/api.js';
+import { FocoContext, avisarChassi } from '../lib/foco.js';
+import { aplicar as aplicarTema, gravarLocal as gravarTema, lerLocal as lerTema } from '../lib/tema.js';
 import BrandLockup from './BrandLockup.jsx';
 import Logo from './Logo.jsx';
 import Copiloto from './Copiloto.jsx';
 import Icon from './Icon.jsx';
-import { Painel, Etiqueta, Pulso } from './hud/index.jsx';
+import { ACENTO, MARCA, Painel, Etiqueta, Pulso } from './hud/index.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LAYOUT — o chassi da aplicação na linguagem HUD.
@@ -55,6 +57,7 @@ const CHAVE_RECOLHIDO = 'zd_menu_recolhido';
 export default function Layout({ children }) {
   const { user, setUser } = useUser();
   const nav = useNavigate();
+  const { pathname } = useLocation();
   const [notifAbertas, setNotifAbertas] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
   const [menuMovel, setMenuMovel] = useState(false);
@@ -65,6 +68,73 @@ export default function Layout({ children }) {
     return salvo === '1';
   });
   const notifRef = useRef(null);
+
+  // Silenciador à vista. Som que só pode ser desligado dentro das
+  // configurações é som que a pessoa desliga fechando a aba.
+  const [somLigado, setSomLigado] = useState(() => lerTema().som);
+  const alternarSom = () => {
+    const t = { ...lerTema(), som: !somLigado };
+    gravarTema(t);
+    aplicarTema(t);
+    setSomLigado(t.som);
+  };
+
+  // ── Modo foco ────────────────────────────────────────────────────────────
+  // `pedido` vem da tela, `dispensado` vem da pessoa. O foco só vale quando a
+  // tela pede e ninguém dispensou, e dispensar não desmonta nada: é só o
+  // chassi voltando.
+  const [pedido, setPedido] = useState(false);
+  const [dispensado, setDispensado] = useState(false);
+  const [topoAberto, setTopoAberto] = useState(false);
+  const menuAntes = useRef(null);
+
+  // No celular o foco não vale: lá o cabeçalho carrega o botão que abre o
+  // menu, e a barra lateral já é uma gaveta escondida. Recolher os dois
+  // deixaria a pessoa numa tela sem saída aparente.
+  const [estreito, setEstreito] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 768,
+  );
+  useEffect(() => {
+    const medir = () => setEstreito(window.innerWidth < 768);
+    window.addEventListener('resize', medir);
+    return () => window.removeEventListener('resize', medir);
+  }, []);
+
+  const foco = pedido && !dispensado && !estreito;
+
+  const pedirFoco = useCallback((quer) => {
+    setPedido(quer);
+    if (quer) setDispensado(false);
+  }, []);
+
+  // Entrar no foco recolhe o menu guardando o que a pessoa tinha; sair devolve.
+  useEffect(() => {
+    if (foco) {
+      if (menuAntes.current === null) menuAntes.current = recolhido;
+      setRecolhido(true);
+    } else if (menuAntes.current !== null) {
+      setRecolhido(menuAntes.current);
+      menuAntes.current = null;
+    }
+    setTopoAberto(false);
+  }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // O cabeçalho encolhe sem que a janela mude de tamanho, então quem mede a
+  // própria altura precisa ser avisado, na entrada e no fim da transição.
+  useEffect(() => {
+    avisarChassi();
+    const t = setTimeout(avisarChassi, 380);
+    return () => clearTimeout(t);
+  }, [foco, topoAberto, recolhido]);
+
+  useEffect(() => {
+    if (!foco) return undefined;
+    const tecla = (e) => { if (e.key === 'Escape') setDispensado(true); };
+    document.addEventListener('keydown', tecla);
+    return () => document.removeEventListener('keydown', tecla);
+  }, [foco]);
+
+  const contextoFoco = useMemo(() => ({ foco, pedirFoco }), [foco, pedirFoco]);
 
   const capacidades = user.capacidades || [];
   const podeAbrirPainel = capacidades.includes('usuarios.ler') || capacidades.includes('comunidade.curar');
@@ -106,7 +176,7 @@ export default function Layout({ children }) {
                 <>
                   <span className="flex-1 truncate">{m.label}</span>
                   {m.selo && (
-                    <Etiqueta cor={isActive ? '#00ff64' : '#00e5ff'} className="!text-[8px] !py-0.5 !px-1.5">
+                    <Etiqueta cor={isActive ? MARCA : ACENTO} className="!text-[8px] !py-0.5 !px-1.5">
                       {m.selo}
                     </Etiqueta>
                   )}
@@ -124,17 +194,17 @@ export default function Layout({ children }) {
       {compacto ? (
         <img src="/assets/agents/faces/maia.webp" alt="Maiá" title="Maiá · Inteligência Regenerativa"
           className="w-9 h-9 object-cover object-center mx-auto hud-corte"
-          style={{ '--c': '6px', boxShadow: '0 0 12px #00ff6440' }} />
+          style={{ '--c': '6px', boxShadow: '0 0 12px color-mix(in srgb, var(--zd-marca) 25%, transparent)' }} />
       ) : (
         <Painel tamanho="p" className="p-3 flex items-center gap-3">
           <img src="/assets/agents/faces/maia.webp" alt="Maiá"
             className="w-10 h-10 object-cover object-center shrink-0 hud-corte"
-            style={{ '--c': '7px', boxShadow: '0 0 14px #00ff6440' }} />
+            style={{ '--c': '7px', boxShadow: '0 0 14px color-mix(in srgb, var(--zd-marca) 25%, transparent)' }} />
           <div className="min-w-0">
             <div className="text-xs font-bold truncate">Maiá</div>
             <div className="hud-tec text-[8.5px] text-white/35">INTELIGÊNCIA REGENERATIVA</div>
             <div className="text-[10px] zd-green flex items-center gap-1.5 mt-1">
-              <Pulso cor="#00ff64" /> em campo
+              <Pulso /> em campo
             </div>
           </div>
         </Painel>
@@ -147,7 +217,7 @@ export default function Layout({ children }) {
           title={recolhido ? 'Expandir menu' : 'Recolher menu'}
           aria-label={recolhido ? 'Expandir menu' : 'Recolher menu'}
           aria-expanded={!recolhido}
-          className={`hidden md:flex items-center gap-2 w-full mt-3 py-2 text-[11px] text-white/40 hover:text-[#00e5ff] hover:bg-white/[.04] transition-colors ${
+          className={`hidden md:flex items-center gap-2 w-full mt-3 py-2 text-[11px] text-white/40 hover:text-[color:var(--zd-acento)] hover:bg-white/[.04] transition-colors ${
             compacto ? 'justify-center' : 'px-3'}`}
         >
           <Icon nome="chevron" tam={15} className={recolhido ? '-rotate-90' : 'rotate-90'} />
@@ -160,7 +230,8 @@ export default function Layout({ children }) {
   );
 
   return (
-    <div className="min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan flex">
+    <FocoContext.Provider value={contextoFoco}>
+    <div className="min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan flex" data-foco={foco ? 'sim' : 'nao'}>
       {/* Barra fixa: tablet e desktop */}
       <aside className={`zd-sidebar shrink-0 hidden md:flex flex-col relative z-10 transition-[width] duration-300 ${
         recolhido ? 'w-[68px]' : 'w-60'}`}>
@@ -191,7 +262,20 @@ export default function Layout({ children }) {
       )}
 
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
-        <header className="border-b border-[#00e5ff1f]">
+        {/* No modo foco o cabeçalho sobe e some. A faixa fina que sobra o traz
+            de volta ao encostar o mouse, e no toque ela é o alvo do dedo. */}
+        {foco && !topoAberto && (
+          <button className="zd-puxador" title="Mostrar a barra superior"
+            aria-label="Mostrar a barra superior"
+            onMouseEnter={() => setTopoAberto(true)}
+            onClick={() => setTopoAberto(true)}>
+            <span />
+          </button>
+        )}
+
+        <div className="zd-topo" data-recolhido={foco && !topoAberto ? 'sim' : 'nao'}
+          onMouseLeave={() => { if (foco) setTopoAberto(false); }}>
+        <header className="border-b" style={{ borderColor: 'color-mix(in srgb, var(--zd-acento) 12%, transparent)' }}>
           <div className="flex items-center justify-between gap-2 md:gap-4 px-3 sm:px-4 md:px-5 py-2.5 md:py-3">
             <div className="flex items-center gap-2 md:hidden min-w-0">
               <button onClick={() => setMenuMovel(true)} aria-label="Abrir menu"
@@ -208,7 +292,7 @@ export default function Layout({ children }) {
               {TABS.map(t => (
                 <NavLink key={t.to} to={t.to} end={t.to === '/'}
                   className={({ isActive }) => `px-2 xl:px-2.5 py-1.5 text-[10px] xl:text-[11px] font-semibold uppercase tracking-[.04em] whitespace-nowrap transition-colors ${
-                    isActive ? 'text-[#00ff64] bg-[#00ff6414]' : 'text-white/40 hover:text-white/85 hover:bg-white/5'}`}
+                    isActive ? 'zd-aba-topo-ativa' : 'text-white/40 hover:text-white/85 hover:bg-white/5'}`}
                   style={({ isActive }) => (isActive ? { clipPath: CORTE_ABA } : undefined)}>
                   {t.label}
                 </NavLink>
@@ -216,10 +300,10 @@ export default function Layout({ children }) {
             </nav>
 
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <Etiqueta cor="#00ff64" title="Seiva: seus créditos de IA">
+              <Etiqueta cor={MARCA} title="Seiva: seus créditos de IA">
                 <Icon nome="seiva" tam={11} /> {user.creditos}
               </Etiqueta>
-              <Etiqueta cor="#00e5ff" title={`XP total: ${user.gamification.xp}`} className="hidden md:inline-flex">
+              <Etiqueta cor={ACENTO} title={`XP total: ${user.gamification.xp}`} className="hidden md:inline-flex">
                 NV {user.nivel.nivel} · {user.nivel.nome}
               </Etiqueta>
               {user.gamification.streak?.dias > 1 && (
@@ -230,11 +314,12 @@ export default function Layout({ children }) {
 
               <div className="relative" ref={notifRef}>
                 <button onClick={() => setNotifAbertas(v => !v)} aria-label="Notificações"
-                  className="relative text-white/45 hover:text-[#00e5ff] transition-colors p-2">
+                  className="relative text-white/45 hover:text-[color:var(--zd-acento)] transition-colors p-2">
                   <Icon nome="transmissao" tam={18} />
                   {notificacoes.length > 0 && (
-                    <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#00ff64]"
-                      style={{ transform: 'rotate(45deg)' }} />
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5"
+                      style={{ background: 'var(--zd-marca)', transform: 'rotate(45deg)' }}
+                      />
                   )}
                 </button>
                 {notifAbertas && (
@@ -250,6 +335,15 @@ export default function Layout({ children }) {
                 )}
               </div>
 
+              <button onClick={alternarSom} aria-pressed={somLigado}
+                title={somLigado ? 'Silenciar a interface' : 'Ligar o retorno sonoro'}
+                aria-label={somLigado ? 'Silenciar a interface' : 'Ligar o retorno sonoro'}
+                className={`transition-colors p-2 ${somLigado
+                  ? 'text-white/45 hover:text-[color:var(--zd-acento)]'
+                  : 'text-white/20 hover:text-white/50'}`}>
+                <Icon nome={somLigado ? 'som' : 'semSom'} tam={17} />
+              </button>
+
               <button onClick={sair} title="Sair" aria-label="Sair"
                 className="text-white/35 hover:text-[#ff4d8d] transition-colors p-2">
                 <Icon nome="cadeadoAberto" tam={17} />
@@ -257,11 +351,29 @@ export default function Layout({ children }) {
             </div>
           </div>
         </header>
+        </div>
 
-        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden">{children}</main>
+        {/* A chave por caminho reinicia a animação a cada rota: sem ela o
+            React reaproveita o nó e a tela nova aparece seca. */}
+        <main className={`flex-1 overflow-x-hidden ${
+          foco ? 'p-2 md:p-3' : 'p-3 sm:p-4 md:p-6 lg:p-8'}`}>
+          <div key={pathname} className="zd-entra h-full">{children}</div>
+        </main>
       </div>
+
+      {/* Saída do modo foco. Fica no canto, discreta, porque o ponto do modo é
+          justamente não ter nada disputando a tela. */}
+      {foco && (
+        <button onClick={() => setDispensado(true)}
+          title="Sair do modo foco (Esc)" aria-label="Sair do modo foco"
+          className="hud-botao-vazio fixed top-1.5 right-2 z-30 px-2.5 py-1 text-[9px] hud-caps
+                     flex items-center gap-1.5 opacity-35 hover:opacity-100 transition-opacity">
+          <Icon nome="fechar" tam={12} /> foco
+        </button>
+      )}
 
       <Copiloto />
     </div>
+    </FocoContext.Provider>
   );
 }

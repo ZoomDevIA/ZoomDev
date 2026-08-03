@@ -9,13 +9,34 @@ import React from 'react';
 //
 // Cada componente aceita `cor` (hex) e repassa como variável CSS, de modo que
 // um painel de agente roxo e um de carbono ciano usem a mesma estrutura.
+//
+// ── Por que `cor` não tem valor padrão ────────────────────────────────────
+// Sem cor pedida, o componente NÃO escreve estilo em linha: deixa a folha de
+// estilo decidir, e a folha usa a variável de tema. Um padrão fixo aqui, por
+// mais discreto que fosse, venceria a escolha da pessoa em todo painel da
+// plataforma, e o tema viraria enfeite.
+//
+// Quando a cor É passada, ela é semântica (roxo é ciência, magenta é erro, a
+// cor de um agente é a identidade dele) e deve mesmo vencer o tema.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const CIANO = '#00e5ff';
+/** Cor de acento vinda do tema, para quando o valor precisa ir em linha. */
+export const ACENTO = 'var(--zd-acento)';
+export const MARCA = 'var(--zd-marca)';
 
-/** Converte hex + alfa (0 a 255) na notação #rrggbbaa. */
-function tom(hex, alfa) {
-  return `${hex}${alfa.toString(16).padStart(2, '0')}`;
+/**
+ * Aplica alfa (0 a 255) a uma cor.
+ *
+ * Hex vira a notação #rrggbbaa, que é curta e barata. Qualquer outra coisa,
+ * inclusive `var(--zd-acento)`, passa por color-mix: sem isso, concatenar o
+ * alfa produziria `var(--zd-acento)8a`, que o navegador descarta em silêncio e
+ * deixa o elemento sem cor nenhuma.
+ */
+function tom(cor, alfa) {
+  if (typeof cor === 'string' && cor.startsWith('#')) {
+    return `${cor}${alfa.toString(16).padStart(2, '0')}`;
+  }
+  return `color-mix(in srgb, ${cor} ${Math.round((alfa / 255) * 100)}%, transparent)`;
 }
 
 const BASE_PAINEL = [0x06, 0x14, 0x0d];
@@ -27,6 +48,8 @@ const BASE_PAINEL = [0x06, 0x14, 0x0d];
  * cartão inteiro.
  */
 export function tingir(hex, intensidade = 0.08) {
+  // Precisa de canais para misturar: sem hex, devolve o fundo do painel do tema.
+  if (typeof hex !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(hex)) return 'var(--zd-painel)';
   const n = parseInt(String(hex).replace('#', ''), 16);
   const rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
   const m = rgb.map((c, i) => Math.round(BASE_PAINEL[i] + (c - BASE_PAINEL[i]) * intensidade));
@@ -35,14 +58,14 @@ export function tingir(hex, intensidade = 0.08) {
 
 // ── Painel ────────────────────────────────────────────────────────────────
 export function Painel({
-  children, cor = CIANO, aceso = false, quatroCantos = false,
+  children, cor, aceso = false, quatroCantos = false,
   tamanho = '', vivo = false, className = '', style, ...resto
 }) {
   return (
     <div
       className={`hud-painel ${quatroCantos ? 'hud-4' : ''} ${aceso ? 'hud-aceso' : ''} ${
         tamanho === 'p' ? 'hud-p' : tamanho === 'g' ? 'hud-g' : ''} ${vivo ? 'hud-vivo' : ''} ${className}`}
-      style={{ '--cor': aceso ? tom(cor, 0x8a) : tom(cor, 0x3d), ...style }}
+      style={cor ? { '--cor': aceso ? tom(cor, 0x8a) : tom(cor, 0x3d), ...style } : style}
       {...resto}
     >
       {children}
@@ -51,20 +74,20 @@ export function Painel({
 }
 
 // ── Cantoneiras ───────────────────────────────────────────────────────────
-export function Cantoneira({ children, cor = CIANO, tam = 14, className = '', style, ...resto }) {
+export function Cantoneira({ children, cor, tam = 14, className = '', style, ...resto }) {
   return (
     <div className={`hud-cantoneira ${className}`}
-      style={{ '--cor': tom(cor, 0x99), '--tam': `${tam}px`, ...style }} {...resto}>
+      style={{ ...(cor ? { '--cor': tom(cor, 0x99) } : {}), '--tam': `${tam}px`, ...style }} {...resto}>
       {children}
     </div>
   );
 }
 
 // ── Rótulo com linha-guia ─────────────────────────────────────────────────
-export function Rotulo({ children, cor = CIANO, ponto = true, className = '', style }) {
+export function Rotulo({ children, cor, ponto = true, className = '', style }) {
   return (
     <div className={`hud-rotulo ${ponto ? 'ponto' : ''} ${className}`}
-      style={{ color: cor, ...style }}>
+      style={{ color: cor || ACENTO, ...style }}>
       {children}
     </div>
   );
@@ -80,10 +103,12 @@ export function Divisor({ children, className = '' }) {
 }
 
 // ── Etiqueta ──────────────────────────────────────────────────────────────
-export function Etiqueta({ children, cor = CIANO, className = '', ...resto }) {
+export function Etiqueta({ children, cor, className = '', ...resto }) {
   return (
     <span className={`hud-etiqueta ${className}`}
-      style={{ color: cor, background: tom(cor, 0x14), boxShadow: `inset 0 0 0 1px ${tom(cor, 0x3d)}` }}
+      style={cor
+        ? { color: cor, background: tom(cor, 0x14), boxShadow: `inset 0 0 0 1px ${tom(cor, 0x3d)}` }
+        : undefined}
       {...resto}>
       {children}
     </span>
@@ -91,11 +116,11 @@ export function Etiqueta({ children, cor = CIANO, className = '', ...resto }) {
 }
 
 // ── Barra segmentada ──────────────────────────────────────────────────────
-export function Barra({ valor = 0, cor = CIANO, altura = 10, className = '' }) {
+export function Barra({ valor = 0, cor, altura = 10, className = '' }) {
   const pct = Math.max(0, Math.min(100, Number(valor) || 0));
   return (
     <div className={`hud-barra ${className}`}
-      style={{ height: altura, color: cor, borderColor: tom(cor, 0x3d) }}
+      style={{ height: altura, color: cor || ACENTO, ...(cor ? { borderColor: tom(cor, 0x3d) } : {}) }}
       role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
       <i style={{ width: `${pct}%` }} />
     </div>
@@ -103,13 +128,14 @@ export function Barra({ valor = 0, cor = CIANO, altura = 10, className = '' }) {
 }
 
 // ── Medidor circular ──────────────────────────────────────────────────────
-export function Anel({ valor = 0, cor = CIANO, tam = 74, children, className = '' }) {
+export function Anel({ valor = 0, cor, tam = 74, children, className = '' }) {
   const pct = Math.max(0, Math.min(100, Number(valor) || 0));
+  const c = cor || ACENTO;
   return (
     <div className={`hud-anel ${className}`}
-      style={{ '--pct': pct, '--cor': cor, width: tam, height: tam }}>
+      style={{ '--pct': pct, '--cor': c, width: tam, height: tam }}>
       <div className="text-center leading-none">
-        {children ?? <span className="hud-tec font-bold text-sm" style={{ color: cor }}>{Math.round(pct)}</span>}
+        {children ?? <span className="hud-tec font-bold text-sm" style={{ color: c }}>{Math.round(pct)}</span>}
       </div>
     </div>
   );
@@ -152,12 +178,13 @@ export function Campo({ multilinha = false, className = '', ...resto }) {
 }
 
 // ── Bloco de estatística ──────────────────────────────────────────────────
-export function Estatistica({ valor, rotulo, cor = CIANO, icone = null, className = '' }) {
+export function Estatistica({ valor, rotulo, cor, icone = null, className = '' }) {
+  const c = cor || ACENTO;
   return (
     <Painel tamanho="p" cor={cor} className={`p-3.5 ${className}`}>
       <div className="flex items-center gap-2">
-        {icone && <span style={{ color: cor }}>{icone}</span>}
-        <div className="hud-tec font-bold text-xl leading-none" style={{ color: cor }}>{valor}</div>
+        {icone && <span style={{ color: c }}>{icone}</span>}
+        <div className="hud-tec font-bold text-xl leading-none" style={{ color: c }}>{valor}</div>
       </div>
       <div className="hud-caps text-[9px] text-white/40 mt-1.5 leading-tight">{rotulo}</div>
     </Painel>
@@ -165,7 +192,7 @@ export function Estatistica({ valor, rotulo, cor = CIANO, icone = null, classNam
 }
 
 // ── Marcador de estado ────────────────────────────────────────────────────
-export function Pulso({ cor = '#00ff64', ativo = true, titulo, className = '' }) {
+export function Pulso({ cor = MARCA, ativo = true, titulo, className = '' }) {
   return (
     <span
       className={`${ativo ? 'hud-pulso' : ''} shrink-0 ${className}`}
@@ -180,7 +207,7 @@ export function Pulso({ cor = '#00ff64', ativo = true, titulo, className = '' })
 
 // ── Cabeçalho de seção ────────────────────────────────────────────────────
 // Rótulo à esquerda, linha até a borda e ação opcional à direita.
-export function Secao({ rotulo, titulo, descricao, cor = CIANO, acao = null, children }) {
+export function Secao({ rotulo, titulo, descricao, cor, acao = null, children }) {
   return (
     <section className="space-y-3">
       <div className="flex items-end justify-between gap-4 flex-wrap">

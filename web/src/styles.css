@@ -2,37 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============ Design System ZoomDev OS — clonado do protótipo Base44 ============ */
+/* ═══════════════════════════════════════════════════════════════════════════
+   VARIÁVEIS DE TEMA — a fonte única da aparência.
+
+   Os valores abaixo são o padrão de fábrica. Quem manda de verdade é
+   `web/src/lib/tema.js`, que os reescreve em :root a partir da escolha da
+   pessoa, antes do primeiro quadro. Estarem aqui garante que a plataforma
+   continue inteira se o JavaScript demorar, falhar ou estiver desligado.
+
+   O que é tema e o que não é:
+
+     TEMA       acento e marca, a escada de superfícies, chanfro, tipografia.
+     SEMÂNTICA  âmbar é atenção, magenta é erro, roxo é ciência, e a cor de
+                cada agente é a identidade dele. Não seguem o tema, porque
+                seguir quebraria a leitura.
+   ═══════════════════════════════════════════════════════════════════════════ */
 :root {
-  --brand-green: #00ff64;
-  --brand-blue: #00c8ff;
-  --brand-bg: #030d07;
+  --zd-acento: #00e5ff;
+  --zd-marca: #00ff64;
+
+  --zd-pagina: #030d07;
+  --zd-painel: #06140d;
+  --zd-solido: #04140a;
+  --zd-elevado: #0a1a12;
+  --zd-hover: #0e2419;
+  --zd-campo: #07170f;
+
+  --zd-fonte-titulo: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --zd-fonte-corpo: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --zd-fonte-tec: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Apelidos antigos, mantidos para não reescrever as telas de uma vez */
+  --brand-green: var(--zd-marca);
+  --brand-blue: var(--zd-acento);
+  --brand-bg: var(--zd-pagina);
 }
+
+/* Densidade: a raiz em rem escala o espaçamento do Tailwind sem tocar nos
+   tamanhos de texto escritos em px, que continuam legíveis nos três modos. */
+:root[data-densidade='compacto'] { font-size: 14.5px; }
+:root[data-densidade='confortavel'] { font-size: 16px; }
+:root[data-densidade='amplo'] { font-size: 17.5px; }
 
 body {
   background: var(--brand-bg);
   color: #fff;
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--zd-fonte-corpo);
 }
 
-h1, h2, h3, .font-heading { font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; }
+h1, h2, h3, .font-heading { font-family: var(--zd-fonte-titulo); }
 
 .zd-bg { background: var(--brand-bg); }
-.zd-sidebar { background: linear-gradient(180deg, #050f08, #040c07); border-right: 1px solid rgba(0,255,100,.08); }
-.zd-card { background: #05140acc; border: 1px solid rgba(0,255,100,.12); backdrop-filter: blur(12px); }
-.zd-card-glow { background: #05140ae6; border: 1px solid rgba(0,255,100,.2); backdrop-filter: blur(16px); box-shadow: 0 0 20px #00ff640d, inset 0 1px #00ff641a; }
+.zd-sidebar { background: linear-gradient(180deg, var(--zd-painel), var(--zd-pagina)); border-right: 1px solid color-mix(in srgb, var(--zd-marca) 8%, transparent); }
+.zd-card { background: color-mix(in srgb, var(--zd-painel) 80%, transparent); border: 1px solid color-mix(in srgb, var(--zd-marca) 12%, transparent); backdrop-filter: blur(12px); }
+.zd-card-glow { background: color-mix(in srgb, var(--zd-painel) 90%, transparent); border: 1px solid color-mix(in srgb, var(--zd-marca) 20%, transparent); backdrop-filter: blur(16px); box-shadow: 0 0 20px color-mix(in srgb, var(--zd-marca) 5%, transparent), inset 0 1px color-mix(in srgb, var(--zd-marca) 10%, transparent); }
 .zd-green { color: var(--brand-green); }
-.zd-green-dim { color: #00cc50; }
+.zd-green-dim { color: color-mix(in srgb, var(--zd-marca) 80%, #000); }
 .zd-blue { color: var(--brand-blue); }
 .zd-gradient-text { background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-blue) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .zd-gradient-btn { background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-blue) 100%); color: var(--brand-bg); font-weight: 700; transition: all .2s ease; }
-.zd-gradient-btn:hover:not(:disabled) { background: linear-gradient(135deg, #00ff80, #00d460); transform: translateY(-1px); }
+.zd-gradient-btn:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
 .zd-gradient-btn:disabled { opacity: .45; cursor: not-allowed; }
 .zd-menu-item { color: #ffffff80; transition: all .2s ease; }
-.zd-menu-item:hover { color: #ffffffe6; background: #00ff640f; }
+.zd-menu-item:hover { color: #ffffffe6; background: color-mix(in srgb, var(--zd-marca) 6%, transparent); }
 .zd-menu-item.active {
-  color: #00ff64;
-  background: linear-gradient(90deg, #00ff6422, #00ff6408);
+  color: var(--zd-marca);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--zd-marca) 13%, transparent), color-mix(in srgb, var(--zd-marca) 3%, transparent));
   position: relative;
 }
 /* Marcador angular no item ativo, no lugar da barrinha reta */
@@ -42,27 +77,27 @@ h1, h2, h3, .font-heading { font-family: 'Space Grotesk', ui-sans-serif, system-
   right: 0; top: 50%;
   width: 3px; height: 60%;
   transform: translateY(-50%);
-  background: #00ff64;
+  background: var(--zd-marca);
   clip-path: polygon(0 0, 100% 14%, 100% 86%, 0 100%);
-  box-shadow: -2px 0 12px #00ff6480;
+  box-shadow: -2px 0 12px color-mix(in srgb, var(--zd-marca) 50%, transparent);
 }
-.zd-stat-card { background: #00ff640a; border: 1px solid rgba(0,255,100,.1); transition: all .3s ease; }
-.zd-stat-card:hover { border-color: #00ff6440; background: #00ff6412; }
-.zd-agent-card { background: #05140ae6; border: 1px solid rgba(0,255,100,.15); transition: all .3s ease; }
-.zd-agent-card:hover { border-color: #00ff6466; transform: translateY(-2px); box-shadow: 0 8px 25px #00ff641a; }
-.zd-glow-green { box-shadow: 0 0 30px #00ff6426; }
-.zd-glow-blue { box-shadow: 0 0 30px #00c8ff26; }
-.zd-circuit-bg { background-image: radial-gradient(circle at 20% 50%, rgba(0,255,100,.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(0,200,255,.03) 0%, transparent 50%); }
-.zd-notification { background: #05140af2; border: 1px solid rgba(0,255,100,.15); border-left: 3px solid #00ff64; }
-.zd-tag { background: #00ff641a; border: 1px solid rgba(0,255,100,.2); color: #00ff64; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-.zd-tag-blue { background: #00c8ff1a; border: 1px solid rgba(0,200,255,.25); color: #00c8ff; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-.zd-input { background: #05140acc; border: 1px solid rgba(0,255,100,.18); color: #fff; transition: border-color .2s; }
-.zd-input:focus { outline: none; border-color: #00ff6466; box-shadow: 0 0 0 3px #00ff6415; }
+.zd-stat-card { background: color-mix(in srgb, var(--zd-marca) 4%, transparent); border: 1px solid color-mix(in srgb, var(--zd-marca) 10%, transparent); transition: all .3s ease; }
+.zd-stat-card:hover { border-color: color-mix(in srgb, var(--zd-marca) 25%, transparent); background: color-mix(in srgb, var(--zd-marca) 7%, transparent); }
+.zd-agent-card { background: color-mix(in srgb, var(--zd-painel) 90%, transparent); border: 1px solid color-mix(in srgb, var(--zd-marca) 15%, transparent); transition: all .3s ease; }
+.zd-agent-card:hover { border-color: color-mix(in srgb, var(--zd-marca) 40%, transparent); transform: translateY(-2px); box-shadow: 0 8px 25px color-mix(in srgb, var(--zd-marca) 10%, transparent); }
+.zd-glow-green { box-shadow: 0 0 30px color-mix(in srgb, var(--zd-marca) 15%, transparent); }
+.zd-glow-blue { box-shadow: 0 0 30px color-mix(in srgb, var(--zd-acento) 15%, transparent); }
+.zd-circuit-bg { background-image: radial-gradient(circle at 20% 50%, color-mix(in srgb, var(--zd-marca) 3%, transparent) 0%, transparent 50%), radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--zd-acento) 3%, transparent) 0%, transparent 50%); }
+.zd-notification { background: color-mix(in srgb, var(--zd-painel) 95%, transparent); border: 1px solid color-mix(in srgb, var(--zd-marca) 15%, transparent); border-left: 3px solid var(--zd-marca); }
+.zd-tag { background: color-mix(in srgb, var(--zd-marca) 10%, transparent); border: 1px solid color-mix(in srgb, var(--zd-marca) 20%, transparent); color: var(--zd-marca); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.zd-tag-blue { background: color-mix(in srgb, var(--zd-acento) 10%, transparent); border: 1px solid color-mix(in srgb, var(--zd-acento) 25%, transparent); color: var(--zd-acento); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.zd-input { background: color-mix(in srgb, var(--zd-painel) 80%, transparent); border: 1px solid color-mix(in srgb, var(--zd-marca) 18%, transparent); color: #fff; transition: border-color .2s; }
+.zd-input:focus { outline: none; border-color: color-mix(in srgb, var(--zd-marca) 40%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--zd-marca) 8%, transparent); }
 .zd-input::placeholder { color: #ffffff45; }
 
 @keyframes zdSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .zd-spin-logo { animation: zdSpin 4s linear infinite; }
-@keyframes zdPulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px #00ff6430; } 50% { opacity: .75; box-shadow: 0 0 26px #00ff6455; } }
+@keyframes zdPulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px color-mix(in srgb, var(--zd-marca) 19%, transparent); } 50% { opacity: .75; box-shadow: 0 0 26px color-mix(in srgb, var(--zd-marca) 33%, transparent); } }
 @keyframes zdFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes zdPop { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
 .zd-pulse { animation: zdPulse 2s ease-in-out infinite; }
@@ -71,12 +106,20 @@ h1, h2, h3, .font-heading { font-family: 'Space Grotesk', ui-sans-serif, system-
 
 /* Jornada gamificada */
 .journey-node { transition: all .3s ease; }
-.journey-node.concluida { border-color: #00ff64; background: #00ff641f; }
-.journey-node.atual { border-color: #00c8ff; background: #00c8ff14; animation: zdPulse 2.4s ease-in-out infinite; }
+.journey-node.concluida { border-color: var(--zd-marca); background: color-mix(in srgb, var(--zd-marca) 12%, transparent); }
+.journey-node.atual { border-color: var(--zd-acento); background: color-mix(in srgb, var(--zd-acento) 8%, transparent); animation: zdPulse 2.4s ease-in-out infinite; }
 .journey-node.bloqueada { opacity: .38; }
-.journey-line { height: 2px; background: linear-gradient(90deg, #00ff6455, #00c8ff33); flex: 1; }
+.journey-line { height: 2px; background: linear-gradient(90deg, color-mix(in srgb, var(--zd-marca) 33%, transparent), color-mix(in srgb, var(--zd-acento) 20%, transparent)); flex: 1; }
 
 ::-webkit-scrollbar { width: 9px; height: 9px; }
-::-webkit-scrollbar-track { background: #04100a; }
-::-webkit-scrollbar-thumb { background: #00ff6428; border-radius: 6px; }
-::-webkit-scrollbar-thumb:hover { background: #00ff6445; }
+::-webkit-scrollbar-track { background: var(--zd-pagina); }
+::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--zd-marca) 16%, transparent); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--zd-marca) 27%, transparent); }
+
+/* Aba ativa da barra superior. Sai do JSX e vem para cá para seguir o tema:
+   valor escrito em classe utilitária do Tailwind é literal e não acompanha a
+   escolha de cor de quem usa. */
+.zd-aba-topo-ativa {
+  color: var(--zd-marca);
+  background: color-mix(in srgb, var(--zd-marca) 8%, transparent);
+}

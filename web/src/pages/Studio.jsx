@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import { api, gerarDocumentoSSE } from '../lib/api.js';
+import { EVENTO_CHASSI, useFoco } from '../lib/foco.js';
 import { useUser } from '../App.jsx';
 import Chassi from '../components/studio/Chassi.jsx';
 import BarraFase, { faseDe } from '../components/studio/BarraFase.jsx';
@@ -47,15 +48,25 @@ export default function Studio() {
   const temporizador = useRef(null);
   const documentoServidor = useRef('');
 
+  // O Studio é a oficina: pede o chassi recolhido enquanto estiver aberto.
+  useFoco(true);
+
   // ── A altura do palco é medida, não chutada ──────────────────────────────
+  // Além do redimensionamento da janela, o chassi avisa quando ele mesmo
+  // encolhe: entrar no modo foco muda a altura disponível sem que a janela
+  // mude de tamanho, e sem esse aviso o palco ficaria curto.
   useEffect(() => {
     const medir = () => {
       const topo = raiz.current?.getBoundingClientRect().top ?? 0;
-      setAltura(Math.max(440, window.innerHeight - topo - 20));
+      setAltura(Math.max(440, window.innerHeight - topo - 16));
     };
     medir();
     window.addEventListener('resize', medir);
-    return () => window.removeEventListener('resize', medir);
+    window.addEventListener(EVENTO_CHASSI, medir);
+    return () => {
+      window.removeEventListener('resize', medir);
+      window.removeEventListener(EVENTO_CHASSI, medir);
+    };
   }, [carregando]);
 
   // ── Carga ────────────────────────────────────────────────────────────────

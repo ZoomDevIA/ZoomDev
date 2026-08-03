@@ -18,17 +18,17 @@
 
 :root {
   /* Paleta estrutural */
-  --hud-ciano: #00e5ff;
-  --hud-verde: #00ff64;
+  --hud-ciano: var(--zd-acento);
+  --hud-verde: var(--zd-marca);
   --hud-ambar: #ffc531;
   --hud-magenta: #ff4d8d;
   --hud-roxo: #a855f7;
 
-  --hud-fundo: #030d07;
-  --hud-painel: #06140dd9;
-  --hud-painel-solido: #06140d;
-  --hud-linha: #00e5ff3d;
-  --hud-linha-forte: #00e5ff85;
+  --hud-fundo: var(--zd-pagina);
+  --hud-painel: color-mix(in srgb, var(--zd-painel) 85%, transparent);
+  --hud-painel-solido: var(--zd-painel);
+  --hud-linha: color-mix(in srgb, var(--zd-acento) 24%, transparent);
+  --hud-linha-forte: color-mix(in srgb, var(--zd-acento) 52%, transparent);
   --hud-texto-fraco: #9fb8ad;
 
   /* Geometria */
@@ -96,14 +96,14 @@
   );
 }
 
-.hud-painel.hud-aceso { --cor: var(--hud-linha-forte); box-shadow: 0 0 26px #00e5ff1c; }
+.hud-painel.hud-aceso { --cor: var(--hud-linha-forte); box-shadow: 0 0 26px color-mix(in srgb, var(--zd-acento) 11%, transparent); }
 .hud-painel.hud-p { --c: var(--chanfro-p); }
 .hud-painel.hud-g { --c: var(--chanfro-g); }
 
 /* Reação ao passar o mouse, para blocos clicáveis */
 .hud-vivo { transition: transform .22s ease, box-shadow .22s ease; }
 .hud-vivo:hover { transform: translateY(-2px); }
-.hud-vivo:hover.hud-painel { --cor: var(--hud-linha-forte); box-shadow: 0 10px 34px #00e5ff14; }
+.hud-vivo:hover.hud-painel { --cor: var(--hud-linha-forte); box-shadow: 0 10px 34px color-mix(in srgb, var(--zd-acento) 8%, transparent); }
 
 /* ── Cantoneiras ──────────────────────────────────────────────────────────
    Quatro cantos em L, sem moldura fechada. Oito gradientes: dois por canto. */
@@ -143,10 +143,10 @@
    O canto superior direito cortado, como as abas da referência. */
 .hud-aba {
   --cor: var(--hud-linha);
-  --fundo: #0a1a12;
+  --fundo: var(--zd-elevado);
   --texto: var(--hud-texto-fraco);
   color: var(--texto);
-  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+  clip-path: polygon(0 0, calc(100% - calc(var(--chanfro) * .9)) 0, 100% calc(var(--chanfro) * .9), 100% 100%, 0 100%);
   background: var(--fundo);
   border: 0;
   transition: color .2s ease, background .2s ease;
@@ -157,7 +157,7 @@
   background: transparent;
   transition: background .2s ease;
 }
-.hud-aba:hover { color: #dff6ec; background: #0e2419; }
+.hud-aba:hover { color: #dff6ec; background: var(--zd-hover); }
 .hud-aba.ativa {
   color: var(--hud-fundo);
   background: var(--hud-ambar);
@@ -169,7 +169,7 @@
    Progresso em blocos. O trilho é escuro; o preenchimento herda currentColor. */
 .hud-barra {
   height: 10px;
-  background: #0b1d14;
+  background: var(--zd-elevado);
   border: 1px solid var(--hud-linha);
   overflow: hidden;
 }
@@ -191,7 +191,7 @@
   --cor: var(--hud-ciano);
   position: relative;
   border-radius: 50%;
-  background: conic-gradient(var(--cor) calc(var(--pct) * 1%), #0e2419 0);
+  background: conic-gradient(var(--cor) calc(var(--pct) * 1%), var(--zd-hover) 0);
   display: grid;
   place-items: center;
 }
@@ -230,7 +230,7 @@
 .hud-rotulo.ponto::after {
   background:
     radial-gradient(circle at 100% 50%, currentColor 0 2px, transparent 2px),
-    linear-gradient(90deg, var(--hud-linha-forte), #00e5ff1a);
+    linear-gradient(90deg, var(--hud-linha-forte), color-mix(in srgb, var(--zd-acento) 10%, transparent));
 }
 
 /* ── Divisor angular ──────────────────────────────────────────────────────
@@ -247,8 +247,8 @@
   flex: 1;
   height: 6px;
   background:
-    linear-gradient(90deg, transparent, #00e5ff26),
-    repeating-linear-gradient(115deg, #00e5ff33 0 2px, transparent 2px 5px);
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--zd-acento) 15%, transparent)),
+    repeating-linear-gradient(115deg, color-mix(in srgb, var(--zd-acento) 20%, transparent) 0 2px, transparent 2px 5px);
   clip-path: polygon(0 40%, 100% 0, 100% 60%, 0 100%);
 }
 .hud-divisor::after { transform: scaleX(-1); }
@@ -269,8 +269,8 @@
 }
 .hud-grade {
   background-image:
-    linear-gradient(#00e5ff08 1px, transparent 1px),
-    linear-gradient(90deg, #00e5ff08 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--zd-acento) 3%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--zd-acento) 3%, transparent) 1px, transparent 1px);
   background-size: 46px 46px;
 }
 
@@ -290,17 +290,17 @@
 /* ── Chave alternadora ────────────────────────────────────────────────────
    Trilho e alavanca do seletor de módulos, agora com geometria angular. */
 .hud-trilho {
-  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  clip-path: polygon(calc(var(--chanfro) * .7) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .7)), calc(100% - calc(var(--chanfro) * .7)) 100%, 0 100%, 0 calc(var(--chanfro) * .7));
   transition: background .28s ease, box-shadow .28s ease;
 }
 .hud-alavanca {
-  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  clip-path: polygon(calc(var(--chanfro) * .5) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .5)), calc(100% - calc(var(--chanfro) * .5)) 100%, 0 100%, 0 calc(var(--chanfro) * .5));
 }
 
 /* ── Tipografia de interface ──────────────────────────────────────────────
    Rótulos técnicos em caixa alta com espaçamento largo. */
 .hud-tec {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--zd-fonte-tec);
   letter-spacing: .08em;
 }
 .hud-caps {
@@ -313,9 +313,9 @@
    Ação primária: chanfro, contorno luminoso e varredura no hover. */
 .hud-botao {
   overflow: hidden;
-  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  clip-path: polygon(calc(var(--chanfro) * .9) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .9)), calc(100% - calc(var(--chanfro) * .9)) 100%, 0 100%, 0 calc(var(--chanfro) * .9));
   background: linear-gradient(135deg, var(--hud-verde), var(--hud-ciano));
-  color: #04140a;
+  color: var(--zd-solido);
   font-weight: 700;
   letter-spacing: .04em;
   transition: filter .2s ease, transform .2s ease;
@@ -332,30 +332,30 @@
 .hud-botao:hover:not(:disabled)::after { transform: translateX(120%); }
 
 .hud-botao-vazio {
-  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
-  background: #0a1a12;
+  clip-path: polygon(calc(var(--chanfro) * .9) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .9)), calc(100% - calc(var(--chanfro) * .9)) 100%, 0 100%, 0 calc(var(--chanfro) * .9));
+  background: var(--zd-elevado);
   color: var(--hud-ciano);
   border: 0;
   box-shadow: inset 0 0 0 1px var(--hud-linha);
   transition: box-shadow .2s ease, background .2s ease, color .2s ease;
 }
 .hud-botao-vazio:hover:not(:disabled) {
-  background: #0e2419;
+  background: var(--zd-hover);
   box-shadow: inset 0 0 0 1px var(--hud-linha-forte);
   color: #b9f2ff;
 }
 
 /* ── Entrada de texto ─────────────────────────────────────────────────────*/
 .hud-campo {
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-  background: #07170f;
+  clip-path: polygon(calc(var(--chanfro) * .8) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .8)), calc(100% - calc(var(--chanfro) * .8)) 100%, 0 100%, 0 calc(var(--chanfro) * .8));
+  background: var(--zd-campo);
   box-shadow: inset 0 0 0 1px var(--hud-linha);
   color: #eafff5;
   transition: box-shadow .2s ease;
 }
 .hud-campo:focus {
   outline: none;
-  box-shadow: inset 0 0 0 1px var(--hud-linha-forte), 0 0 0 3px #00e5ff14;
+  box-shadow: inset 0 0 0 1px var(--hud-linha-forte), 0 0 0 3px color-mix(in srgb, var(--zd-acento) 8%, transparent);
 }
 .hud-campo::placeholder { color: #ffffff3d; }
 
@@ -365,9 +365,9 @@
   align-items: center;
   gap: 5px;
   padding: 2px 8px;
-  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
-  background: #00e5ff14;
-  box-shadow: inset 0 0 0 1px #00e5ff33;
+  clip-path: polygon(calc(var(--chanfro) * .5) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .5)), calc(100% - calc(var(--chanfro) * .5)) 100%, 0 100%, 0 calc(var(--chanfro) * .5));
+  background: color-mix(in srgb, var(--zd-acento) 8%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--zd-acento) 20%, transparent);
   color: var(--hud-ciano);
   font-size: 9.5px;
   font-weight: 700;
@@ -404,8 +404,8 @@
 
 .zd-card, .zd-card-glow, .zd-agent-card, .zd-stat-card {
   --c: 10px;
-  --cor: #00e5ff3d;
-  --fundo: #06140d;
+  --cor: color-mix(in srgb, var(--zd-acento) 24%, transparent);
+  --fundo: var(--zd-painel);
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -434,36 +434,36 @@
 .zd-card::after, .zd-card-glow::after,
 .zd-agent-card::after, .zd-stat-card::after { inset: 1px; background: var(--fundo); }
 
-.zd-card-glow { --cor: #00e5ff70; box-shadow: 0 0 22px #00e5ff14; }
-.zd-agent-card { --cor: #00ff6440; }
-.zd-agent-card:hover { --cor: #00ff6499; transform: translateY(-2px); box-shadow: 0 10px 30px #00ff6414; }
-.zd-stat-card { --c: 6px; --cor: #00e5ff33; }
-.zd-stat-card:hover { --cor: #00e5ff85; background: transparent !important; }
+.zd-card-glow { --cor: color-mix(in srgb, var(--zd-acento) 44%, transparent); box-shadow: 0 0 22px color-mix(in srgb, var(--zd-acento) 8%, transparent); }
+.zd-agent-card { --cor: color-mix(in srgb, var(--zd-marca) 25%, transparent); }
+.zd-agent-card:hover { --cor: color-mix(in srgb, var(--zd-marca) 60%, transparent); transform: translateY(-2px); box-shadow: 0 10px 30px color-mix(in srgb, var(--zd-marca) 8%, transparent); }
+.zd-stat-card { --c: 6px; --cor: color-mix(in srgb, var(--zd-acento) 20%, transparent); }
+.zd-stat-card:hover { --cor: color-mix(in srgb, var(--zd-acento) 52%, transparent); background: transparent !important; }
 
 /* Notificação: barra de acento angular à esquerda */
 .zd-notification {
   border: 0;
   border-radius: 0;
-  background: #06140d;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-  box-shadow: inset 3px 0 0 #00ff64, inset 0 0 0 1px #00e5ff2e;
+  background: var(--zd-painel);
+  clip-path: polygon(calc(var(--chanfro) * .8) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .8)), calc(100% - calc(var(--chanfro) * .8)) 100%, 0 100%, 0 calc(var(--chanfro) * .8));
+  box-shadow: inset 3px 0 0 var(--zd-marca), inset 0 0 0 1px color-mix(in srgb, var(--zd-acento) 18%, transparent);
 }
 
 /* Botão principal e campos */
 .zd-gradient-btn {
   border-radius: 0 !important;
-  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  clip-path: polygon(calc(var(--chanfro) * .9) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .9)), calc(100% - calc(var(--chanfro) * .9)) 100%, 0 100%, 0 calc(var(--chanfro) * .9));
   letter-spacing: .03em;
 }
 .zd-input {
   border: 0 !important;
   border-radius: 0 !important;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-  background: #07170f;
-  box-shadow: inset 0 0 0 1px #00e5ff3d;
+  clip-path: polygon(calc(var(--chanfro) * .8) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .8)), calc(100% - calc(var(--chanfro) * .8)) 100%, 0 100%, 0 calc(var(--chanfro) * .8));
+  background: var(--zd-campo);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--zd-acento) 24%, transparent);
 }
 .zd-input:focus {
-  box-shadow: inset 0 0 0 1px #00e5ff85, 0 0 0 3px #00e5ff14;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--zd-acento) 52%, transparent), 0 0 0 3px color-mix(in srgb, var(--zd-acento) 8%, transparent);
   border-color: transparent;
 }
 
@@ -471,21 +471,21 @@
 .zd-tag, .zd-tag-blue {
   border: 0 !important;
   border-radius: 0 !important;
-  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  clip-path: polygon(calc(var(--chanfro) * .5) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .5)), calc(100% - calc(var(--chanfro) * .5)) 100%, 0 100%, 0 calc(var(--chanfro) * .5));
   letter-spacing: .1em;
 }
-.zd-tag { box-shadow: inset 0 0 0 1px #00ff6440; }
-.zd-tag-blue { box-shadow: inset 0 0 0 1px #00c8ff4d; }
+.zd-tag { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--zd-marca) 25%, transparent); }
+.zd-tag-blue { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--zd-acento) 30%, transparent); }
 
 /* Nós da jornada gamificada */
 .journey-node { border-radius: 0 !important; }
 .journey-node.concluida, .journey-node.atual, .journey-node.bloqueada {
-  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  clip-path: polygon(calc(var(--chanfro) * .7) 0, 100% 0, 100% calc(100% - calc(var(--chanfro) * .7)), calc(100% - calc(var(--chanfro) * .7)) 100%, 0 100%, 0 calc(var(--chanfro) * .7));
 }
 
 /* Barra de rolagem em bloco, sem raio */
-::-webkit-scrollbar-thumb { border-radius: 0; background: #00e5ff33; }
-::-webkit-scrollbar-thumb:hover { background: #00e5ff66; }
+::-webkit-scrollbar-thumb { border-radius: 0; background: color-mix(in srgb, var(--zd-acento) 20%, transparent); }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--zd-acento) 40%, transparent); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    STUDIO — o espaço de trabalho de duas janelas.
@@ -521,16 +521,16 @@
 .studio-divisor::before {
   content: '';
   position: absolute; inset: 0 3px;
-  background: #00e5ff26;
+  background: color-mix(in srgb, var(--zd-acento) 15%, transparent);
   transition: background .2s ease;
 }
-.studio-divisor:hover::before, .studio-divisor.arrastando::before { background: #00e5ff99; }
+.studio-divisor:hover::before, .studio-divisor.arrastando::before { background: color-mix(in srgb, var(--zd-acento) 60%, transparent); }
 /* Punho: três traços no meio da coluna, para o alvo de clique ficar óbvio */
 .studio-divisor::after {
   content: '';
   position: absolute; left: 1px; top: 50%; width: 5px; height: 34px;
   transform: translateY(-50%);
-  background: repeating-linear-gradient(0deg, #00e5ff99 0 2px, transparent 2px 5px);
+  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--zd-acento) 60%, transparent) 0 2px, transparent 2px 5px);
 }
 
 /* O display entra em :where() porque este arquivo carrega depois do Tailwind:
@@ -550,12 +550,12 @@
 .fase-trilha { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 .fase-trilha::-webkit-scrollbar { display: none; }
 .fase-passo {
-  --cor: #00e5ff;
+  --cor: var(--zd-acento);
   position: relative;
   flex: 1 1 0;
   min-width: 92px;
   padding: 7px 14px 7px 20px;
-  background: #0a1a12;
+  background: var(--zd-elevado);
   color: #ffffff4d;
   font-size: 10px;
   font-weight: 700;
@@ -567,10 +567,10 @@
 }
 .fase-passo:first-child { clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%); }
 .fase-passo:last-child { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 9px 50%); }
-.fase-passo.concluida { background: #0d2a1a; color: #00ff6499; }
+.fase-passo.concluida { background: color-mix(in srgb, var(--zd-marca) 14%, var(--zd-painel)); color: color-mix(in srgb, var(--zd-marca) 60%, transparent); }
 .fase-passo.atual {
   background: var(--cor);
-  color: #04140a;
+  color: var(--zd-solido);
   box-shadow: 0 0 22px color-mix(in srgb, var(--cor) 40%, transparent);
 }
 
@@ -591,7 +591,7 @@
   content: '';
   position: absolute; inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, transparent, #00e5ff1f 45%, #00e5ff3d 50%, #00e5ff1f 55%, transparent);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--zd-acento) 12%, transparent) 45%, color-mix(in srgb, var(--zd-acento) 24%, transparent) 50%, color-mix(in srgb, var(--zd-acento) 12%, transparent) 55%, transparent);
   animation: varredura 1.1s ease-out;
 }
 
@@ -602,7 +602,7 @@
   width: 2px; height: 1.05em;
   margin-left: 2px;
   vertical-align: text-bottom;
-  background: #00e5ff;
+  background: var(--zd-acento);
   animation: hudPulso 1s steps(2) infinite;
 }
 
@@ -650,8 +650,8 @@
   flex: none;
   border-radius: 50%;
   padding: 2px;
-  background: #04140a;
-  box-shadow: 0 0 0 1px #00e5ff5c, 0 0 18px #00e5ff33, 0 0 44px #00e5ff14;
+  background: var(--zd-solido);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--zd-acento) 36%, transparent), 0 0 18px color-mix(in srgb, var(--zd-acento) 20%, transparent), 0 0 44px color-mix(in srgb, var(--zd-acento) 8%, transparent);
   transition: box-shadow .32s ease, transform .32s cubic-bezier(.22,1,.36,1);
 }
 .maia-anel::before {
@@ -660,7 +660,7 @@
   inset: -4px;
   border-radius: 50%;
   background: conic-gradient(from 0deg,
-    #00e5ff00 0 46%, #00e5ff99 68%, #eafcff 80%, #00e5ff00 90%);
+    color-mix(in srgb, var(--zd-acento) 0%, transparent) 0 46%, color-mix(in srgb, var(--zd-acento) 60%, transparent) 68%, #eafcff 80%, color-mix(in srgb, var(--zd-acento) 0%, transparent) 90%);
   -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
   mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
   animation: maiaGiro 6s linear infinite;
@@ -680,7 +680,7 @@
 
 .maia-doca:hover .maia-anel,
 .maia-doca[data-previa='true'] .maia-anel {
-  box-shadow: 0 0 0 1px #00e5ffb3, 0 0 26px #00e5ff59, 0 0 58px #00ff6424;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--zd-acento) 70%, transparent), 0 0 26px color-mix(in srgb, var(--zd-acento) 35%, transparent), 0 0 58px color-mix(in srgb, var(--zd-marca) 14%, transparent);
   transform: scale(1.04);
 }
 
@@ -691,8 +691,8 @@
   height: 1px;
   flex: none;
   background:
-    radial-gradient(circle at 0 50%, #00e5ff 0 2px, transparent 2px),
-    linear-gradient(90deg, #00e5ff1a, #00e5ffb3);
+    radial-gradient(circle at 0 50%, var(--zd-acento) 0 2px, transparent 2px),
+    linear-gradient(90deg, color-mix(in srgb, var(--zd-acento) 10%, transparent), color-mix(in srgb, var(--zd-acento) 70%, transparent));
   transition: width .34s cubic-bezier(.22,1,.36,1);
 }
 .maia-doca .maia-fio { width: 0; }
@@ -716,8 +716,8 @@
 /* ── Janela do chat ──────────────────────────────────────────────────────*/
 .maia-janela {
   --c: 14px;
-  --cor: #00e5ff85;
-  --fundo: #04140a;
+  --cor: color-mix(in srgb, var(--zd-acento) 52%, transparent);
+  --fundo: var(--zd-solido);
   width: min(376px, calc(100vw - 2rem));
   height: min(548px, calc(100dvh - 6.5rem));
 }
@@ -728,4 +728,259 @@
 @media (prefers-reduced-motion: reduce) {
   .maia-anel::before { animation: none; }
   .maia-fio, .maia-previa, .maia-anel { transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHAVES DE TEMA — o que o painel de Aparência liga e desliga.
+
+   Ficam no fim do arquivo de propósito: são regras de sobreposição, e o lugar
+   delas é depois de tudo o que elas podem precisar vencer.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Textura de fundo ─────────────────────────────────────────────────────
+   A grade e a varredura dão o ar de visor, e são a primeira coisa que
+   incomoda quem trabalha horas seguidas na mesma tela. Por isso desligam. */
+:root[data-textura='off'] .hud-grade { background-image: none; }
+:root[data-textura='off'] .hud-scan::before { display: none; }
+:root[data-textura='off'] .zd-circuit-bg { background-image: none; }
+
+/* ── Movimento ────────────────────────────────────────────────────────────
+   Três níveis. `reduzido` encurta a transição e cala o que se repete para
+   sempre; `desligado` para tudo, para quem tem enjoo de movimento ou está
+   numa máquina fraca. */
+:root[data-movimento='reduzido'] .hud-pulso,
+:root[data-movimento='reduzido'] .zd-pulse,
+:root[data-movimento='reduzido'] .zd-float,
+:root[data-movimento='reduzido'] .zd-spin-logo,
+:root[data-movimento='reduzido'] .journey-node.atual,
+:root[data-movimento='reduzido'] .maia-anel::before,
+:root[data-movimento='reduzido'] .cursor-agente::after,
+:root[data-movimento='reduzido'] .hud-botao::after {
+  animation: none;
+}
+:root[data-movimento='reduzido'] .hud-vivo:hover { transform: none; }
+
+:root[data-movimento='desligado'] *,
+:root[data-movimento='desligado'] *::before,
+:root[data-movimento='desligado'] *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODO FOCO — o chassi saindo de cena.
+
+   O cabeçalho não é escondido com `display: none`: ele encolhe. Sumir de uma
+   vez faria o conteúdo saltar 60 px para cima, e o salto é justamente o que a
+   pessoa percebe como defeito. Encolhendo, a área de trabalho cresce.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.zd-topo {
+  max-height: 140px;
+  overflow: hidden;
+  transition: max-height .36s cubic-bezier(.22,1,.36,1), opacity .22s ease;
+}
+.zd-topo[data-recolhido='sim'] {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A faixa que devolve o cabeçalho: alta o bastante para o dedo, discreta o
+   bastante para não virar mais uma barra. */
+.zd-puxador {
+  height: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  flex: none;
+}
+.zd-puxador > span {
+  width: 54px;
+  height: 3px;
+  background: color-mix(in srgb, var(--zd-acento) 30%, transparent);
+  clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 100%, 0 100%);
+  transition: background .2s ease, width .2s ease;
+}
+.zd-puxador:hover > span,
+.zd-puxador:focus-visible > span {
+  background: var(--zd-acento);
+  width: 84px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IGNIÇÃO E TRANSIÇÃO DE TELA
+
+   Duas regras valem para as duas: só `opacity` e `transform` são animados,
+   que são as propriedades que o navegador resolve na GPU sem recalcular
+   layout; e o movimento entra sempre por baixo, nunca por cima, porque o
+   olho lê "chegando" e não "caindo".
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.zd-ignicao {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--zd-acento) 7%, transparent), transparent 55%),
+    var(--zd-pagina);
+  cursor: pointer;
+  animation: zdIgnicaoEntra .28s ease both;
+}
+.zd-ignicao.saindo {
+  animation: zdIgnicaoSai .4s cubic-bezier(.4,0,.2,1) both;
+  pointer-events: none;
+}
+@keyframes zdIgnicaoEntra { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zdIgnicaoSai {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.04); }
+}
+
+.zd-ignicao-miolo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  max-width: 340px;
+  width: 100%;
+}
+
+/* O anel de partida: dois arcos girando em sentidos opostos, com a logo no
+   meio. Sentidos opostos porque um só lê como "ícone girando", e dois leem
+   como máquina ligando. */
+.zd-ignicao-anel {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  display: grid;
+  place-items: center;
+}
+.zd-ignicao-anel::before,
+.zd-ignicao-anel::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+}
+.zd-ignicao-anel::before {
+  inset: 0;
+  background: conic-gradient(from 0deg,
+    transparent 0 55%, color-mix(in srgb, var(--zd-acento) 60%, transparent) 75%, var(--zd-acento) 88%, transparent 95%);
+  animation: zdGiraFrente 1.5s linear infinite;
+}
+.zd-ignicao-anel::after {
+  inset: 12px;
+  background: conic-gradient(from 180deg,
+    transparent 0 62%, color-mix(in srgb, var(--zd-marca) 55%, transparent) 82%, var(--zd-marca) 92%, transparent 97%);
+  animation: zdGiraTras 2.2s linear infinite;
+}
+.zd-ignicao-anel > * { position: relative; z-index: 1; }
+@keyframes zdGiraFrente { to { transform: rotate(360deg); } }
+@keyframes zdGiraTras { to { transform: rotate(-360deg); } }
+
+.zd-ignicao-linha {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #ffffff2e;
+  transition: color .3s ease;
+}
+.zd-ignicao-linha.feita { color: color-mix(in srgb, var(--zd-acento) 85%, #fff); }
+.zd-ignicao-marca {
+  width: 6px; height: 6px;
+  flex: none;
+  background: currentColor;
+  transform: rotate(45deg) scale(.6);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease;
+}
+.zd-ignicao-linha.feita .zd-ignicao-marca {
+  transform: rotate(45deg) scale(1);
+  box-shadow: 0 0 8px currentColor;
+}
+
+.zd-ignicao-barra {
+  width: 100%;
+  height: 3px;
+  margin-top: 22px;
+  background: color-mix(in srgb, var(--zd-acento) 12%, transparent);
+  overflow: hidden;
+}
+.zd-ignicao-barra > i {
+  display: block;
+  height: 100%;
+  width: var(--pct, 0%);
+  background: linear-gradient(90deg, var(--zd-marca), var(--zd-acento));
+  transition: width .3s cubic-bezier(.22,1,.36,1);
+}
+
+/* ── Entrada de tela ──────────────────────────────────────────────────────
+   Curta de propósito. Transição de rota longa parece elegante na primeira
+   vez e vira atraso na décima. */
+@keyframes zdEntraTela {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: none; }
+}
+.zd-entra { animation: zdEntraTela .3s cubic-bezier(.22,1,.36,1) both; }
+
+:root[data-movimento='reduzido'] .zd-entra { animation-duration: .14s; }
+:root[data-movimento='reduzido'] .zd-ignicao-anel::before,
+:root[data-movimento='reduzido'] .zd-ignicao-anel::after { animation-duration: 3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zd-entra { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GANHO FLUTUANTE — o número que sobe.
+
+   Fica fora do fluxo e sem captura de clique: ele passa por cima de tudo e
+   não atrapalha nada. A subida é curta e a saída começa antes do fim, porque
+   número que fica parado na tela vira sujeira.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.zd-ganhos {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 80;
+}
+
+.zd-ganho {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--zd-fonte-tec);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  color: var(--zd-marca);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--zd-marca) 60%, transparent);
+  animation: zdGanhoSobe 1.5s cubic-bezier(.22,1,.36,1) both;
+}
+.zd-ganho.nivel {
+  font-size: 16px;
+  color: var(--zd-acento);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--zd-acento) 70%, transparent);
+}
+
+@keyframes zdGanhoSobe {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.7); }
+  14%  { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+  26%  { transform: translate(-50%, -60%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -190%) scale(.94); }
+}
+
+:root[data-movimento='desligado'] .zd-ganho { animation: none; opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .zd-ganho { animation-duration: .9s; }
 }

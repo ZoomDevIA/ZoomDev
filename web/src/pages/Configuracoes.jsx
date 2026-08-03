@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useUser } from '../App.jsx';
 import { api, setToken, baixarMeusDados } from '../lib/api.js';
 import Icon from '../components/Icon.jsx';
+import Aparencia from '../components/configuracoes/Aparencia.jsx';
 import { Painel, Rotulo, Etiqueta, Botao, Campo, Secao, Barra } from '../components/hud/index.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -24,6 +25,7 @@ export default function Configuracoes() {
       </div>
 
       <Perfil user={user} refreshUser={refreshUser} />
+      <Aparencia user={user} refreshUser={refreshUser} />
       <TrocarSenha onEncerrou={() => { setToken(null); setUser(null); }} />
       <PlanoECreditos user={user} />
       <Gamificacao user={user} />

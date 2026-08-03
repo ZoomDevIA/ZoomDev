@@ -1,7 +1,11 @@
-import React, { createContext, lazy, Suspense, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, lazy, Suspense, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { api, getToken, setToken } from './lib/api.js';
+import { aplicar as aplicarTema, gravarLocal as gravarTema } from './lib/tema.js';
 import Layout from './components/Layout.jsx';
+import Logo from './components/Logo.jsx';
+import Ignicao from './components/Ignicao.jsx';
+import Sensorial, { anunciarGanho } from './components/Sensorial.jsx';
 import GamificationToasts, { ToastContext } from './components/GamificationToasts.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -33,10 +37,16 @@ import Legal from './pages/Legal.jsx';
 const Studio = lazy(() => import('./pages/Studio.jsx'));
 const Mundo = lazy(() => import('./pages/Mundo.jsx'));
 
+// Carga de uma seção pesada (Studio, Mundo). Mesma linguagem da ignição, em
+// escala menor: quem já viu a partida reconhece o anel e sabe que é espera,
+// não erro.
 function Carregando() {
   return (
-    <div className="flex items-center justify-center py-24">
-      <div className="zd-gradient-text font-heading text-lg font-bold zd-pulse">carregando…</div>
+    <div className="flex flex-col items-center justify-center py-24 gap-4">
+      <div className="zd-ignicao-anel" style={{ width: 62, height: 62 }}>
+        <Logo className="w-8 h-8" />
+      </div>
+      <div className="hud-tec text-[10px] text-white/35 uppercase tracking-[.2em]">carregando</div>
     </div>
   );
 }
@@ -49,6 +59,12 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [carregando, setCarregando] = useState(Boolean(getToken()));
   const [toasts, setToasts] = useState([]);
+
+  // A partida roda uma vez por sessão de aba: ao abrir com credencial guardada
+  // e ao entrar. A aplicação monta atrás dela, então quando a cortina sai já
+  // está tudo pronto.
+  const [ignicao, setIgnicao] = useState(Boolean(getToken()));
+  const jaIgniu = useRef(false);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -64,6 +80,23 @@ export default function App() {
   useEffect(() => {
     if (getToken()) refreshUser();
   }, [refreshUser]);
+
+  // O tema guardado na conta vence o do navegador: entrar num computador novo
+  // deve trazer a plataforma do jeito que a pessoa deixou, não do jeito de
+  // fábrica. Só grava de volta se veio algo, para não apagar a escolha local
+  // de quem nunca salvou na conta.
+  useEffect(() => {
+    if (!user?.tema) return;
+    gravarTema(user.tema);
+    aplicarTema(user.tema);
+  }, [user?.tema]);
+
+  // Entrou agora: dá a partida. `jaIgniu` impede que a cortina volte quando o
+  // perfil é recarregado no meio da sessão, por exemplo ao salvar o tema.
+  useEffect(() => {
+    if (user && !jaIgniu.current) { jaIgniu.current = true; setIgnicao(true); }
+    if (!user) jaIgniu.current = false;
+  }, [user]);
 
   // A sessão vence por inatividade. Quando o servidor recusa o token, o
   // cliente da API já o descarta e avisa aqui: sem isso, a pessoa ficaria
@@ -95,9 +128,13 @@ export default function App() {
     const lista = Array.isArray(gam) ? gam : [gam];
     for (const g of lista) {
       if (!g) continue;
-      if (g.xpGanho) notify({ tipo: 'xp', titulo: `+${g.xpGanho} XP`, detalhe: g.subiuNivel ? `Subiu para o nível ${g.nivel.nivel}: ${g.nivel.nome}! 🎉` : null });
+      if (g.xpGanho) {
+        notify({ tipo: 'xp', titulo: `+${g.xpGanho} XP`, detalhe: g.subiuNivel ? `Subiu para o nível ${g.nivel.nivel}: ${g.nivel.nome}! 🎉` : null });
+        anunciarGanho({ xp: g.xpGanho, tipo: g.subiuNivel ? 'nivel' : 'xp' });
+      }
       for (const c of g.novasConquistas || []) {
         notify({ tipo: 'conquista', titulo: `${c.emoji} Conquista: ${c.nome}`, detalhe: c.descricao });
+        anunciarGanho({ tipo: 'conquista' });
       }
     }
   }, [notify]);
@@ -109,16 +146,16 @@ export default function App() {
     || (user.capacidades || []).includes('comunidade.curar')
   );
 
-  if (carregando) {
-    return <div className="min-h-screen zd-bg flex items-center justify-center">
-      <div className="zd-gradient-text font-heading text-2xl font-bold zd-pulse px-6 py-3">ZoomDev OS</div>
-    </div>;
-  }
-
   return (
     <UserContext.Provider value={{ user, setUser, refreshUser, celebrar }}>
       <ToastContext.Provider value={{ toasts, notify }}>
-        {!user ? (
+        {/* A cortina fica no mesmo lugar da árvore o tempo todo, para que a
+            chegada do perfil não reinicie a sequência do zero. Ela sai quando
+            a partida termina E o perfil já chegou. */}
+        {(ignicao || carregando) && (
+          <Ignicao nome={user?.nome?.split(' ')[0]} onFim={() => setIgnicao(false)} />
+        )}
+        {carregando ? null : !user ? (
           /* Visitante: a home é pública, escreve a ideia primeiro, cria conta depois. */
           <Routes>
             <Route path="/" element={<Home />} />
@@ -162,6 +199,7 @@ export default function App() {
             </Suspense>
           </Layout>
         )}
+        <Sensorial />
         <GamificationToasts />
       </ToastContext.Provider>
     </UserContext.Provider>

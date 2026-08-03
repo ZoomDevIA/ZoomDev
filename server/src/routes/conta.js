@@ -15,14 +15,53 @@ import { limitar } from '../services/limite.js';
 
 export const contaRouter = Router();
 
+// ── Tema ──────────────────────────────────────────────────────────────────
+// O tema é escolhido no navegador e guardado aqui para seguir a pessoa de um
+// aparelho para outro. Como vem inteiro do cliente, entra por lista fechada:
+// campo fora da lista é descartado, valor fora do formato é descartado, e o
+// que sobra nunca passa de um punhado de bytes.
+//
+// O cliente valida de novo ao aplicar. Esta camada existe para o caso de
+// alguém escrever direto na rota, e para o dia em que um campo for aposentado.
+const HEX = /^#[0-9a-f]{6}$/i;
+const TEXTO = /^[a-z]{1,20}$/;
+const CAMPOS_TEMA = {
+  acento: v => (HEX.test(v) ? String(v).toLowerCase() : undefined),
+  marca: v => (HEX.test(v) ? String(v).toLowerCase() : undefined),
+  fundo: v => (TEXTO.test(v) ? v : undefined),
+  fonteTitulo: v => (TEXTO.test(v) ? v : undefined),
+  fonteCorpo: v => (TEXTO.test(v) ? v : undefined),
+  arestas: v => (TEXTO.test(v) ? v : undefined),
+  densidade: v => (TEXTO.test(v) ? v : undefined),
+  movimento: v => (TEXTO.test(v) ? v : undefined),
+  textura: v => (typeof v === 'boolean' ? v : undefined),
+  som: v => (typeof v === 'boolean' ? v : undefined),
+  volume: v => (Number.isFinite(Number(v)) ? Math.min(1, Math.max(0, Number(v))) : undefined),
+};
+
+function limparTema(bruto) {
+  if (!bruto || typeof bruto !== 'object') return null;
+  const limpo = {};
+  for (const [campo, validar] of Object.entries(CAMPOS_TEMA)) {
+    const v = validar(bruto[campo]);
+    if (v !== undefined) limpo[campo] = v;
+  }
+  return Object.keys(limpo).length ? limpo : null;
+}
+
 // Editar o perfil. O e-mail não entra: trocar endereço exige confirmar o novo,
 // e esse fluxo pede uma rota própria em vez de um campo solto aqui.
 contaRouter.patch('/', (req, res) => {
-  const { nome } = req.body || {};
+  const { nome, tema } = req.body || {};
   if (nome !== undefined) {
     const limpo = String(nome).trim();
     if (limpo.length < 2) return res.status(400).json({ error: 'O nome precisa de pelo menos 2 caracteres.' });
     req.user.nome = limpo.slice(0, 80);
+  }
+  if (tema !== undefined) {
+    const limpo = limparTema(tema);
+    if (!limpo) return res.status(400).json({ error: 'Tema inválido.' });
+    req.user.tema = limpo;
   }
   save();
   res.json(publicUser(req.user));
