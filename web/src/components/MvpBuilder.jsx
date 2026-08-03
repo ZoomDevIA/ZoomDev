@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { api, construirMvpSSE, baixarMvpZip, mvpPreviewUrl } from '../lib/api.js';
+import { api, construirMvpSSE, baixarMvpZip, previaMvp } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -19,10 +19,22 @@ export default function MvpBuilder({ projetoId }) {
   const [aba, setAba] = useState('preview');
   const [arquivoAtivo, setArquivoAtivo] = useState('index.html');
   const [baixando, setBaixando] = useState(false);
+  const [urlPrevia, setUrlPrevia] = useState(null);
 
   useEffect(() => {
     api.mvp(projetoId).then(m => { if (m.status === 'pronto') setMvp(m); }).catch(() => {});
   }, [projetoId]);
+
+  // A prévia é servida por uma rota própria, com política de conteúdo isolada:
+  // o bilhete de acesso vale dez minutos e é pedido por quem já está logado.
+  useEffect(() => {
+    if (!mvp?.arquivos?.length || aba !== 'preview') return;
+    let vivo = true;
+    previaMvp(projetoId, { pagina: arquivoAtivo })
+      .then(r => { if (vivo) setUrlPrevia(r.url); })
+      .catch(e => { if (vivo) setErro(e.message); });
+    return () => { vivo = false; };
+  }, [projetoId, mvp, aba, arquivoAtivo]);
 
   const construir = async () => {
     setErro(null); setConstruindo(true); setProgresso({}); setMvp(null);
@@ -133,16 +145,20 @@ export default function MvpBuilder({ projetoId }) {
                     {a.arquivo}
                   </button>
                 ))}
-                <a href={mvpPreviewUrl(projetoId, arquivoAtivo)} target="_blank" rel="noreferrer"
-                  className="rounded-lg px-3 py-1.5 text-[11px] text-[#00c8ff] border border-[#00c8ff33] hover:bg-[#00c8ff12] transition-colors">
+                <button type="button"
+                  onClick={() => urlPrevia && window.open(urlPrevia, '_blank', 'noopener')}
+                  disabled={!urlPrevia}
+                  className="rounded-lg px-3 py-1.5 text-[11px] text-[#00c8ff] border border-[#00c8ff33] hover:bg-[#00c8ff12] transition-colors disabled:opacity-40">
                   abrir em nova aba ↗
-                </a>
+                </button>
               </div>
+              {/* O documento vem do servidor, em origem opaca e com política
+                  própria: código gerado por IA não roda na mesma origem da
+                  plataforma, onde alcançaria o token de quem está logado. */}
               <iframe
-                key={arquivoAtivo}
-                srcDoc={montarPreview(mvp, arquivoAtivo)}
+                key={urlPrevia || arquivoAtivo}
+                src={urlPrevia || 'about:blank'}
                 title="Preview do MVP"
-                sandbox="allow-scripts allow-forms allow-modals"
                 className="w-full rounded-xl border border-white/10 bg-white"
                 style={{ height: 'min(70vh, 620px)' }}
               />
@@ -180,14 +196,4 @@ export default function MvpBuilder({ projetoId }) {
       )}
     </section>
   );
-}
-
-/** Monta o preview com CSS e JS embutidos: o iframe é isolado, sem rede. */
-function montarPreview(mvp, nomeArquivo) {
-  const html = mvp.arquivos.find(a => a.arquivo === nomeArquivo)?.conteudo || '';
-  const css = mvp.arquivos.find(a => a.arquivo.endsWith('.css'))?.conteudo || '';
-  const js = mvp.arquivos.find(a => a.arquivo.endsWith('.js'))?.conteudo || '';
-  return html
-    .replace(/<link[^>]*rel=["']stylesheet["'][^>]*>/gi, `<style>${css}</style>`)
-    .replace(/<script[^>]*src=["'][^"']*["'][^>]*><\/script>/gi, `<script>${js}<\/script>`);
 }

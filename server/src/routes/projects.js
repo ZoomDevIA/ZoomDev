@@ -10,6 +10,7 @@ import { planoParaPdf } from '../services/exportPdf.js';
 import { paginaHtml } from '../services/exportHtml.js';
 import { construirMvp, PECAS, ETAPA_DESIGN } from '../agents/mvpBuilder.js';
 import { publicar, projetarProjeto } from '../services/vitrine.js';
+import { emitirPrevia } from '../services/previa.js';
 import { exigir } from '../auth.js';
 import JSZip from 'jszip';
 
@@ -337,16 +338,43 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
   }
 });
 
-// Preview: serve cada arquivo do MVP com o content-type certo
-projectsRouter.get('/:id/mvp/preview/:arquivo', (req, res) => {
+// ═══════════════════════════════════════════════════════════════════════════
+// PRÉVIA DO MVP
+//
+// A rota anterior servia cada arquivo cru da nossa própria origem, e por isso
+// tinha dois problemas: o iframe não manda cabeçalho de autorização, então
+// ela respondia 401 e a prévia nunca aparecia de verdade; e se aparecesse,
+// código gerado por IA estaria rodando na mesma origem da plataforma, com
+// alcance ao armazenamento e ao token de quem estivesse logado.
+//
+// Agora quem está autenticado pede um bilhete de dez minutos, e o documento
+// é servido por /previa/:bilhete com política própria e origem opaca.
+//
+// O corpo pode trazer os arquivos EM RASCUNHO, ainda não salvos, para que a
+// prévia mostre o que está no editor agora e não o que foi salvo por último.
+// ═══════════════════════════════════════════════════════════════════════════
+projectsRouter.post('/:id/mvp/previa', (req, res) => {
   const proj = store.projects[req.params.id];
-  if (!proj?.mvp?.arquivos || proj.userId !== req.user.id) return res.status(404).json({ error: 'MVP não encontrado.' });
-  const arq = proj.mvp.arquivos.find(a => a.arquivo === req.params.arquivo);
-  if (!arq) return res.status(404).json({ error: 'Arquivo não encontrado.' });
-  const tipos = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.md': 'text/markdown' };
-  const ext = arq.arquivo.slice(arq.arquivo.lastIndexOf('.'));
-  res.setHeader('Content-Type', `${tipos[ext] || 'text/plain'}; charset=utf-8`);
-  res.send(arq.conteudo);
+  if (!proj?.mvp?.arquivos || proj.userId !== req.user.id) {
+    return res.status(404).json({ error: 'MVP não encontrado.' });
+  }
+
+  const rascunhos = Array.isArray(req.body?.arquivos) ? req.body.arquivos : [];
+  // Rascunho só substitui arquivo que já existe: o corpo da requisição não
+  // pode inventar arquivo novo dentro do projeto de ninguém.
+  const arquivos = proj.mvp.arquivos.map((a) => {
+    const r = rascunhos.find(x => x.arquivo === a.arquivo);
+    return r && typeof r.conteudo === 'string' && r.conteudo.length <= 800_000
+      ? { arquivo: a.arquivo, conteudo: r.conteudo }
+      : { arquivo: a.arquivo, conteudo: a.conteudo };
+  });
+
+  const pagina = String(req.body?.pagina || 'index.html');
+  const { bilhete, expiraEm } = emitirPrevia({
+    userId: req.user.id, projetoId: proj.id, arquivos, pagina,
+  });
+
+  res.json({ url: `/previa/${bilhete}`, expiraEm });
 });
 
 projectsRouter.get('/:id/mvp', (req, res) => {

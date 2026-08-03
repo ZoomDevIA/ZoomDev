@@ -2,8 +2,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
-import cors from 'cors';
 import { config } from './config.js';
+import { cabecalhos, cors, POLITICA_PREVIA } from './services/blindagem.js';
+import { lerPrevia, montarPrevia } from './services/previa.js';
 import { register, login, authMiddleware, adminMiddleware, publicUser } from './auth.js';
 import { save, store } from './store.js';
 import { projectsRouter } from './routes/projects.js';
@@ -31,7 +32,35 @@ import { initPic } from './agents/sextaFeira.js';
 import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gamification.js';
 
 const app = express();
-app.use(cors());
+app.disable('x-powered-by');
+
+// Blindagem de transporte antes de tudo: cabeçalhos em toda resposta e CORS
+// por lista, no lugar do `cors()` que aceitava qualquer origem da internet.
+app.use(cabecalhos);
+app.use(cors);
+
+// ── Prévia do MVP ──────────────────────────────────────────────────────────
+// Fora de /api e antes da autenticação de propósito: o iframe não carrega
+// cabeçalho de autorização, então o acesso vem de um bilhete de dez minutos
+// emitido por quem já está autenticado. O documento sai com política própria,
+// em origem opaca, sem alcance ao armazenamento nem ao token da plataforma.
+app.get('/previa/:bilhete', (req, res) => {
+  // Os cabeçalhos vêm antes do desvio: a mensagem de prévia expirada também
+  // precisa aparecer dentro do iframe, e com DENY ela ficaria em branco.
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Content-Security-Policy', POLITICA_PREVIA);
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Cache-Control', 'no-store');
+
+  const p = lerPrevia(req.params.bilhete);
+  if (!p) {
+    return res.status(410).send(
+      '<!doctype html><meta charset="utf-8">'
+      + '<body style="font:14px system-ui;background:#0b1f16;color:#9fb8ad;padding:28px">'
+      + 'Esta prévia expirou. Use o botão de recarregar no Estúdio.');
+  }
+  res.send(montarPrevia(p.arquivos, p.pagina));
+});
 // Webhook do Stripe exige o corpo BRUTO para validar a assinatura, por isso
 // vem antes do parser JSON.
 app.post('/api/pagamentos/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {

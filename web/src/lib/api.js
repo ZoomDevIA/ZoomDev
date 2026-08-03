@@ -33,11 +33,28 @@ async function req(path, opts = {}) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    if (res.status === 401 && token) sessaoCaiu(data);
     const err = new Error(data.error || `Erro ${res.status}`);
     err.status = res.status;
+    err.code = data.code;
     throw err;
   }
   return data;
+}
+
+// ── Sessão derrubada pelo servidor ─────────────────────────────────────────
+// A sessão agora vence por inatividade. Quando isso acontece, o token na mão
+// do navegador virou lixo: mantê-lo faria toda tela seguinte falhar com um
+// erro diferente. Limpa aqui, uma vez só, e avisa a aplicação.
+let jaAvisou = false;
+export function sessaoCaiu(data) {
+  setToken(null);
+  setPainelToken(null);
+  if (jaAvisou) return;                 // várias chamadas em paralelo, um aviso só
+  jaAvisou = true;
+  window.dispatchEvent(new CustomEvent('zd:sessao-expirada', {
+    detail: { motivo: data?.code === 'SESSAO_EXPIRADA' ? 'inatividade' : 'invalida' },
+  }));
 }
 
 export const api = {
@@ -281,7 +298,14 @@ export async function construirMvpSSE(projId, handlers) {
   }
 }
 
-export const mvpPreviewUrl = (projId, arquivo) => `/api/projects/${projId}/mvp/preview/${arquivo}`;
+// Prévia do MVP: pede um bilhete de dez minutos e devolve o endereço público
+// que o iframe pode carregar. Os rascunhos ainda não salvos vão junto, para a
+// prévia mostrar o que está no editor agora.
+export const previaMvp = (projId, { arquivos = [], pagina = 'index.html' } = {}) =>
+  req(`/projects/${projId}/mvp/previa`, {
+    method: 'POST',
+    body: JSON.stringify({ arquivos, pagina }),
+  });
 
 export async function baixarMvpZip(projId) {
   const res = await fetch(`/api/projects/${projId}/mvp.zip`, { headers: { Authorization: `Bearer ${token}` } });

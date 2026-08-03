@@ -16,7 +16,47 @@ import crypto from 'node:crypto';
 import { store, save } from '../store.js';
 import { encerrarSessoesDe, papelDe } from '../auth.js';
 
-export const VERSAO_TERMOS = '2026-08-01';
+export const VERSAO_TERMOS = '2026-08-03';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RETENÇÃO DE ANEXOS
+//
+// O Studio guarda o TEXTO extraído do que a pessoa anexa: o edital em PDF, o
+// plano antigo em DOCX, a transcrição da reunião com o sócio. O arquivo
+// original nunca é gravado, mas o texto fica, e ele é o insumo dos agentes.
+//
+// Guardar isso para sempre seria acumular dado de terceiro (quem falou na
+// reunião, quem assinou o documento) sem finalidade que justifique o prazo.
+// A LGPD pede que o dado dure o tempo da finalidade, e a finalidade aqui é
+// alimentar a geração do plano e as conversas do projeto.
+//
+// Seis meses cobrem com folga um ciclo de ideação até MVP. Depois disso o
+// texto sai e fica só o registro de que existiu, para a pessoa entender o que
+// aconteceu em vez de achar que o anexo sumiu sozinho.
+// ═══════════════════════════════════════════════════════════════════════════
+export const RETENCAO_ANEXOS_DIAS = 180;
+
+export function expurgarAnexosVencidos() {
+  const limite = Date.now() - RETENCAO_ANEXOS_DIAS * 24 * 60 * 60 * 1000;
+  let expurgados = 0;
+
+  for (const p of Object.values(store.projects)) {
+    if (!p.anexos?.length) continue;
+    p.anexos = p.anexos.map((a) => {
+      if (a.expurgadoEm || !a.em || Date.parse(a.em) > limite) return a;
+      expurgados++;
+      return {
+        nome: a.nome, tipo: a.tipo, em: a.em,
+        expurgadoEm: new Date().toISOString(),
+        texto: '',
+        nota: `Conteúdo removido após ${RETENCAO_ANEXOS_DIAS} dias, conforme a política de retenção.`,
+      };
+    });
+  }
+
+  if (expurgados) save();
+  return expurgados;
+}
 
 export function exportarDados(user) {
   const projetos = Object.values(store.projects).filter(p => p.userId === user.id);
@@ -28,6 +68,12 @@ export function exportarDados(user) {
     geradoEm: new Date().toISOString(),
     aviso: 'Exportação completa dos dados associados a esta conta, conforme a Lei 13.709/2018 (LGPD), '
          + 'artigo 18. Não inclui segredos do sistema, como o hash da sua senha e os tokens de sessão.',
+    politicaDeRetencao: {
+      anexos: `O texto extraído dos arquivos anexados é removido após ${RETENCAO_ANEXOS_DIAS} dias. `
+            + 'O arquivo original nunca é gravado: ele é lido em memória e descartado.',
+      sessoes: 'Uma sessão sem uso por 30 dias é encerrada e apagada.',
+      localizacao: 'Guardada com uma casa decimal, o suficiente para a região e insuficiente para o endereço.',
+    },
     conta: {
       id: user.id,
       nome: user.nome,
@@ -38,6 +84,8 @@ export function exportarDados(user) {
       criadoEm: user.criadoEm,
       ultimoAcesso: user.ultimoAcesso || null,
       termosAceitos: user.termosAceitos || null,
+      // Território informado no Studio, com o consentimento e a data
+      localizacao: user.local || null,
     },
     gamificacao: user.gamification || null,
     projetos: projetos.map(p => ({
@@ -51,8 +99,31 @@ export function exportarDados(user) {
       publicado: Boolean(p.publicado),
       criadoEm: p.criadoEm,
       plano: p.plano || null,
+      // O documento do ZoomDoc é o texto que a pessoa escreveu, e por isso o
+      // dado mais pessoal do projeto inteiro. Ficar de fora da exportação
+      // seria entregar o índice e reter o livro.
+      documento: p.documento || null,
+      documentoEm: p.documentoEm || null,
+      planoZoomDev: p.planoZoomDev || null,
+      metricas: p.metricas || null,
+      // Conversa do console: o que a pessoa pediu e o que os agentes responderam
+      trilha: p.trilha || [],
+      // Texto extraído do que ela anexou, com a data e o expurgo quando houve
+      anexos: (p.anexos || []).map(a => ({
+        nome: a.nome, tipo: a.tipo, em: a.em || null,
+        texto: a.texto || '',
+        expurgadoEm: a.expurgadoEm || null,
+      })),
       missoes: p.missoes || [],
-      mvp: p.mvp ? { status: p.mvp.status, construidoEm: p.mvp.construidoEm, arquivos: (p.mvp.arquivos || []).map(a => a.arquivo) } : null,
+      mvp: p.mvp
+        ? {
+          status: p.mvp.status,
+          construidoEm: p.mvp.construidoEm,
+          // O código gerado é entregue por inteiro: é trabalho da pessoa
+          arquivos: (p.mvp.arquivos || []).map(a => ({ arquivo: a.arquivo, conteudo: a.conteudo })),
+          design: p.mvp.design || null,
+        }
+        : null,
     })),
     carbono: { pedidos, planosCompensacao: planos },
     pagamentos: transacoes.map(t => ({
@@ -80,6 +151,14 @@ export function excluirConta(user, { removerPublicados = false } = {}) {
       p.userId = null;
       p.autorAnonimo = true;
       p.curtidas = [];
+      // Só o que a vitrine mostra sobrevive. O documento que a pessoa
+      // escreveu, a conversa com os agentes e o texto do que ela anexou não
+      // são conteúdo público: seguem a pessoa, e a pessoa está saindo.
+      delete p.documento;
+      delete p.planoZoomDev;
+      delete p.trilha;
+      delete p.anexos;
+      delete p.metricas;
       mantidos.push(p.id);
     } else {
       delete store.projects[p.id];
@@ -109,6 +188,9 @@ export function excluirConta(user, { removerPublicados = false } = {}) {
   user.anonimizadoEm = new Date().toISOString();
   user.chatLog = [];
   user.sextaFeiraChat = [];
+  // Território informado no Studio: some junto. É dado de localização, o tipo
+  // que menos justifica sobreviver a um pedido de exclusão.
+  delete user.local;
   user.papel = null;
   encerrarSessoesDe(user.id);
   save();
@@ -118,6 +200,18 @@ export function excluirConta(user, { removerPublicados = false } = {}) {
     projetosApagados: apagados.length,
     projetosMantidosAnonimos: mantidos.length,
     anonimizadoEm: user.anonimizadoEm,
+    removidos: [
+      'nome, e-mail e senha',
+      'localização informada',
+      'documentos do ZoomDoc e conversas com os agentes',
+      'texto dos arquivos anexados',
+      'histórico de conversa com o copiloto',
+      'sessões ativas em todos os aparelhos',
+    ],
+    mantidoSemIdentificacao: [
+      'projetos publicados na vitrine, sem vínculo com você',
+      'transações financeiras, por obrigação fiscal',
+    ],
   };
 }
 

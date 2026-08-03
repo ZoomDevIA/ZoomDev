@@ -65,6 +65,25 @@ export default function App() {
     if (getToken()) refreshUser();
   }, [refreshUser]);
 
+  // A sessão vence por inatividade. Quando o servidor recusa o token, o
+  // cliente da API já o descarta e avisa aqui: sem isso, a pessoa ficaria
+  // numa tela logada que falha em toda ação, sem entender por quê.
+  useEffect(() => {
+    const aoExpirar = (e) => {
+      setUser(null);
+      setCarregando(false);
+      setToasts(t => [...t, {
+        id: 'sessao',
+        titulo: 'Sessão encerrada',
+        detalhe: e.detail?.motivo === 'inatividade'
+          ? 'Você ficou muito tempo sem usar a plataforma. Entre de novo para continuar.'
+          : 'Sua credencial não vale mais. Entre de novo para continuar.',
+      }]);
+    };
+    window.addEventListener('zd:sessao-expirada', aoExpirar);
+    return () => window.removeEventListener('zd:sessao-expirada', aoExpirar);
+  }, []);
+
   const notify = useCallback((toast) => {
     const id = Math.random().toString(36).slice(2);
     setToasts(t => [...t, { id, ...toast }]);

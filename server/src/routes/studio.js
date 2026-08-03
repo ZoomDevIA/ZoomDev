@@ -362,15 +362,27 @@ studioRouter.post('/:id/conversa',
         }
       }
 
+      const fala = {
+        agenteId: 'maia',
+        agenteNome: 'Maiá',
+        cor: '#00e5ff',
+        texto: r.resposta,
+        selo: novoDocumento ? 'documento atualizado' : undefined,
+      };
+
+      // A trilha fica gravada no projeto: recarregar a página não pode apagar
+      // o que foi combinado com os agentes. Últimas 60 entradas, porque o
+      // valor está na conversa recente e o resto só engorda o banco.
+      proj.trilha = [
+        ...(proj.trilha || []),
+        { id: `u${Date.now()}`, papel: 'usuario', texto: pedido, em: new Date().toISOString(),
+          anexos: novos.map(a => ({ nome: a.nome, tipo: a.tipo })) },
+        { id: `a${Date.now()}`, papel: 'agente', em: new Date().toISOString(), ...fala },
+      ].slice(-60);
+
       save();
       res.json({
-        falas: [{
-          agenteId: 'maia',
-          agenteNome: 'Maiá',
-          cor: '#00e5ff',
-          texto: r.resposta,
-          selo: novoDocumento ? 'documento atualizado' : undefined,
-        }],
+        falas: [fala],
         documento: novoDocumento,
         recarregar: novos.length > 0,
         creditos: req.user.creditos,

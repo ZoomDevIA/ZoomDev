@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '../Icon.jsx';
 import { Botao, Etiqueta } from '../hud/index.jsx';
-import { api, baixarMvpZip, construirMvpSSE } from '../../lib/api.js';
+import { api, baixarMvpZip, construirMvpSSE, previaMvp } from '../../lib/api.js';
 import { MolduraPalco, PalcoVazio } from './Palco.jsx';
 import Editor from './Editor.jsx';
 
@@ -32,8 +32,9 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
   const [salvando, setSalvando] = useState(false);
   const [vista, setVista] = useState('codigo');
   const [arvoreAberta, setArvoreAberta] = useState(true);
-  const [chavePrevia, setChavePrevia] = useState(0);
+  const [chavePrevia, setChavePrevia] = useState(0);   // força um bilhete novo
   const [designAberto, setDesignAberto] = useState(false);
+  const [urlPrevia, setUrlPrevia] = useState(null);
 
   const carregar = useCallback(async () => {
     try {
@@ -82,6 +83,37 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
       setChavePrevia(k => k + 1);
     } catch (e) { onAviso?.(e.message); } finally { setSalvando(false); }
   };
+
+  const paginaPrevia = atual?.endsWith('.html') ? atual : 'index.html';
+
+  // ── Prévia ───────────────────────────────────────────────────────────────
+  // O documento vem do servidor, com política própria e em origem opaca.
+  // Montá-lo no cliente com srcdoc não funciona mais: documento em srcdoc
+  // herda a política de conteúdo da plataforma, e o código gerado, que é todo
+  // embutido, seria bloqueado antes de rodar.
+  //
+  // Os rascunhos não salvos vão no pedido, então a prévia continua mostrando
+  // o que está no editor agora.
+  const chaveRascunhos = sujos.map(n => `${n}:${(rascunhos[n] || '').length}`).join('|');
+  const pedirPrevia = useCallback(async () => {
+    if (!arquivos.length) return null;
+    try {
+      const r = await previaMvp(projeto.id, {
+        arquivos: sujos.map(nome => ({ arquivo: nome, conteudo: rascunhos[nome] })),
+        pagina: paginaPrevia,
+      });
+      setUrlPrevia(r.url);
+      return r.url;
+    } catch (e) { onAviso?.(e.message); return null; }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projeto?.id, arquivos.length, chaveRascunhos, paginaPrevia, chavePrevia]);
+
+  // Pede um bilhete novo quando a prévia abre, quando a página muda ou quando
+  // o botão de recarregar é usado. Não a cada tecla: ver a página piscar a
+  // cada caractere atrapalha mais do que ajuda.
+  useEffect(() => {
+    if (vista === 'previa' || vista === 'ambos') pedirPrevia();
+  }, [vista, pedirPrevia]);
 
   // Ctrl+S / Cmd+S salva, como em qualquer editor
   useEffect(() => {
@@ -139,14 +171,10 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
   }
 
   const previaAberta = vista === 'previa' || vista === 'ambos';
-  const paginaPrevia = atual?.endsWith('.html') ? atual : 'index.html';
 
-  const abrirEmAba = () => {
-    const html = montarPrevia(arquivos, rascunhos, paginaPrevia);
-    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-    window.open(url, '_blank', 'noopener');
-    // Solto depois de um instante: revogar na hora mataria a aba recém-aberta.
-    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  const abrirEmAba = async () => {
+    const url = urlPrevia || await pedirPrevia();
+    if (url) window.open(url, '_blank', 'noopener');
   };
 
   return (
@@ -249,17 +277,18 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
                 <Icon nome="externo" tam={12} />
               </button>
             </div>
-            {/* srcdoc em vez de src: o iframe não carrega o cabeçalho de
-                autorização, então buscar a página no servidor devolveria 401.
-                Montar o HTML aqui também faz a prévia refletir o que está no
-                editor agora, não o que foi salvo da última vez. */}
-            <iframe
-              key={chavePrevia}
-              title="Prévia do MVP"
-              srcDoc={montarPrevia(arquivos, rascunhos, paginaPrevia)}
-              sandbox="allow-scripts allow-forms allow-modals"
-              className="flex-1 w-full bg-white"
-            />
+            {urlPrevia ? (
+              <iframe
+                key={urlPrevia}
+                title="Prévia do MVP"
+                src={urlPrevia}
+                className="flex-1 w-full bg-white"
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <Icon nome="atualizar" tam={18} className="text-white/25 animate-spin" />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -381,43 +410,6 @@ function Bloco({ titulo, cor = '#00e5ff', children }) {
       {children}
     </div>
   );
-}
-
-// ── Montagem da prévia ────────────────────────────────────────────────────
-// O MVP é um punhado de arquivos soltos. Para vê-lo num iframe sem servidor,
-// o CSS e o JS referenciados entram embutidos no HTML, e os links entre as
-// páginas locais são desligados: clicar em app.html dentro do iframe tentaria
-// navegar para um arquivo que não existe naquele contexto.
-function montarPrevia(arquivos, rascunhos, pagina) {
-  const ler = (nome) => rascunhos[nome] ?? arquivos.find(a => a.arquivo === nome)?.conteudo ?? '';
-  let html = ler(pagina) || ler('index.html');
-  if (!html) return '<!doctype html><meta charset="utf-8"><p style="font:14px system-ui;padding:24px">Sem página para exibir.</p>';
-
-  html = html.replace(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi, (todo, arquivo) => {
-    const css = ler(arquivo.replace(/^\.?\//, ''));
-    return css ? `<style>\n${css}\n</style>` : todo;
-  });
-
-  html = html.replace(/<script[^>]+src=["']([^"']+\.js)["'][^>]*>\s*<\/script>/gi, (todo, arquivo) => {
-    const js = ler(arquivo.replace(/^\.?\//, ''));
-    return js ? `<script>\n${js}\n</script>` : todo;
-  });
-
-  // Navegação entre páginas locais vira aviso em vez de erro de rede
-  const avisoNavegacao = `<script>
-document.addEventListener('click', function (e) {
-  var a = e.target.closest && e.target.closest('a[href]');
-  if (!a) return;
-  var href = a.getAttribute('href') || '';
-  if (/^https?:/i.test(href)) return;
-  e.preventDefault();
-  console.info('Prévia: navegação para ' + href + ' desativada. Abra o arquivo no editor.');
-}, true);
-</script>`;
-
-  return html.includes('</body>')
-    ? html.replace('</body>', `${avisoNavegacao}</body>`)
-    : html + avisoNavegacao;
 }
 
 function BotaoVista({ atual, onMudar }) {

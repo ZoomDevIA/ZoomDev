@@ -46,7 +46,9 @@ const TERMOS = [
 const PRIVACIDADE = [
   ['Quais dados coletamos', [
     'De cadastro: nome, e-mail e senha. A senha é guardada como hash scrypt com sal único, nunca em texto claro, e nem o administrador consegue lê-la.',
-    'Do uso: os projetos que você cria, os planos gerados, os cálculos de carbono, as conversas com os agentes e os registros de acesso (data, hora e endereço IP).',
+    'Do uso: os projetos que você cria, os planos gerados no ZoomDoc, os cálculos de carbono, as conversas com os agentes no Studio e os registros de acesso (data, hora e endereço IP).',
+    'Dos anexos: quando você anexa um PDF, DOCX, PPTX ou áudio no Studio, o arquivo é lido em memória e descartado. O que fica gravado é o TEXTO extraído dele, dentro do seu projeto.',
+    'De localização, só se você informar: o Studio pergunta onde o negócio vai operar, porque o território muda o plano. A cidade é a que você digita; a coordenada do aparelho, quando autorizada, é gravada com uma casa decimal, o suficiente para a região e insuficiente para o endereço. Recusar não impede nada.',
     'De pagamento: identificador da transação e situação. Dados de cartão nunca passam pela ZoomDev, ficam com o processador.',
   ]],
   ['Para que usamos', [
@@ -58,16 +60,20 @@ const PRIVACIDADE = [
     'Com a Anthropic, que processa o texto enviado aos agentes para gerar as respostas.',
     'Com o processador de pagamento, quando você assina um plano.',
     'Com o provedor de e-mail, para enviar recuperação de senha e avisos de conta.',
-    'Com mais ninguém, salvo ordem judicial.',
+    'Com o serviço de transcrição, apenas quando você anexa um áudio e apenas o áudio daquele anexo.',
+    'Com mais ninguém, salvo ordem judicial. As fontes tipográficas do site são servidas pela própria ZoomDev: nenhum recurso da plataforma é carregado de terceiro, então nenhum terceiro recebe seu endereço IP ao abrir a página.',
   ]],
   ['Seus direitos (LGPD, artigo 18)', [
     'Acessar e exportar tudo o que temos sobre você, em JSON legível, na página de Configurações.',
     'Corrigir seus dados de perfil, na mesma página.',
-    'Excluir sua conta. A exclusão anonimiza o registro: nome, e-mail e senha são apagados. Projetos privados vão junto; um projeto que você publicou na vitrine permanece, mas sem qualquer vínculo com você (a escolha de removê-lo também é sua, na hora da exclusão).',
+    'Excluir sua conta. A exclusão anonimiza o registro: nome, e-mail, senha e localização são apagados, junto com os documentos que você escreveu, as conversas com os agentes e o texto dos seus anexos. Projetos privados vão junto; um projeto que você publicou na vitrine permanece na vitrine, sem qualquer vínculo com você e sem o conteúdo que era seu (a escolha de removê-lo também é sua, na hora da exclusão).',
     'Transações financeiras permanecem sem identificação, porque têm prazo de guarda próprio na legislação fiscal.',
   ]],
   ['Por quanto tempo guardamos', [
-    'Enquanto sua conta existir. Depois da exclusão, o que resta já não identifica você.',
+    'Seus projetos e documentos: enquanto sua conta existir. Depois da exclusão, o que resta já não identifica você.',
+    'Texto extraído dos arquivos que você anexa: 180 dias. Depois disso o conteúdo é removido e fica só o registro de que o anexo existiu, para você entender o que aconteceu. O arquivo original nunca chegou a ser gravado.',
+    'Sessões: uma sessão sem uso por 30 dias é encerrada e apagada. Cada acesso renova esse prazo, então quem usa a plataforma não é deslogado.',
+    'Conversa com os agentes no Studio: as 60 mensagens mais recentes de cada projeto.',
     'Registros de auditoria administrativa: as 500 ações mais recentes.',
     'Cópias de segurança do banco: sete dias.',
   ]],

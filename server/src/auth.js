@@ -88,11 +88,51 @@ export function login({ email, password }) {
   return createSession(user.id);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SESSÕES COM PRAZO
+//
+// Antes o token não vencia nunca: um que vazasse hoje continuaria entrando
+// daqui a um ano, e nem trocar de aparelho ou de emprego encerrava o acesso.
+//
+// O prazo é DESLIZANTE, não fixo. Quem usa a plataforma toda semana nunca é
+// deslogado, porque cada requisição empurra o vencimento para frente. Quem
+// sumiu por trinta dias volta pelo login. Prazo fixo curto obrigaria a
+// relogar no meio de um plano de negócios sendo escrito, e prazo fixo longo
+// não protege de nada.
+//
+// A renovação só é gravada quando resta menos de um dia da janela: sem isso,
+// cada clique reescreveria o banco inteiro.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const VALIDADE_MS = 30 * 24 * 60 * 60 * 1000;   // 30 dias sem uso encerram
+const RENOVA_A_PARTIR_DE = 24 * 60 * 60 * 1000; // grava a renovação uma vez por dia
+
 function createSession(userId) {
   const token = crypto.randomBytes(32).toString('hex');
-  store.sessions[token] = { userId, criadoEm: new Date().toISOString() };
+  const agora = Date.now();
+  store.sessions[token] = {
+    userId,
+    criadoEm: new Date(agora).toISOString(),
+    expiraEm: new Date(agora + VALIDADE_MS).toISOString(),
+  };
+  limparSessoesVencidas();
   save();
   return { token, user: publicUser(store.users[userId]) };
+}
+
+/** Varre as sessões vencidas. Roda no login e no pulso diário. */
+export function limparSessoesVencidas() {
+  const agora = Date.now();
+  let removidas = 0;
+  for (const [tok, s] of Object.entries(store.sessions)) {
+    // Sessão anterior a esta mudança não tem prazo: ganha um a partir da
+    // criação, em vez de ser invalidada e derrubar todo mundo de uma vez.
+    const limite = s.expiraEm
+      ? Date.parse(s.expiraEm)
+      : Date.parse(s.criadoEm || 0) + VALIDADE_MS;
+    if (!Number.isFinite(limite) || limite < agora) { delete store.sessions[tok]; removidas++; }
+  }
+  return removidas;
 }
 
 /** Encerra todas as sessões de um usuário (usado ao desativar ou trocar papel). */
@@ -160,6 +200,24 @@ export function authMiddleware(req, res, next) {
   if (!session || !store.users[session.userId]) {
     return res.status(401).json({ error: 'Não autenticado.' });
   }
+
+  const agora = Date.now();
+  const limite = session.expiraEm
+    ? Date.parse(session.expiraEm)
+    : Date.parse(session.criadoEm || 0) + VALIDADE_MS;
+
+  if (!Number.isFinite(limite) || limite < agora) {
+    delete store.sessions[token];
+    save();
+    return res.status(401).json({ error: 'Sua sessão expirou por inatividade. Entre de novo.', code: 'SESSAO_EXPIRADA' });
+  }
+
+  // Renovação deslizante, gravada no máximo uma vez por dia
+  if (limite - agora < VALIDADE_MS - RENOVA_A_PARTIR_DE) {
+    session.expiraEm = new Date(agora + VALIDADE_MS).toISOString();
+    save();
+  }
+
   const user = store.users[session.userId];
   if (user.ativo === false) {
     return res.status(403).json({ error: 'Conta desativada.' });

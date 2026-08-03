@@ -8,6 +8,8 @@
 // A plataforma deixa de ser reativa: ela trabalha enquanto o fundador dorme.
 // ═══════════════════════════════════════════════════════════════════════════
 import { store, save, id } from '../store.js';
+import { expurgarAnexosVencidos } from './lgpd.js';
+import { limparSessoesVencidas } from '../auth.js';
 import { varrer, matchesDoProjeto, resumoRadar } from './radarEditais.js';
 import { radarProjeto } from './unicornio.js';
 
@@ -34,6 +36,17 @@ export async function pulsar({ forcar = false } = {}) {
 
   if (!forcar && p.ultimoPulso && Date.now() - new Date(p.ultimoPulso).getTime() < DIA_MS) {
     return { pulado: true, ultimoPulso: p.ultimoPulso };
+  }
+
+  // 0. Higiene de dados: prazos de retenção e sessões vencidas.
+  //
+  // Fica no pulso porque uma varredura por dia é exatamente a granularidade
+  // certa para prazo medido em meses, e porque um processo separado só para
+  // isso seria mais infraestrutura para manter do que valor entregue.
+  const anexosExpurgados = expurgarAnexosVencidos();
+  const sessoesEncerradas = limparSessoesVencidas();
+  if (anexosExpurgados || sessoesEncerradas) {
+    console.log(`higiene: ${anexosExpurgados} anexo(s) expurgado(s), ${sessoesEncerradas} sessão(ões) vencida(s)`);
   }
 
   // 1. Varredura de editais

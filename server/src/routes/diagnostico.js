@@ -12,6 +12,7 @@ import { config } from '../config.js';
 import { store } from '../store.js';
 import { pagamentosConfig } from '../services/pagamentos.js';
 import { CATALOGO } from '../services/elenco.js';
+import { origensPermitidas } from '../services/blindagem.js';
 
 export const diagnosticoRouter = Router();
 
@@ -183,7 +184,17 @@ diagnosticoRouter.get('/status', async (req, res) => {
   add('url', 'URL pública', Boolean(process.env.ZOOMDEV_URL),
     process.env.ZOOMDEV_URL
       ? `Definida: ${process.env.ZOOMDEV_URL}`
-      : 'ZOOMDEV_URL não definida: o retorno do checkout do Stripe vai apontar para localhost. Defina com a URL do seu domínio.');
+      : 'ZOOMDEV_URL não definida: o retorno do checkout do Stripe aponta para localhost e a lista de origens do CORS fica vazia. Defina com a URL do seu domínio.');
+
+  // ── Blindagem de transporte ──
+  const origens = origensPermitidas();
+  const emProducao = process.env.NODE_ENV === 'production';
+  add('blindagem', 'Blindagem de transporte', true,
+    `Política de conteúdo estrita, HSTS sob HTTPS, moldura negada e fontes da própria origem. `
+    + (origens.length
+      ? `CORS restrito a: ${origens.join(', ')}.`
+      : 'CORS sem lista: qualquer origem passa. Defina ZOOMDEV_URL para fechar.')
+    + (emProducao ? '' : ' Ambiente não marcado como produção: as origens locais continuam liberadas.'));
 
   const erros = checagens.filter(c => c.status === 'erro');
   const atencoes = checagens.filter(c => c.status === 'atencao');

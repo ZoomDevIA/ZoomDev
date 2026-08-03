@@ -5,4 +5,4 @@ server/data/
 .env.*
 *.log
 .DS_Store
-.tmp-test-data/
+.tmp-test-*/
