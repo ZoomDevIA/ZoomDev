@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, getToken } from '../lib/api.js';
 import { useUser } from '../App.jsx';
@@ -17,6 +17,14 @@ import { Painel, Rotulo, Etiqueta, Botao, Estatistica } from '../components/hud/
 //
 // Os dois seletores não são enfeite: o que estiver ligado aqui define a
 // trilha do projeto que nasce deste formulário.
+//
+// ── Enquadramento ─────────────────────────────────────────────────────────
+// A primeira dobra é medida, não estimada. O cabeçalho é lido em tempo de
+// execução e a seção de ideação recebe a altura que sobra da janela, de modo
+// que título, caixa, módulos e o botão de construir caibam juntos sem rolagem.
+// Subtrair um valor fixo quebraria assim que o cabeçalho quebrasse de linha
+// num celular estreito, e usar `vh` deixaria a barra do navegador móvel comer
+// o botão. Por isso: medição real mais `dvh`.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const RASCUNHO = 'zd_rascunho_ideia';
@@ -38,6 +46,13 @@ const FASE_LABEL = {
   ideacao: 'Ideação', validacao: 'Validação', mvp: 'MVP', tracao: 'Tração', escala: 'Escala',
 };
 
+// O exemplo dentro da caixa é o que define a altura dela enquanto está vazia:
+// o navegador dimensiona pelo texto do placeholder. A versão longa embrulhava
+// em cinco linhas num celular de 360 px e sozinha empurrava o botão de
+// construir para fora da dobra. Duas frases, então, uma para cada largura.
+const EXEMPLO_LONGO = 'Ex.: uma plataforma que conecta cooperativas de açaí do Pará a compradores internacionais, com rastreabilidade da colheita à entrega e certificação de origem…';
+const EXEMPLO_CURTO = 'Ex.: conectar cooperativas de açaí do Pará a compradores globais.';
+
 export default function Home() {
   const nav = useNavigate();
   const ctx = useUser();
@@ -53,6 +68,45 @@ export default function Home() {
   const [filtro, setFiltro] = useState('todos');
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState(null);
+
+  const cabecalho = useRef(null);
+  const area = useRef(null);
+  const [topo, setTopo] = useState(0);
+  const [estreito, setEstreito] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 640,
+  );
+
+  // O cabeçalho é medido de verdade: em tela estreita ele quebra de linha e
+  // fica mais alto, e a dobra precisa acompanhar.
+  useLayoutEffect(() => {
+    if (logado) return undefined;
+    const medir = () => setTopo(cabecalho.current?.offsetHeight || 0);
+    medir();
+    const obs = new ResizeObserver(medir);
+    if (cabecalho.current) obs.observe(cabecalho.current);
+    window.addEventListener('resize', medir);
+    return () => { obs.disconnect(); window.removeEventListener('resize', medir); };
+  }, [logado]);
+
+  // A caixa de texto cresce com o que está escrito, até um teto proporcional à
+  // janela. Altura fixa em cinco linhas deixava um vazio alto no desktop e
+  // empurrava o botão de construir para fora da primeira dobra.
+  const ajustarAltura = useCallback(() => {
+    const el = area.current;
+    if (!el) return;
+    const curto = window.innerWidth < 640;
+    setEstreito(curto);
+    const piso = curto ? 84 : 112;
+    const teto = Math.max(piso, Math.round(window.innerHeight * (curto ? 0.22 : 0.24)));
+    el.style.height = 'auto';
+    el.style.height = `${Math.max(piso, Math.min(el.scrollHeight + 2, teto))}px`;
+  }, []);
+
+  useLayoutEffect(() => { ajustarAltura(); }, [descricao, estreito, ajustarAltura]);
+  useEffect(() => {
+    window.addEventListener('resize', ajustarAltura);
+    return () => window.removeEventListener('resize', ajustarAltura);
+  }, [ajustarAltura]);
 
   useEffect(() => { api.home().then(setDados).catch(() => {}); }, []);
   useEffect(() => {
@@ -96,9 +150,9 @@ export default function Home() {
   return (
     <div className={logado ? 'space-y-12' : 'min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan'}>
       {!logado && (
-        <header className="border-b border-white/5">
-          <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 px-5 py-4">
-            <BrandLockup symbolSize={34} wordmarkHeight={26} />
+        <header ref={cabecalho} className="border-b border-white/5">
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 px-5 py-3.5">
+            <BrandLockup symbolSize={32} wordmarkHeight={24} />
             <div className="flex items-center gap-2">
               <Link to="/entrar" className="text-sm text-white/60 hover:text-white px-3 py-2 transition-colors">Entrar</Link>
               <Link to="/entrar?modo=cadastro" className="hud-botao px-4 py-2 text-sm inline-flex items-center gap-2">
@@ -109,43 +163,51 @@ export default function Home() {
         </header>
       )}
 
-      <div className={logado ? 'space-y-12' : 'max-w-6xl mx-auto px-5 py-12 md:py-16 space-y-14'}>
+      <div className={logado ? 'space-y-10' : 'max-w-6xl mx-auto px-4 sm:px-5 pb-14 space-y-12'}>
 
         {/* ── Chamada + caixa de ideação ───────────────────────────────── */}
-        <section className="space-y-7">
+        {/* A dobra inteira cabe na janela: o que sobra do cabeçalho vira a
+            altura mínima desta seção, e o conteúdo fica centrado nela. Em tela
+            baixa demais o mínimo simplesmente deixa de valer e a página rola,
+            sem cortar nada. */}
+        <section
+          className={logado ? 'space-y-5' : 'flex flex-col justify-center gap-4 sm:gap-5 py-4 sm:py-6'}
+          style={logado ? undefined : { minHeight: `calc(100dvh - ${topo}px)` }}
+        >
           <div className="text-center max-w-2xl mx-auto">
-            <Etiqueta cor="#00ff64" className="mb-4">Ideia → Exit</Etiqueta>
-            <h1 className="font-heading text-[26px] sm:text-3xl md:text-[42px] font-bold leading-[1.12]">
+            <Etiqueta cor="#00ff64" className="mb-3">Ideia → Exit</Etiqueta>
+            <h1 className="font-heading text-[24px] sm:text-[30px] md:text-[34px] lg:text-[40px] font-bold leading-[1.12] mt-1">
               O que você quer <span className="zd-gradient-text">construir hoje?</span>
             </h1>
-            <p className="text-white/55 text-sm md:text-base mt-3 leading-relaxed">
+            <p className="text-white/55 text-[12.5px] md:text-[15px] mt-2.5 leading-snug md:leading-relaxed max-w-xl mx-auto">
               Descreva sua ideia em uma frase. Os agentes da ZoomDev estruturam o plano de negócios,
               constroem o MVP, encontram os editais e medem o impacto, do primeiro rascunho ao primeiro contrato.
             </p>
           </div>
 
-          <Painel aceso quatroCantos tamanho="g" as="div" className="p-5 md:p-6 max-w-3xl mx-auto">
-          <form onSubmit={construir} className="space-y-5">
+          <Painel aceso quatroCantos tamanho="g" as="div" className="p-4 md:p-5 max-w-3xl w-full mx-auto">
+          <form onSubmit={construir} className="space-y-4">
             <div className="relative">
               <textarea
-                rows={5}
-                className="hud-campo w-full px-4 sm:px-5 pt-4 pb-8 text-[14px] sm:text-[15px] resize-y leading-relaxed"
-                placeholder="Ex.: uma plataforma que conecta cooperativas de açaí do Pará a compradores internacionais, com rastreabilidade da colheita à entrega e certificação de origem…"
+                ref={area}
+                rows={2}
+                className="hud-campo block w-full px-4 sm:px-5 pt-3.5 pb-6 text-[14px] sm:text-[15px] resize-none overflow-y-auto leading-relaxed"
+                placeholder={estreito ? EXEMPLO_CURTO : EXEMPLO_LONGO}
                 value={descricao}
                 onChange={e => setDescricao(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) construir(e); }}
               />
-              <div className="absolute bottom-2.5 right-4 text-[10px] text-white/25 pointer-events-none">
+              <div className="absolute bottom-2 right-4 text-[10px] text-white/25 pointer-events-none">
                 {descricao.length < 20 ? `${20 - descricao.length} caracteres para começar` : '⌘ + Enter'}
               </div>
             </div>
 
             {/* ── Os dois seletores ─────────────────────────────────────── */}
             <div>
-              <Rotulo className="mb-2.5">
+              <Rotulo className="mb-2">
                 MÓDULOS <span className="hidden sm:inline">DESTA CONSTRUÇÃO </span>· ARRASTE PARA LIGAR
               </Rotulo>
-              <div className="grid sm:grid-cols-2 gap-3 items-stretch">
+              <div className="grid sm:grid-cols-2 gap-2.5 items-stretch">
                 {modulosInfo.map(m => (
                   <ModuloSwitch
                     key={m.id}
@@ -159,19 +221,19 @@ export default function Home() {
 
             {erro && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{erro}</div>}
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Botao type="submit" disabled={!pronto || enviando} className="flex-1 py-3.5 text-sm">
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <Botao type="submit" disabled={!pronto || enviando} className="flex-1 py-3 text-[13.5px]">
                 <Icon nome="raio" tam={15} />
                 {enviando ? 'Estruturando sua ideia…' : logado ? 'Construir agora' : 'Construir agora · criar conta grátis'}
                 {!enviando && <Icon nome="setaDireita" tam={14} />}
               </Botao>
               <Link to={logado ? '/carbonpay' : '/entrar'}
-                className="hud-botao-vazio px-5 py-3.5 text-sm text-center font-semibold shrink-0 inline-flex items-center justify-center gap-2">
+                className="hud-botao-vazio px-5 py-3 text-[13.5px] text-center font-semibold shrink-0 inline-flex items-center justify-center gap-2">
                 <Icon nome="folha" tam={15} /> Abrir a calculadora
               </Link>
             </div>
 
-            <p className="text-[11px] text-white/32 text-center">
+            <p className="text-[11px] text-white/32 text-center leading-snug">
               {modulos.bio && modulos.carbono
                 ? 'Trilha da bioeconomia com inventário de carbono desde o dia zero.'
                 : modulos.bio
@@ -184,12 +246,12 @@ export default function Home() {
           </Painel>
 
           {/* Exemplos para quem travou na primeira frase */}
-          <div className="max-w-3xl mx-auto">
-            <div className="flex items-center gap-2 flex-wrap justify-center">
+          <div className="max-w-3xl w-full mx-auto">
+            <div className="flex items-center gap-1.5 flex-wrap justify-center">
               <span className="text-[11px] text-white/35">Sem ideia ainda? Comece por um destes:</span>
               {EXEMPLOS.map(ex => (
                 <button key={ex.titulo} type="button" onClick={() => usarExemplo(ex)}
-                  className="hud-corte border border-white/12 hover:border-[#00ff6455] hover:bg-[#00ff640d] px-3 py-1.5 text-[11px] text-white/60 hover:text-white/90 transition-all"
+                  className="hud-corte border border-white/12 hover:border-[#00ff6455] hover:bg-[#00ff640d] px-2.5 py-1 text-[11px] text-white/60 hover:text-white/90 transition-all"
                   style={{ '--c': '6px' }}>
                   {ex.titulo} <span className="text-white/25">· {ex.tag}</span>
                 </button>

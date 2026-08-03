@@ -609,3 +609,123 @@
 @media (prefers-reduced-motion: reduce) {
   .palco-entra, .palco-varredura::after, .cursor-agente::after { animation: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOLDURA DA MAIÁ — o copiloto flutuante.
+
+   Três peças, sempre as mesmas, nas três situações:
+
+     ANEL ──fio── PAINEL
+
+   O anel segura o rosto e é a única coisa visível quando recolhido. O fio é a
+   linha-guia do HUD, com terminador em ponto. O painel é a superfície
+   chanfrada que carrega o texto.
+
+   Recolhido, existe só o anel. Ao aproximar o dedo ou o mouse, o fio se
+   desenha e o painel abre à esquerda: no canto da tela não há espaço à
+   direita, então a composição é espelhada. Aberto, a janela do chat repete a
+   mesma gramática no cabeçalho, aí sim com o anel à esquerda, como no desenho.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.maia-doca {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+}
+
+/* ── Anel ────────────────────────────────────────────────────────────────
+   Contorno ciano constante, arco luminoso girando por cima e o rosto dentro.
+   O arco é um cone recortado por máscara radial: vira anel sem pintar o miolo,
+   que é onde a Maiá aparece. */
+.maia-anel {
+  --tam: 52px;
+  position: relative;
+  width: var(--tam);
+  height: var(--tam);
+  flex: none;
+  border-radius: 50%;
+  padding: 2px;
+  background: #04140a;
+  box-shadow: 0 0 0 1px #00e5ff5c, 0 0 18px #00e5ff33, 0 0 44px #00e5ff14;
+  transition: box-shadow .32s ease, transform .32s cubic-bezier(.22,1,.36,1);
+}
+.maia-anel::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    #00e5ff00 0 46%, #00e5ff99 68%, #eafcff 80%, #00e5ff00 90%);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  animation: maiaGiro 6s linear infinite;
+  pointer-events: none;
+}
+.maia-anel > img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+@keyframes maiaGiro { to { transform: rotate(360deg); } }
+
+.maia-doca:hover .maia-anel,
+.maia-doca[data-previa='true'] .maia-anel {
+  box-shadow: 0 0 0 1px #00e5ffb3, 0 0 26px #00e5ff59, 0 0 58px #00ff6424;
+  transform: scale(1.04);
+}
+
+/* ── Fio de ligação ──────────────────────────────────────────────────────
+   Um pixel de altura, ponto no fim. Recolhido tem largura zero: a linha se
+   desenha quando o painel abre. */
+.maia-fio {
+  height: 1px;
+  flex: none;
+  background:
+    radial-gradient(circle at 0 50%, #00e5ff 0 2px, transparent 2px),
+    linear-gradient(90deg, #00e5ff1a, #00e5ffb3);
+  transition: width .34s cubic-bezier(.22,1,.36,1);
+}
+.maia-doca .maia-fio { width: 0; }
+.maia-doca[data-previa='true'] .maia-fio { width: 16px; }
+
+/* ── Painel da prévia ────────────────────────────────────────────────────
+   Fecha em zero pelo lado direito, junto do fio, e abre para a esquerda. */
+.maia-previa {
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: max-width .34s cubic-bezier(.22,1,.36,1), opacity .24s ease, transform .34s cubic-bezier(.22,1,.36,1);
+}
+.maia-doca[data-previa='true'] .maia-previa {
+  max-width: min(15rem, calc(100vw - 7rem));
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Janela do chat ──────────────────────────────────────────────────────*/
+.maia-janela {
+  --c: 14px;
+  --cor: #00e5ff85;
+  --fundo: #04140a;
+  width: min(376px, calc(100vw - 2rem));
+  height: min(548px, calc(100dvh - 6.5rem));
+}
+
+/* Bolha de mensagem: a mesma borda de um pixel dos painéis, em escala menor */
+.maia-bolha { --c: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .maia-anel::before { animation: none; }
+  .maia-fio, .maia-previa, .maia-anel { transition: none; }
+}

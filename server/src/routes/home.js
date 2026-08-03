@@ -14,6 +14,10 @@ export const homeRouter = Router();
 // ── Os dois seletores da home ──────────────────────────────────────────────
 // O texto de cada módulo mora aqui para que a caixa de contexto que aparece
 // antes de ligar o botão e o que o módulo realmente faz nunca se separem.
+//
+// O corpo é curto de propósito: ele aparece numa caixa flutuante sobre a
+// página, e um parágrafo de cinco linhas ali vira um bloco que atrapalha em
+// vez de informar. O detalhe fica nos ganhos, que são lidos em varredura.
 export const MODULOS = [
   {
     id: 'carbono',
@@ -23,17 +27,17 @@ export const MODULOS = [
     chamada: 'Mede o passivo ambiental do negócio desde a primeira linha do plano.',
     aoLigar: {
       titulo: 'O que acontece ao ativar',
-      corpo: 'Seu projeto passa a carregar um inventário de emissões pelos escopos 1, 2 e 3 do GHG Protocol. Os agentes incluem a pegada nas projeções financeiras, o Plano de Compensação é gerado junto com o plano de negócios e o CarbonPay fica disponível para compensar o residual.',
+      corpo: 'O plano passa a carregar o inventário de emissões pelos escopos 1, 2 e 3 do GHG Protocol, e nasce com o Plano de Compensação junto.',
       ganhos: [
-        'Inventário GHG Protocol com faixa de incerteza declarada',
-        'Plano de compensação na hierarquia medir → reduzir → compensar',
-        'Selo de evidência em cada número, sem estimativa disfarçada de dado',
+        'Pegada dentro das projeções financeiras',
+        'Compensação na hierarquia medir, reduzir, compensar',
+        'Selo de evidência em cada número',
       ],
-      custo: 'Sem custo de seiva. Adiciona uma etapa de perguntas na ideação.',
+      custo: 'Sem custo de seiva. Acrescenta uma etapa de perguntas na ideação.',
     },
     aoDesligar: {
       titulo: 'O que você perde ao desligar',
-      corpo: 'O projeto segue normalmente, mas sem inventário de emissões, sem plano de compensação e sem acesso ao CarbonPay a partir deste projeto. Você pode religar quando quiser: nada do que já foi calculado é apagado.',
+      corpo: 'O projeto segue sem inventário, sem plano de compensação e sem CarbonPay. Religar depois não apaga nada do que já foi calculado.',
     },
   },
   {
@@ -44,18 +48,17 @@ export const MODULOS = [
     chamada: 'Troca a jornada genérica pela trilha da bioeconomia regenerativa.',
     aoLigar: {
       titulo: 'O que acontece ao ativar',
-      corpo: 'A jornada do projeto muda de trilha: entram os agentes da bioeconomia, o plano passa a exigir evidência científica classificada, o radar de editais prioriza fomento de bioeconomia e o Impacto 360° alinha o projeto aos ODS da ONU.',
+      corpo: 'A jornada troca de trilha: entram os agentes da bioeconomia e toda afirmação científica passa a exigir evidência classificada.',
       ganhos: [
-        'Conselho com os especialistas de biotecnologia e regeneração',
-        'Radar de editais focado em fomento de bioeconomia e clima',
-        'Impacto 360° com alinhamento aos ODS e leitura ESG',
-        'Selo de evidência exigido em toda afirmação científica',
+        'Conselho de biotecnologia e regeneração',
+        'Editais de fomento de bioeconomia e clima',
+        'Impacto 360° alinhado aos ODS da ONU',
       ],
-      custo: 'Sem custo de seiva. A geração do plano fica mais criteriosa e um pouco mais lenta.',
+      custo: 'Sem custo de seiva. O plano fica mais criterioso e um pouco mais lento.',
     },
     aoDesligar: {
       titulo: 'O que você perde ao desligar',
-      corpo: 'O projeto volta à trilha de startup digital: mais rápida, sem exigência de evidência científica e sem os módulos de bioeconomia. Continua com plano, MVP, editais e investidores.',
+      corpo: 'O projeto volta à trilha de startup digital, mais rápida e sem exigência científica. Continua com plano, MVP, editais e investidores.',
     },
   },
 ];

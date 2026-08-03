@@ -12,21 +12,57 @@ import { tingir } from './hud/index.jsx';
 // A caixa de contexto aparece no hover/foco, ANTES do clique: ela explica o
 // que a ativação faz e o que se perde ao desligar. O texto vem do servidor
 // (rota /api/home), então nunca descreve algo diferente do que o módulo faz.
+//
+// ── Para onde ela abre ────────────────────────────────────────────────────
+// Abrindo para baixo, a caixa cobria justamente o botão de construir e os
+// números do ecossistema, ou seja, escondia a ação principal no exato momento
+// em que a pessoa estava decidindo. Agora ela abre PARA CIMA por padrão, sobre
+// a área de digitação, que ninguém está usando enquanto escolhe o módulo, e só
+// desce quando não há espaço acima. O conteúdo também encolheu: duas linhas de
+// ganho, tipografia menor e teto de altura.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const LARGURA = 74;   // trilho
 const ALTURA = 34;
 const RAIO = 27;      // alavanca
 const CURSO = LARGURA - RAIO - 7;   // deslocamento máximo
+const ALTURA_CAIXA = 190;   // estimativa usada só para decidir o lado
 
 export default function ModuloSwitch({ modulo, ligado, onChange, disabled = false }) {
   const trilho = useRef(null);
+  const cartao = useRef(null);
   const [arrastando, setArrastando] = useState(false);
   const [x, setX] = useState(ligado ? CURSO : 0);
   const [contexto, setContexto] = useState(false);
+  const [acima, setAcima] = useState(true);
   const cor = modulo.cor || '#00ff64';
 
   useEffect(() => { if (!arrastando) setX(ligado ? CURSO : 0); }, [ligado, arrastando]);
+
+  // O lado é decidido na abertura, com a posição real do cartão na janela.
+  const abrir = useCallback(() => {
+    const r = cartao.current?.getBoundingClientRect();
+    if (r) {
+      const cabe = r.top >= ALTURA_CAIXA + 12;
+      setAcima(cabe || window.innerHeight - r.bottom < ALTURA_CAIXA + 12);
+    }
+    setContexto(true);
+  }, []);
+
+  const fechar = useCallback(() => setContexto(false), []);
+
+  // Sem mouse não existe passar por cima: no celular a caixa abre ao tocar no
+  // corpo do cartão e fecha ao tocar em qualquer outro lugar.
+  const semHover = typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && !window.matchMedia('(hover: hover)').matches;
+
+  useEffect(() => {
+    if (!contexto || !semHover) return undefined;
+    const fora = (e) => { if (!cartao.current?.contains(e.target)) fechar(); };
+    document.addEventListener('pointerdown', fora);
+    return () => document.removeEventListener('pointerdown', fora);
+  }, [contexto, semHover, fechar]);
 
   const posicaoDoPonteiro = useCallback((clientX) => {
     const r = trilho.current?.getBoundingClientRect();
@@ -68,12 +104,17 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
 
   return (
     <div
+      ref={cartao}
       className="relative h-full"
-      onMouseEnter={() => setContexto(true)}
-      onMouseLeave={() => setContexto(false)}
+      onMouseEnter={semHover ? undefined : abrir}
+      onMouseLeave={semHover ? undefined : fechar}
+      onClick={semHover ? (e) => {
+        if (trilho.current?.contains(e.target)) return;   // a alavanca tem função própria
+        if (contexto) fechar(); else abrir();
+      } : undefined}
     >
       <div
-        className={`hud-painel h-full p-4 flex flex-col gap-2.5 transition-all duration-300 ${disabled ? 'opacity-60' : ''}`}
+        className={`hud-painel h-full p-3.5 flex flex-col gap-2 transition-all duration-300 ${disabled ? 'opacity-60' : ''}`}
         style={{
           '--cor': ligado ? `${cor}8a` : 'rgba(255,255,255,.12)',
           '--fundo': ligado ? tingir(cor, 0.09) : '#06140d',
@@ -108,8 +149,8 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
             onPointerUp={soltar}
             onPointerCancel={soltar}
             onKeyDown={tecla}
-            onFocus={() => setContexto(true)}
-            onBlur={() => setContexto(false)}
+            onFocus={(e) => { if (e.target.matches(':focus-visible')) abrir(); }}
+            onBlur={fechar}
             className={`hud-trilho shrink-0 select-none touch-none outline-none focus-visible:ring-2 ${
               disabled ? 'cursor-not-allowed' : arrastando ? 'cursor-grabbing' : 'cursor-grab'}`}
             style={{
@@ -152,31 +193,34 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
         <div
           id={`ctx-${modulo.id}`}
           role="tooltip"
-          className="hud-painel hud-4 absolute z-30 left-0 right-0 top-full mt-2 p-4 zd-pop"
+          className={`hud-painel hud-4 hud-p absolute z-30 left-0 right-0 p-3 zd-pop pointer-events-none ${
+            acima ? 'bottom-full mb-2' : 'top-full mt-2'}`}
           style={{
             '--cor': `${cor}6b`,
             '--fundo': '#04120a',
-            backdropFilter: 'blur(16px)',
-            boxShadow: `0 12px 40px rgba(0,0,0,.55), 0 0 22px ${cor}1f`,
+            boxShadow: `0 10px 34px rgba(0,0,0,.62), 0 0 18px ${cor}1f`,
           }}
         >
-          <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: cor }}>
+          <div className="hud-caps text-[9px] mb-1" style={{ color: cor }}>
             {info.titulo}
           </div>
-          <p className="text-[12px] text-white/72 leading-relaxed">{info.corpo}</p>
+          <p className="text-[11px] text-white/70 leading-snug">{info.corpo}</p>
 
-          {info.ganhos && (
-            <ul className="mt-2.5 space-y-1">
+          {info.ganhos && info.ganhos.length > 0 && (
+            <ul className="mt-1.5 space-y-0.5">
               {info.ganhos.map((g, i) => (
-                <li key={i} className="text-[11px] text-white/60 flex gap-1.5 leading-snug">
-                  <span className="shrink-0" style={{ color: cor }}>▸</span>{g}
+                <li key={i} className="text-[10px] text-white/55 flex gap-1.5 leading-snug">
+                  <span className="shrink-0" style={{ color: cor }}>▸</span>
+                  <span className="min-w-0">{g}</span>
                 </li>
               ))}
             </ul>
           )}
 
           {info.custo && (
-            <div className="text-[10px] text-white/40 mt-2.5 pt-2.5 border-t border-white/8">{info.custo}</div>
+            <div className="text-[9.5px] text-white/38 mt-2 pt-2 border-t border-white/8 leading-snug">
+              {info.custo}
+            </div>
           )}
         </div>
       )}
