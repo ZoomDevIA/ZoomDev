@@ -77,7 +77,7 @@ function ChatSextaFeira() {
         )}
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-3"
-        style={{ backgroundImage: 'linear-gradient(180deg, rgba(4,14,8,.95), rgba(4,14,8,.97)), url(/assets/site/chat-bg.png)', backgroundSize: 'cover' }}>
+        style={{ backgroundImage: 'linear-gradient(180deg, rgba(4,14,8,.95), rgba(4,14,8,.97)), url(/assets/site/chat-bg.webp)', backgroundSize: 'cover' }}>
         {mensagens.map((m, i) => (
           <div key={i} className={`max-w-[90%] rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap ${
             m.role === 'user' ? 'ml-auto bg-[#00c8ff1a] border border-[#00c8ff33]' : 'bg-white/[.05] border border-white/10 text-white/80'

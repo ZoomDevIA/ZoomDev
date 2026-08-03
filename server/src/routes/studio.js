@@ -28,6 +28,7 @@ import { extrair, LIMITE_BYTES } from '../services/extracao.js';
 import { modoTranscricao } from '../services/transcricao.js';
 import { awardXP, FASES, FASE_LABEL, NIVEL_STARTUP, missoesValidacaoPadrao } from '../services/gamification.js';
 import { limitar } from '../services/limite.js';
+import { lerConteudo, gravarConteudo, arquivosMvp } from '../services/conteudo.js';
 
 export const studioRouter = Router();
 
@@ -212,7 +213,7 @@ studioRouter.get('/:id/documento/gerar', async (req, res) => {
   try {
     const { plano, planoClassico } = await gerarPlanoZoomDev(proj, {
       local: req.user.local?.recusado ? null : req.user.local,
-      anexos: proj.anexos || [],
+      anexos: lerConteudo(proj.id).anexos || [],
       aoProgredir: (id, dados) => {
         enviar('etapa', { id, ...dados });
         const etapa = ETAPAS.find(e => e.id === id);
@@ -228,9 +229,10 @@ studioRouter.get('/:id/documento/gerar', async (req, res) => {
 
     const html = montarDocumento(plano, proj);
 
-    proj.planoZoomDev = plano;
+    // O plano e o documento vão para o arquivo de conteúdo do projeto; o
+    // índice fica só com o resumo clássico, que as listas e a ficha leem.
+    gravarConteudo(proj.id, { planoZoomDev: plano, documento: html });
     proj.plano = planoClassico;
-    proj.documento = html;
     proj.documentoEm = new Date().toISOString();
     proj.geracao = { status: 'concluida', metodologia: 'zoomdev-1', concluidaEm: proj.documentoEm };
 
@@ -275,7 +277,7 @@ studioRouter.put('/:id/documento', (req, res) => {
   if (html.length > 3_000_000) {
     return res.status(413).json({ error: 'O documento passou do tamanho máximo. Divida-o ou remova imagens embutidas.' });
   }
-  proj.documento = html;
+  gravarConteudo(proj.id, { documento: html });
   proj.documentoEm = new Date().toISOString();
   save();
   res.json({ salvoEm: proj.documentoEm });
@@ -339,8 +341,9 @@ studioRouter.post('/:id/conversa',
         nome: a.nome, tipo: a.tipo, texto: String(a.extraido || a.texto).slice(0, 40_000),
         em: new Date().toISOString(),
       }));
+      const conteudo = lerConteudo(proj.id);
       if (novos.length) {
-        proj.anexos = [...(proj.anexos || []), ...novos].slice(-12);
+        gravarConteudo(proj.id, { anexos: [...(conteudo.anexos || []), ...novos].slice(-12) });
       }
 
       const r = await structured({
@@ -355,7 +358,7 @@ studioRouter.post('/:id/conversa',
       if (podeEditar && r.acao === 'editar') {
         novoDocumento = aplicarEdicoes(documento, r);
         if (novoDocumento !== documento) {
-          proj.documento = novoDocumento;
+          gravarConteudo(proj.id, { documento: novoDocumento });
           proj.documentoEm = new Date().toISOString();
         } else {
           novoDocumento = null;   // nada casou: não vale sobrescrever à toa
@@ -373,12 +376,14 @@ studioRouter.post('/:id/conversa',
       // A trilha fica gravada no projeto: recarregar a página não pode apagar
       // o que foi combinado com os agentes. Últimas 60 entradas, porque o
       // valor está na conversa recente e o resto só engorda o banco.
-      proj.trilha = [
-        ...(proj.trilha || []),
-        { id: `u${Date.now()}`, papel: 'usuario', texto: pedido, em: new Date().toISOString(),
-          anexos: novos.map(a => ({ nome: a.nome, tipo: a.tipo })) },
-        { id: `a${Date.now()}`, papel: 'agente', em: new Date().toISOString(), ...fala },
-      ].slice(-60);
+      gravarConteudo(proj.id, {
+        trilha: [
+          ...(lerConteudo(proj.id).trilha || []),
+          { id: `u${Date.now()}`, papel: 'usuario', texto: pedido, em: new Date().toISOString(),
+            anexos: novos.map(a => ({ nome: a.nome, tipo: a.tipo })) },
+          { id: `a${Date.now()}`, papel: 'agente', em: new Date().toISOString(), ...fala },
+        ].slice(-60),
+      });
 
       save();
       res.json({
@@ -483,14 +488,17 @@ studioRouter.put('/:id/mvp/arquivo', (req, res) => {
   if (!proj) return;
 
   const { arquivo, conteudo } = req.body || {};
-  if (!proj.mvp?.arquivos?.length) return res.status(409).json({ error: 'Este projeto ainda não tem MVP construído.' });
+  const arquivos = arquivosMvp(proj.id);
+  if (!arquivos.length) return res.status(409).json({ error: 'Este projeto ainda não tem MVP construído.' });
 
-  const alvo = proj.mvp.arquivos.find(a => a.arquivo === arquivo);
+  const alvo = arquivos.find(a => a.arquivo === arquivo);
   if (!alvo) return res.status(404).json({ error: `Arquivo ${arquivo} não existe neste MVP.` });
   if (typeof conteudo !== 'string') return res.status(400).json({ error: 'Conteúdo inválido.' });
   if (conteudo.length > 800_000) return res.status(413).json({ error: 'Arquivo grande demais.' });
 
-  alvo.conteudo = conteudo;
+  gravarConteudo(proj.id, {
+    mvpArquivos: arquivos.map(a => (a.arquivo === arquivo ? { ...a, conteudo } : a)),
+  });
   proj.mvp.editadoEm = new Date().toISOString();
   save();
   res.json({ arquivo, bytes: Buffer.byteLength(conteudo, 'utf8'), salvoEm: proj.mvp.editadoEm });

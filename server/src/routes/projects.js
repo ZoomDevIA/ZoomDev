@@ -11,6 +11,7 @@ import { paginaHtml } from '../services/exportHtml.js';
 import { construirMvp, PECAS, ETAPA_DESIGN } from '../agents/mvpBuilder.js';
 import { publicar, projetarProjeto } from '../services/vitrine.js';
 import { emitirPrevia } from '../services/previa.js';
+import { hidratar, gravarConteudo, arquivosMvp, apagarConteudo } from '../services/conteudo.js';
 import { exigir } from '../auth.js';
 import JSZip from 'jszip';
 
@@ -27,7 +28,9 @@ projectsRouter.get('/', (req, res) => {
 projectsRouter.get('/:id', (req, res) => {
   const proj = store.projects[req.params.id];
   if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });
-  res.json(proj);
+  // A ficha e o Studio precisam do documento; a LISTA acima não, e por isso
+  // ela continua servindo só o índice.
+  res.json(hidratar(proj));
 });
 
 // Ideação: recebe a descrição + tipo (startup | biostartup | auto)
@@ -315,10 +318,10 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
       send('peca', { peca: pecaId, status, arquivo });
     });
 
+    gravarConteudo(proj.id, { mvpArquivos: arquivos });
     proj.mvp = {
       status: 'pronto', modo, design,
       construidoEm: new Date().toISOString(),
-      arquivos,
       pecas: proj.mvp.pecas,
     };
     const gam = awardXP(req.user, 'mvp_construido', { projeto: proj.id });
@@ -355,14 +358,15 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════
 projectsRouter.post('/:id/mvp/previa', (req, res) => {
   const proj = store.projects[req.params.id];
-  if (!proj?.mvp?.arquivos || proj.userId !== req.user.id) {
+  const doProjeto = proj && proj.userId === req.user.id ? arquivosMvp(proj.id) : [];
+  if (!doProjeto.length) {
     return res.status(404).json({ error: 'MVP não encontrado.' });
   }
 
   const rascunhos = Array.isArray(req.body?.arquivos) ? req.body.arquivos : [];
   // Rascunho só substitui arquivo que já existe: o corpo da requisição não
   // pode inventar arquivo novo dentro do projeto de ninguém.
-  const arquivos = proj.mvp.arquivos.map((a) => {
+  const arquivos = doProjeto.map((a) => {
     const r = rascunhos.find(x => x.arquivo === a.arquivo);
     return r && typeof r.conteudo === 'string' && r.conteudo.length <= 800_000
       ? { arquivo: a.arquivo, conteudo: r.conteudo }
@@ -384,7 +388,9 @@ projectsRouter.get('/:id/mvp', (req, res) => {
   res.json({
     status: proj.mvp.status, modo: proj.mvp.modo, construidoEm: proj.mvp.construidoEm,
     design: proj.mvp.design || null,
-    arquivos: (proj.mvp.arquivos || []).map(a => ({ arquivo: a.arquivo, bytes: Buffer.byteLength(a.conteudo, 'utf8'), conteudo: a.conteudo })),
+    arquivos: arquivosMvp(proj.id).map(a => ({
+      arquivo: a.arquivo, bytes: Buffer.byteLength(a.conteudo, 'utf8'), conteudo: a.conteudo,
+    })),
   });
 });
 
@@ -392,9 +398,10 @@ projectsRouter.get('/:id/mvp', (req, res) => {
 projectsRouter.get('/:id/mvp.zip', async (req, res, next) => {
   try {
     const proj = store.projects[req.params.id];
-    if (!proj?.mvp?.arquivos || proj.userId !== req.user.id) return res.status(404).json({ error: 'MVP não encontrado.' });
+    const arquivos = proj && proj.userId === req.user.id ? arquivosMvp(proj.id) : [];
+    if (!arquivos.length) return res.status(404).json({ error: 'MVP não encontrado.' });
     const zip = new JSZip();
-    for (const a of proj.mvp.arquivos) zip.file(a.arquivo, a.conteudo);
+    for (const a of arquivos) zip.file(a.arquivo, a.conteudo);
     const buf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
     const slug = proj.nome.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mvp';
     res.setHeader('Content-Type', 'application/zip');

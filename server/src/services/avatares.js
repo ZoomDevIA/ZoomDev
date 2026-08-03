@@ -49,12 +49,12 @@ function ler(subdir, chave) {
 
 /** Retrato completo do agente, ou null. */
 export function retratoDe(id) {
-  return ler('', 'retratos').has(id) ? `/assets/agents/${id}.png` : null;
+  return ler('', 'retratos').has(id) ? `/assets/agents/${id}.webp` : null;
 }
 
 /** Recorte quadrado do rosto, ou null. */
 export function rostoDe(id) {
-  return ler('faces', 'rostos').has(id) ? `/assets/agents/faces/${id}.png` : null;
+  return ler('faces', 'rostos').has(id) ? `/assets/agents/faces/${id}.webp` : null;
 }
 
 /** Melhor imagem para um avatar pequeno: rosto se houver, senão o retrato. */

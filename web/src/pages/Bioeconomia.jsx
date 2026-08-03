@@ -5,16 +5,16 @@ import AgentAvatar from '../components/AgentAvatar.jsx';
 
 // Explorer bio: clone do PlatformExplorer + BioModulePage do protótipo (10 módulos, imagens originais)
 const BIO_MODULOS = [
-  { id: 'bioeconomia', nome: 'Bioeconomia', emoji: '🌿', desc: 'Cadeias produtivas da sociobiodiversidade', img: '/assets/modules/bioeconomia.png' },
-  { id: 'comunidades', nome: 'Comunidades', emoji: '🏘️', desc: 'Povos tradicionais e etnociências', img: '/assets/modules/comunidades.png' },
-  { id: 'carbono', nome: 'Carbono', emoji: '🍃', desc: 'Créditos, MRV e compensação', img: '/assets/modules/carbono.png' },
-  { id: 'rastreabilidade', nome: 'Rastreabilidade', emoji: '📍', desc: 'Da colheita à entrega, com prova', img: '/assets/modules/rastreabilidade.png' },
-  { id: 'esg', nome: 'ESG', emoji: '📊', desc: 'Relatórios e compliance ambiental', img: '/assets/modules/esg.png' },
-  { id: 'biodiversidade', nome: 'Biodiversidade', emoji: '🦜', desc: 'Mapeamento e monitoramento', img: '/assets/modules/biodiversidade.png' },
-  { id: 'projetos_amazonicos', nome: 'Projetos Amazônicos', emoji: '🌳', desc: 'Casos e parcerias regionais', img: '/assets/modules/projetos-amazonicos.png' },
-  { id: 'editais_especificos', nome: 'Editais Específicos', emoji: '📋', desc: 'MCTI, FINEP, COP30, BID, Banco Mundial', img: '/assets/modules/editais-especificos.png' },
-  { id: 'protocolos_cognitivos', nome: 'Protocolos Cognitivos', emoji: '⚡', desc: 'Metodologias de IA bio-inspiradas', img: '/assets/modules/protocolos-cognitivos.png' },
-  { id: 'agentes_amazonicos', nome: 'Agentes Amazônicos', emoji: '🧠', desc: 'Curupira, Iara, Boto, Seringueiro e Tucuju', img: '/assets/modules/agentes-amazonicos.png' },
+  { id: 'bioeconomia', nome: 'Bioeconomia', emoji: '🌿', desc: 'Cadeias produtivas da sociobiodiversidade', img: '/assets/modules/bioeconomia.webp' },
+  { id: 'comunidades', nome: 'Comunidades', emoji: '🏘️', desc: 'Povos tradicionais e etnociências', img: '/assets/modules/comunidades.webp' },
+  { id: 'carbono', nome: 'Carbono', emoji: '🍃', desc: 'Créditos, MRV e compensação', img: '/assets/modules/carbono.webp' },
+  { id: 'rastreabilidade', nome: 'Rastreabilidade', emoji: '📍', desc: 'Da colheita à entrega, com prova', img: '/assets/modules/rastreabilidade.webp' },
+  { id: 'esg', nome: 'ESG', emoji: '📊', desc: 'Relatórios e compliance ambiental', img: '/assets/modules/esg.webp' },
+  { id: 'biodiversidade', nome: 'Biodiversidade', emoji: '🦜', desc: 'Mapeamento e monitoramento', img: '/assets/modules/biodiversidade.webp' },
+  { id: 'projetos_amazonicos', nome: 'Projetos Amazônicos', emoji: '🌳', desc: 'Casos e parcerias regionais', img: '/assets/modules/projetos-amazonicos.webp' },
+  { id: 'editais_especificos', nome: 'Editais Específicos', emoji: '📋', desc: 'MCTI, FINEP, COP30, BID, Banco Mundial', img: '/assets/modules/editais-especificos.webp' },
+  { id: 'protocolos_cognitivos', nome: 'Protocolos Cognitivos', emoji: '⚡', desc: 'Metodologias de IA bio-inspiradas', img: '/assets/modules/protocolos-cognitivos.webp' },
+  { id: 'agentes_amazonicos', nome: 'Agentes Amazônicos', emoji: '🧠', desc: 'Curupira, Iara, Boto, Seringueiro e Tucuju', img: '/assets/modules/agentes-amazonicos.webp' },
 ];
 
 export default function Bioeconomia() {

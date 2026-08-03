@@ -53,7 +53,7 @@ export default function CarbonPay() {
 
       {/* Banner original do CarbonPay (arte + 3 pilares do protótipo) */}
       <div className="zd-card-glow rounded-2xl overflow-hidden relative">
-        <img src="/assets/site/carbonpay-art.png" alt="" className="absolute inset-0 w-full h-full object-cover"
+        <img src="/assets/site/carbonpay-art.webp" alt="" className="absolute inset-0 w-full h-full object-cover"
           onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(3,13,7,.94) 35%, rgba(3,13,7,.72))' }} />
         <div className="relative p-6 grid sm:grid-cols-3 gap-4">

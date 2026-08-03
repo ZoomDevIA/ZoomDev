@@ -55,7 +55,7 @@ export default function Dashboard() {
     <div className="max-w-6xl mx-auto space-y-7">
       {/* Hero: copy literal do protótipo, com o background original de floresta digital */}
       <div className="zd-card-glow rounded-2xl p-6 relative overflow-hidden">
-        <img src="/assets/site/login-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover"
+        <img src="/assets/site/login-hero.webp" alt="" className="absolute inset-0 w-full h-full object-cover"
           onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(3,13,7,.93) 40%, rgba(3,13,7,.78))' }} />
         <div className="relative flex flex-col md:flex-row md:items-center gap-5 justify-between">

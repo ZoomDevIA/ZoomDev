@@ -15,6 +15,7 @@
 import crypto from 'node:crypto';
 import { store, save } from '../store.js';
 import { encerrarSessoesDe, papelDe } from '../auth.js';
+import { lerConteudo, gravarConteudo, apagarConteudo } from './conteudo.js';
 
 export const VERSAO_TERMOS = '2026-08-03';
 
@@ -41,10 +42,13 @@ export function expurgarAnexosVencidos() {
   let expurgados = 0;
 
   for (const p of Object.values(store.projects)) {
-    if (!p.anexos?.length) continue;
-    p.anexos = p.anexos.map((a) => {
+    const anexos = lerConteudo(p.id).anexos;
+    if (!anexos?.length) continue;
+
+    let mexeu = false;
+    const novos = anexos.map((a) => {
       if (a.expurgadoEm || !a.em || Date.parse(a.em) > limite) return a;
-      expurgados++;
+      expurgados++; mexeu = true;
       return {
         nome: a.nome, tipo: a.tipo, em: a.em,
         expurgadoEm: new Date().toISOString(),
@@ -52,6 +56,7 @@ export function expurgarAnexosVencidos() {
         nota: `Conteúdo removido após ${RETENCAO_ANEXOS_DIAS} dias, conforme a política de retenção.`,
       };
     });
+    if (mexeu) gravarConteudo(p.id, { anexos: novos });
   }
 
   if (expurgados) save();
@@ -59,7 +64,11 @@ export function expurgarAnexosVencidos() {
 }
 
 export function exportarDados(user) {
-  const projetos = Object.values(store.projects).filter(p => p.userId === user.id);
+  // O conteúdo pesado mora fora do índice desde a separação do banco: a
+  // exportação precisa buscá-lo, senão entregaria a ficha sem o documento.
+  const projetos = Object.values(store.projects)
+    .filter(p => p.userId === user.id)
+    .map(p => ({ ...p, ...lerConteudo(p.id) }));
   const pedidos = Object.values(store.carbonOrders).filter(o => o.userId === user.id);
   const transacoes = Object.values(store.transacoes || {}).filter(t => t.userId === user.id);
   const planos = Object.values(store.planosCompensacao || {}).filter(p => p.userId === user.id);
@@ -120,7 +129,7 @@ export function exportarDados(user) {
           status: p.mvp.status,
           construidoEm: p.mvp.construidoEm,
           // O código gerado é entregue por inteiro: é trabalho da pessoa
-          arquivos: (p.mvp.arquivos || []).map(a => ({ arquivo: a.arquivo, conteudo: a.conteudo })),
+          arquivos: (p.mvpArquivos || []).map(a => ({ arquivo: a.arquivo, conteudo: a.conteudo })),
           design: p.mvp.design || null,
         }
         : null,
@@ -154,13 +163,13 @@ export function excluirConta(user, { removerPublicados = false } = {}) {
       // Só o que a vitrine mostra sobrevive. O documento que a pessoa
       // escreveu, a conversa com os agentes e o texto do que ela anexou não
       // são conteúdo público: seguem a pessoa, e a pessoa está saindo.
-      delete p.documento;
-      delete p.planoZoomDev;
-      delete p.trilha;
-      delete p.anexos;
+      apagarConteudo(p.id);
+      delete p.temDocumento;
+      delete p.anexosCount;
       delete p.metricas;
       mantidos.push(p.id);
     } else {
+      apagarConteudo(p.id);
       delete store.projects[p.id];
       apagados.push(p.id);
     }

@@ -5,6 +5,7 @@ import express from 'express';
 import { config } from './config.js';
 import { cabecalhos, cors, POLITICA_PREVIA } from './services/blindagem.js';
 import { lerPrevia, montarPrevia } from './services/previa.js';
+import { migrarConteudo } from './services/conteudo.js';
 import { register, login, authMiddleware, adminMiddleware, publicUser } from './auth.js';
 import { save, store } from './store.js';
 import { projectsRouter } from './routes/projects.js';
@@ -171,6 +172,11 @@ if (fs.existsSync(path.join(distDir, 'index.html'))) {
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(distDir, 'index.html')));
   console.log('Servindo o frontend compilado de web/dist');
 }
+
+// Conteúdo pesado fora do índice: move documento, código do MVP, anexos e
+// trilha do db.json para um arquivo por projeto. Roda uma vez; projeto já
+// migrado não entra na conta.
+migrarConteudo();
 
 // Protocolos: garante o PIC da Sexta-Feira e migra os PICs dos agentes se a
 // versão base do código evoluiu (histórico preservado, rollback disponível).

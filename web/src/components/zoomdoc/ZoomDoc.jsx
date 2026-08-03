@@ -143,7 +143,7 @@ export default function ZoomDoc({
           <div className="zd-pagina">
             <header className="zd-cabecalho">
               <div className="zd-marca">
-                <img src="/assets/logo.png" alt="" width="20" height="20" />
+                <img src="/assets/logo.webp" alt="" width="20" height="20" />
                 <span>ZOOMDEV OS</span>
               </div>
               <h1 className="zd-titulo-doc">{titulo}</h1>

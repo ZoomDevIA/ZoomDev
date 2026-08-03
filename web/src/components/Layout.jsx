@@ -122,12 +122,12 @@ export default function Layout({ children }) {
   const rodape = (compacto) => (
     <div className={`border-t border-white/5 ${compacto ? 'p-2' : 'p-4'}`}>
       {compacto ? (
-        <img src="/assets/agents/faces/maia.png" alt="Maiá" title="Maiá · Inteligência Regenerativa"
+        <img src="/assets/agents/faces/maia.webp" alt="Maiá" title="Maiá · Inteligência Regenerativa"
           className="w-9 h-9 object-cover object-center mx-auto hud-corte"
           style={{ '--c': '6px', boxShadow: '0 0 12px #00ff6440' }} />
       ) : (
         <Painel tamanho="p" className="p-3 flex items-center gap-3">
-          <img src="/assets/agents/faces/maia.png" alt="Maiá"
+          <img src="/assets/agents/faces/maia.webp" alt="Maiá"
             className="w-10 h-10 object-cover object-center shrink-0 hud-corte"
             style={{ '--c': '7px', boxShadow: '0 0 14px #00ff6440' }} />
           <div className="min-w-0">

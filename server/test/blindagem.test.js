@@ -22,6 +22,7 @@ const { authMiddleware, limparSessoesVencidas, register } = await import('../src
 const { cors, origensPermitidas, POLITICA_PREVIA } = await import('../src/services/blindagem.js');
 const { exportarDados, excluirConta, expurgarAnexosVencidos, RETENCAO_ANEXOS_DIAS } = await import('../src/services/lgpd.js');
 const { emitirPrevia, lerPrevia, montarPrevia } = await import('../src/services/previa.js');
+const { lerConteudo, gravarConteudo, hidratar, migrarConteudo } = await import('../src/services/conteudo.js');
 
 // ── Auxiliares de requisição e resposta ───────────────────────────────────
 function resposta() {
@@ -173,19 +174,24 @@ test('prévia do MVP isolada', async (t) => {
 });
 
 test('direitos do titular sobre os dados do Studio', async (t) => {
+  // O conteúdo pesado mora fora do índice, então o projeto de teste também é
+  // montado nos dois lugares: assim o teste exercita o caminho de verdade.
   function projetoComTudo(userId) {
     const p = {
       id: `prj_teste_${userId}`, userId, nome: 'Projeto', descricao: 'Ideia',
       classificacao: 'startup', fase: 'ideacao', criadoEm: new Date().toISOString(),
       publicado: false, plano: { geradoEm: 'x' },
-      documento: '<h1>Plano</h1><p>Texto que a pessoa escreveu.</p>',
-      planoZoomDev: { versao: 'zoomdev-1' },
       metricas: { receitaMensal: 100 },
-      trilha: [{ id: 'u1', papel: 'usuario', texto: 'ajuste o mercado' }],
-      anexos: [{ nome: 'edital.pdf', tipo: 'pdf', texto: 'Conteúdo do edital', em: new Date().toISOString() }],
-      mvp: { status: 'pronto', arquivos: [{ arquivo: 'index.html', conteudo: '<h1>MVP</h1>' }] },
+      mvp: { status: 'pronto' },
     };
     store.projects[p.id] = p;
+    gravarConteudo(p.id, {
+      documento: '<h1>Plano</h1><p>Texto que a pessoa escreveu.</p>',
+      planoZoomDev: { versao: 'zoomdev-1' },
+      trilha: [{ id: 'u1', papel: 'usuario', texto: 'ajuste o mercado' }],
+      anexos: [{ nome: 'edital.pdf', tipo: 'pdf', texto: 'Conteúdo do edital', em: new Date().toISOString() }],
+      mvpArquivos: [{ arquivo: 'index.html', conteudo: '<h1>MVP</h1>' }],
+    });
     return p;
   }
 
@@ -220,9 +226,10 @@ test('direitos do titular sobre os dados do Studio', async (t) => {
     assert.equal(store.projects[privado.id], undefined, 'projeto privado vai embora inteiro');
     assert.equal(user.local, undefined, 'localização é o dado que menos justifica sobreviver');
     assert.equal(store.projects[publico.id].userId, null, 'o projeto público perde o vínculo');
-    assert.equal(store.projects[publico.id].documento, undefined, 'o texto da pessoa não é conteúdo público');
-    assert.equal(store.projects[publico.id].anexos, undefined);
-    assert.equal(store.projects[publico.id].trilha, undefined);
+    const restou = lerConteudo(publico.id);
+    assert.equal(restou.documento, undefined, 'o texto da pessoa não é conteúdo público');
+    assert.equal(restou.anexos, undefined);
+    assert.equal(restou.trilha, undefined);
     assert.ok(r.removidos.length > 0, 'a resposta ao titular diz o que saiu, não só "ok"');
   });
 
@@ -230,18 +237,89 @@ test('direitos do titular sobre os dados do Studio', async (t) => {
     const { user } = usuarioDeTeste('h');
     const p = projetoComTudo(user.id);
     const velho = RETENCAO_ANEXOS_DIAS + 1;
-    p.anexos = [
-      { nome: 'antigo.pdf', tipo: 'pdf', texto: 'Texto antigo', em: new Date(Date.now() - velho * 86400000).toISOString() },
-      { nome: 'novo.pdf', tipo: 'pdf', texto: 'Texto recente', em: new Date().toISOString() },
-    ];
+    gravarConteudo(p.id, {
+      anexos: [
+        { nome: 'antigo.pdf', tipo: 'pdf', texto: 'Texto antigo', em: new Date(Date.now() - velho * 86400000).toISOString() },
+        { nome: 'novo.pdf', tipo: 'pdf', texto: 'Texto recente', em: new Date().toISOString() },
+      ],
+    });
 
     const n = expurgarAnexosVencidos();
     assert.ok(n >= 1);
-    assert.equal(p.anexos[0].texto, '', 'o conteúdo sai');
-    assert.ok(p.anexos[0].expurgadoEm, 'a data do expurgo fica');
-    assert.equal(p.anexos[0].nome, 'antigo.pdf', 'o registro de que existiu permanece');
-    assert.equal(p.anexos[1].texto, 'Texto recente', 'o que está no prazo não é tocado');
+    const anexos = lerConteudo(p.id).anexos;
+    assert.equal(anexos[0].texto, '', 'o conteúdo sai');
+    assert.ok(anexos[0].expurgadoEm, 'a data do expurgo fica');
+    assert.equal(anexos[0].nome, 'antigo.pdf', 'o registro de que existiu permanece');
+    assert.equal(anexos[1].texto, 'Texto recente', 'o que está no prazo não é tocado');
 
     assert.equal(expurgarAnexosVencidos(), 0, 'rodar de novo não mexe no que já foi expurgado');
+  });
+});
+
+test('conteúdo pesado fora do índice', async (t) => {
+  await t.test('o índice fica pequeno e o conteúdo vai para arquivo próprio', () => {
+    const { user } = usuarioDeTeste('i');
+    const proj = {
+      id: 'prj_leveza', userId: user.id, nome: 'Leve', descricao: 'x',
+      fase: 'ideacao', criadoEm: new Date().toISOString(), mvp: { status: 'pronto' },
+    };
+    store.projects[proj.id] = proj;
+
+    const documento = '<h1>Plano</h1>'.repeat(2000);   // perto de 28 KB
+    gravarConteudo(proj.id, { documento });
+
+    // O peso não pode ter ido parar no objeto guardado em memória, senão o
+    // próximo save() o levaria de volta para dentro do db.json.
+    assert.equal(proj.documento, undefined, 'o índice não guarda o documento');
+    assert.equal(proj.temDocumento, true, 'o índice guarda só a marca');
+    assert.ok(Buffer.byteLength(JSON.stringify(proj)) < 1000, 'o projeto no índice continua pequeno');
+
+    assert.equal(lerConteudo(proj.id).documento, documento, 'o conteúdo volta inteiro');
+  });
+
+  await t.test('hidratar junta os dois sem sujar o índice', () => {
+    const { user } = usuarioDeTeste('j');
+    const proj = {
+      id: 'prj_hidrata', userId: user.id, nome: 'Hidrata', fase: 'ideacao',
+      criadoEm: new Date().toISOString(), mvp: { status: 'pronto' },
+    };
+    store.projects[proj.id] = proj;
+    gravarConteudo(proj.id, {
+      documento: '<h1>Oi</h1>',
+      mvpArquivos: [{ arquivo: 'index.html', conteudo: '<b>x</b>' }],
+    });
+
+    const completo = hidratar(proj);
+    assert.equal(completo.documento, '<h1>Oi</h1>');
+    assert.equal(completo.mvp.arquivos[0].arquivo, 'index.html', 'os arquivos voltam aninhados no mvp');
+    assert.equal(proj.documento, undefined, 'hidratar devolve cópia, não contamina o índice');
+  });
+
+  await t.test('a migração move o que já estava dentro do índice, e só uma vez', () => {
+    const { user } = usuarioDeTeste('k');
+    const proj = {
+      id: 'prj_antigo', userId: user.id, nome: 'Antigo', fase: 'ideacao',
+      criadoEm: new Date().toISOString(),
+      // Como os projetos eram gravados antes desta mudança
+      documento: '<h1>Documento antigo</h1>',
+      anexos: [{ nome: 'a.pdf', texto: 'x' }],
+      mvp: { status: 'pronto', arquivos: [{ arquivo: 'index.html', conteudo: 'html' }] },
+    };
+    store.projects[proj.id] = proj;
+
+    const primeira = migrarConteudo();
+    assert.ok(primeira.migrados >= 1);
+    assert.equal(proj.documento, undefined, 'o campo sai do índice');
+    assert.equal(proj.mvp.arquivos, undefined, 'os arquivos saem de dentro do mvp');
+    assert.equal(lerConteudo(proj.id).documento, '<h1>Documento antigo</h1>', 'nada se perde');
+    assert.equal(lerConteudo(proj.id).mvpArquivos[0].conteudo, 'html');
+
+    const segunda = migrarConteudo();
+    assert.equal(segunda.migrados, 0, 'rodar de novo não faz nada: já migrou');
+  });
+
+  await t.test('id de projeto com travessia de caminho é recusado', () => {
+    assert.throws(() => lerConteudo('../../etc/passwd'), /inválido/i);
+    assert.throws(() => gravarConteudo('', { documento: 'x' }), /inválido/i);
   });
 });

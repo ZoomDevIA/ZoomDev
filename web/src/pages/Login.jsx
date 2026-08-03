@@ -57,7 +57,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen zd-bg flex items-center justify-center p-6 relative"
-      style={{ backgroundImage: 'url(/assets/site/login-hero.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      style={{ backgroundImage: 'url(/assets/site/login-hero.webp)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(3,13,7,.82), rgba(3,13,7,.9))' }} />
       <div className="grid lg:grid-cols-2 gap-12 max-w-5xl w-full items-center relative">
         <div className="hidden lg:block">

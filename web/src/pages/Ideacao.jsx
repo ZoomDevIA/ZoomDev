@@ -11,9 +11,9 @@ const TIPOS = [
 
 // Exemplos do protótipo (imagens originais do app): clique preenche a ideia
 const EXEMPLOS = [
-  { titulo: 'EditalBot', tag: 'AI SaaS', img: '/assets/site/exemplo-editalbot.png', ideia: 'Um assistente de IA que pesquisa editais de fomento e redige propostas completas para startups, com score de aderência e lembretes de prazo.' },
-  { titulo: 'BioBazaar', tag: 'Marketplace Bio', img: '/assets/site/exemplo-biobazaar.png', ideia: 'Marketplace de ingredientes bioeconômicos da Amazônia com rastreabilidade blockchain da colheita à entrega, conectando cooperativas a indústrias.' },
-  { titulo: 'ForestEye', tag: 'IoT Ambiental', img: '/assets/site/exemplo-foresteye.png', ideia: 'Plataforma de monitoramento florestal com sensoriamento satelital e gêmeo digital da biomassa para projetos de carbono e conservação.' },
+  { titulo: 'EditalBot', tag: 'AI SaaS', img: '/assets/site/exemplo-editalbot.webp', ideia: 'Um assistente de IA que pesquisa editais de fomento e redige propostas completas para startups, com score de aderência e lembretes de prazo.' },
+  { titulo: 'BioBazaar', tag: 'Marketplace Bio', img: '/assets/site/exemplo-biobazaar.webp', ideia: 'Marketplace de ingredientes bioeconômicos da Amazônia com rastreabilidade blockchain da colheita à entrega, conectando cooperativas a indústrias.' },
+  { titulo: 'ForestEye', tag: 'IoT Ambiental', img: '/assets/site/exemplo-foresteye.webp', ideia: 'Plataforma de monitoramento florestal com sensoriamento satelital e gêmeo digital da biomassa para projetos de carbono e conservação.' },
 ];
 
 export default function Ideacao() {
