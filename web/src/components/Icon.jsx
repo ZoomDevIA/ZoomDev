@@ -81,6 +81,41 @@ const G = {
   som: <path d="M11 4 6 8H2v8h4l5 4V4Zm2 3.2a5 5 0 0 1 0 9.6v-2.1a3 3 0 0 0 0-5.4V7.2Zm0-3.1a8 8 0 0 1 0 15.8v-2.1a6 6 0 0 0 0-11.6V4.1Z" />,
   semSom: <path d="M11 4 6 8H2v8h4l5 4V4Zm3.8 4.2 1.4-1.4L19 9.6l2.8-2.8 1.4 1.4L20.4 11l2.8 2.8-1.4 1.4L19 12.4l-2.8 2.8-1.4-1.4L17.6 11l-2.8-2.8Z" />,
   transmissao: <path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-4.6-3.6L6 5A9.9 9.9 0 0 0 3 12c0 2.7 1.1 5.2 3 7l1.4-1.4A8 8 0 0 1 5 12c0-2.2.9-4.2 2.4-5.6Zm9.2 0A8 8 0 0 1 19 12a8 8 0 0 1-2.4 5.6L18 19a9.9 9.9 0 0 0 3-7c0-2.7-1.1-5.2-3-7l-1.4 1.4ZM9.5 8.5 8 7a6.9 6.9 0 0 0-2 5c0 2 .8 3.7 2 5l1.4-1.4A5 5 0 0 1 8 12c0-1.4.6-2.6 1.5-3.5Zm6.5 0A5 5 0 0 1 17 12c0 1.4-.6 2.6-1.5 3.5L17 17a6.9 6.9 0 0 0 2-5c0-2-.8-3.7-2-5l-1 1.5Z" />,
+
+  // ── Módulos da ideação ──────────────────────────────────────────────────
+  // Hexágono de nós com o motivo dentro, redesenhado a partir da arte do
+  // fundador. Vieram como PNG de 1240px com quase metade de margem vazia; em
+  // vetor, na mesma grade 24 dos outros, alinham sozinhos, herdam a cor e não
+  // pesam no pacote.
+  //
+  // Aqui o traço é contorno, não preenchimento: a arte é linear. O grupo
+  // sobrescreve o fill do svg, então o restante do sistema continua igual.
+  hexBroto: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.05" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13.5 3.4 18.5 6.3M13.5 20.6 18.5 17.7M10.5 3.4 5.5 6.3M10.5 20.6 5.5 17.7M3.8 9v6M20.2 9v6" />
+      <circle cx="12" cy="2.6" r="1.45" /><circle cx="20.2" cy="7.3" r="1.45" />
+      <circle cx="20.2" cy="16.7" r="1.45" /><circle cx="12" cy="21.4" r="1.45" />
+      <circle cx="3.8" cy="16.7" r="1.45" /><circle cx="3.8" cy="7.3" r="1.45" />
+      <path d="M11.9 12.3C11.8 9.9 10.2 8.3 7.9 8.1c-.2 2.4 1.6 4.1 4 4.2Z" />
+      <path d="M12.1 12.3c.1-2.4 1.7-4 4-4.2.2 2.4-1.6 4.1-4 4.2Z" />
+      <path d="M12 15.1v-2.9" />
+      <path d="M8.2 15.2h7.6" />
+      <path d="M8.7 16.3h1M14.3 16.3h1" />
+      <path d="M10.3 16.1v1M12 16.1v1.5M13.7 16.1v1" />
+      <circle cx="10.3" cy="17.6" r=".5" /><circle cx="12" cy="18.1" r=".5" /><circle cx="13.7" cy="17.6" r=".5" />
+    </g>
+  ),
+  hexFolha: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.05" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13.5 3.4 18.5 6.3M13.5 20.6 18.5 17.7M10.5 3.4 5.5 6.3M10.5 20.6 5.5 17.7M3.8 9v6M20.2 9v6" />
+      <circle cx="12" cy="2.6" r="1.45" /><circle cx="20.2" cy="7.3" r="1.45" />
+      <circle cx="20.2" cy="16.7" r="1.45" /><circle cx="12" cy="21.4" r="1.45" />
+      <circle cx="3.8" cy="16.7" r="1.45" /><circle cx="3.8" cy="7.3" r="1.45" />
+      <path d="M8.1 17.2C7.2 12.6 9.9 8.7 15 6.9c1.5 4.7.8 8.8-2.1 10.4-1.9 1.1-3.8 1.1-4.8-.1Z" />
+      <path d="M8.5 16.9c1.1-3.7 3-6.4 5.7-8.4" />
+      <path d="M10.7 15.6c1.9-.3 3.4-1.3 4.2-2.9" />
+    </g>
+  ),
 };
 
 export const ICONES = Object.keys(G);

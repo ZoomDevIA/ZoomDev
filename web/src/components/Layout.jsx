@@ -25,6 +25,10 @@ import { ACENTO, MARCA, Painel, Etiqueta, Pulso } from './hud/index.jsx';
 // precisa reajustar a cada visita.
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Impacto, Compensação e CarbonPay eram três itens soltos no mesmo nível de
+// Bioeconomia, e os três só existem por causa dela: medir impacto, compensar o
+// passivo e pagar a compensação são etapas de uma trilha só. Agrupá-los reduz
+// o menu de onze para oito linhas e conta a hierarquia real do produto.
 const MENU = [
   { to: '/', icone: 'home', label: 'Home' },
   { to: '/strategy', icone: 'cpu', label: 'Strategy Core', selo: 'IA' },
@@ -32,12 +36,20 @@ const MENU = [
   { to: '/agentes', icone: 'bot', label: 'Agentes' },
   { to: '/mundo', icone: 'cubo', label: 'Vale ZoomDev', selo: '3D' },
   { to: '/projetos', icone: 'pasta', label: 'Projetos' },
-  { to: '/bioeconomia', icone: 'folha', label: 'Bioeconomia' },
-  { to: '/impacto', icone: 'globo', label: 'Impacto 360°', selo: 'ODS' },
-  { to: '/compensacao', icone: 'mapa', label: 'Compensação' },
-  { to: '/carbonpay', icone: 'moeda', label: 'CarbonPay', selo: 'FIN' },
+  {
+    to: '/bioeconomia',
+    icone: 'folha',
+    label: 'Bioeconomia',
+    filhos: [
+      { to: '/impacto', icone: 'globo', label: 'Impacto 360°', selo: 'ODS' },
+      { to: '/compensacao', icone: 'mapa', label: 'Compensação' },
+      { to: '/carbonpay', icone: 'moeda', label: 'CarbonPay', selo: 'FIN' },
+    ],
+  },
   { to: '/configuracoes', icone: 'engrenagem', label: 'Configurações' },
 ];
+
+const CHAVE_ABERTOS = 'zd_menu_abertos';
 
 const TABS = [
   { to: '/', label: 'Home' },
@@ -68,6 +80,20 @@ export default function Layout({ children }) {
     return salvo === '1';
   });
   const notifRef = useRef(null);
+
+  // ── Grupos do menu ───────────────────────────────────────────────────────
+  // O que está aberto fica guardado, e o grupo que contém a rota atual abre
+  // sozinho: chegar em Compensação por link direto e encontrar o menu fechado
+  // esconderia de onde aquela tela veio.
+  const [abertos, setAbertos] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(CHAVE_ABERTOS) || '[]'); }
+    catch { return []; }
+  });
+  const alternarGrupo = (chave) => setAbertos(a => {
+    const novo = a.includes(chave) ? a.filter(x => x !== chave) : [...a, chave];
+    try { localStorage.setItem(CHAVE_ABERTOS, JSON.stringify(novo)); } catch { /* modo privado */ }
+    return novo;
+  });
 
   // Silenciador à vista. Som que só pode ser desligado dentro das
   // configurações é som que a pessoa desliga fechando a aba.
@@ -158,34 +184,81 @@ export default function Layout({ children }) {
   // Rota trocada fecha a gaveta: no celular ela cobre a tela inteira.
   useEffect(() => { setMenuMovel(false); }, [children]);
 
+  // Grupo que contém a rota atual abre sozinho, sem sobrescrever o que a
+  // pessoa abriu à mão.
+  useEffect(() => {
+    const dono = MENU.find(m => m.filhos?.some(f => f.to === pathname));
+    if (dono) setAbertos(a => (a.includes(dono.to) ? a : [...a, dono.to]));
+  }, [pathname]);
+
   const sair = () => { setToken(null); setUser(null); nav('/'); };
 
-  // `compacto` vale só na barra fixa; a gaveta do celular é sempre completa.
-  const navegacao = (compacto) => (
-    <nav className="flex-1 mt-1 overflow-y-auto overflow-x-hidden">
-      {itens.map(m => (
-        <NavLink key={m.to} to={m.to} end={m.to === '/'}
-          onClick={() => setMenuMovel(false)}
-          title={compacto ? m.label : undefined}
-          className={({ isActive }) => `zd-menu-item flex items-center gap-3 py-2.5 text-[13px] font-medium ${
-            compacto ? 'px-0 justify-center' : 'px-5'} ${isActive ? 'active' : ''}`}>
-          {({ isActive }) => (
+  // Uma linha do menu, com ou sem recuo de filho.
+  const linha = (m, { compacto, filho = false }) => (
+    <NavLink key={m.to} to={m.to} end={m.to === '/'}
+      onClick={() => setMenuMovel(false)}
+      title={compacto ? m.label : undefined}
+      className={({ isActive }) => `zd-menu-item flex items-center gap-3 text-[13px] font-medium ${
+        filho ? 'py-2 text-[12.5px]' : 'py-2.5'} ${
+        compacto ? 'px-0 justify-center' : filho ? 'pl-9 pr-5' : 'px-5'} ${isActive ? 'active' : ''}`}>
+      {({ isActive }) => (
+        <>
+          <Icon nome={m.icone} tam={compacto ? 19 : filho ? 15 : 17}
+            className={isActive ? '' : 'opacity-60'} />
+          {!compacto && (
             <>
-              <Icon nome={m.icone} tam={compacto ? 19 : 17} className={isActive ? '' : 'opacity-60'} />
-              {!compacto && (
-                <>
-                  <span className="flex-1 truncate">{m.label}</span>
-                  {m.selo && (
-                    <Etiqueta cor={isActive ? MARCA : ACENTO} className="!text-[8px] !py-0.5 !px-1.5">
-                      {m.selo}
-                    </Etiqueta>
-                  )}
-                </>
+              <span className="flex-1 truncate">{m.label}</span>
+              {m.selo && (
+                <Etiqueta cor={isActive ? MARCA : ACENTO} className="!text-[8px] !py-0.5 !px-1.5">
+                  {m.selo}
+                </Etiqueta>
               )}
             </>
           )}
-        </NavLink>
-      ))}
+        </>
+      )}
+    </NavLink>
+  );
+
+  // `compacto` vale só na barra fixa; a gaveta do celular é sempre completa.
+  //
+  // Na régua de ícones não existe recuo que signifique alguma coisa, então os
+  // filhos aparecem sempre, ligados ao pai por um fio à esquerda. Esconder um
+  // grupo inteiro atrás de um clique num menu de 68 px seria trocar duas
+  // linhas de economia por três destinos invisíveis.
+  const navegacao = (compacto) => (
+    <nav className="flex-1 mt-1 overflow-y-auto overflow-x-hidden">
+      {itens.map(m => {
+        if (!m.filhos) return linha(m, { compacto });
+        const aberto = compacto || abertos.includes(m.to);
+        return (
+          <div key={m.to} className="relative">
+            <div className="relative">
+              {linha(m, { compacto })}
+              {!compacto && (
+                <button
+                  onClick={(e) => { e.preventDefault(); alternarGrupo(m.to); }}
+                  aria-expanded={aberto}
+                  aria-label={`${aberto ? 'Recolher' : 'Expandir'} ${m.label}`}
+                  title={aberto ? 'Recolher' : 'Expandir'}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-white/35
+                             hover:text-[color:var(--zd-acento)] transition-colors">
+                  {/* O glifo aponta para baixo em repouso: fechado ele gira
+                      para a direita, aberto volta ao natural. */}
+                  <Icon nome="chevron" tam={13}
+                    className={`transition-transform duration-300 ${aberto ? '' : '-rotate-90'}`} />
+                </button>
+              )}
+            </div>
+
+            <div className="zd-submenu" data-aberto={aberto ? 'sim' : 'nao'}>
+              <div className={compacto ? '' : 'zd-submenu-fio'}>
+                {m.filhos.map(f => linha(f, { compacto, filho: !compacto }))}
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </nav>
   );
 

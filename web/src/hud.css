@@ -984,3 +984,38 @@
 @media (prefers-reduced-motion: reduce) {
   .zd-ganho { animation-duration: .9s; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUBMENU DA BARRA LATERAL
+
+   Abre e fecha por grade em vez de altura: `grid-template-rows` de 0fr para
+   1fr anima sem que ninguém precise medir o conteúdo em JavaScript, e
+   continua certo se um filho for acrescentado amanhã.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.zd-submenu {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .3s cubic-bezier(.22,1,.36,1);
+}
+.zd-submenu[data-aberto='sim'] { grid-template-rows: 1fr; }
+.zd-submenu > * { overflow: hidden; }
+
+/* O fio que liga o grupo aos filhos. Sem ele, no recuo, os três itens leem
+   como linhas soltas mais estreitas em vez de um bloco. */
+.zd-submenu-fio { position: relative; }
+.zd-submenu-fio::before {
+  content: '';
+  position: absolute;
+  left: 26px;
+  top: 2px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--zd-acento) 40%, transparent),
+    color-mix(in srgb, var(--zd-acento) 6%, transparent)
+  );
+}
+
+:root[data-movimento='desligado'] .zd-submenu { transition: none; }

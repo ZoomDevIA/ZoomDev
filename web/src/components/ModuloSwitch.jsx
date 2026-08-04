@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Icon from './Icon.jsx';
 import { tingir } from './hud/index.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -122,18 +123,21 @@ export default function ModuloSwitch({ modulo, ligado, onChange, disabled = fals
         }}
       >
         <div className="flex items-center gap-3">
-          <span className="text-2xl shrink-0 leading-none" aria-hidden>{modulo.emoji}</span>
+          {/* O ícone acende junto com o módulo: é ele que diz o estado agora
+              que a etiqueta de texto saiu. Sem cor pedida, fica apagado. */}
+          <span className="shrink-0 leading-none transition-all duration-300"
+            style={{
+              color: ligado ? cor : '#ffffff3d',
+              filter: ligado ? `drop-shadow(0 0 7px ${cor}80)` : 'none',
+            }}
+            aria-hidden>
+            {modulo.icone
+              ? <Icon nome={modulo.icone} tam={34} />
+              : <span className="text-2xl">{modulo.emoji}</span>}
+          </span>
 
           <div className="min-w-0 flex-1">
             <div className="font-heading font-bold text-sm leading-tight">{modulo.nome}</div>
-            <span
-              className="hud-etiqueta mt-1"
-              style={ligado
-                ? { color: cor, background: `${cor}1a`, boxShadow: `inset 0 0 0 1px ${cor}55` }
-                : { color: '#ffffff55', background: 'transparent', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.14)' }}
-            >
-              {ligado ? 'ligado' : 'desligado'}
-            </span>
           </div>
 
           {/* Trilho arrastável */}

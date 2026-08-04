@@ -22,6 +22,9 @@ export const MODULOS = [
   {
     id: 'carbono',
     nome: 'Calculadora de Carbono',
+    // O emoji fica de reserva: se o nome do ícone mudar de lado, a caixa não
+    // aparece vazia.
+    icone: 'hexFolha',
     emoji: '🍃',
     cor: '#00c8ff',
     chamada: 'Mede o passivo ambiental do negócio desde a primeira linha do plano.',
@@ -43,6 +46,7 @@ export const MODULOS = [
   {
     id: 'bio',
     nome: 'BioStartups',
+    icone: 'hexBroto',
     emoji: '🌿',
     cor: '#00ff64',
     chamada: 'Troca a jornada genérica pela trilha da bioeconomia regenerativa.',
