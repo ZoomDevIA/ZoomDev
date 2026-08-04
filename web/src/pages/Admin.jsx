@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { api, abrirRelatorio } from '../lib/api.js';
 import { useToast } from '../components/GamificationToasts.jsx';
 import AgentAvatar from '../components/AgentAvatar.jsx';
+import Reator from '../components/nave/Reator.jsx';
+import { useFoco } from '../lib/foco.js';
+import '../nave.css';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SUPER DASHBOARD DO ECOSSISTEMA: comandado pela Sexta-Feira 🕶️
@@ -9,7 +12,10 @@ import AgentAvatar from '../components/AgentAvatar.jsx';
 // e o ciclo governado de evolução do Protocolo de Instância Cognitiva.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const corScore = (v) => v >= 80 ? '#00ff64' : v >= 60 ? '#00c8ff' : v >= 40 ? '#ffd700' : 'rgba(255,255,255,.35)';
+// Na ponte a cor pertence ao reator, e só a ele. Intensidade aqui é nível de
+// branco, exatamente como a referência mostra força de sinal: quanto mais
+// forte, mais claro. Assim o painel tem um alvo de atenção só.
+const corScore = (v) => v >= 80 ? '#ffffff' : v >= 60 ? '#ffffffc4' : v >= 40 ? '#ffffff85' : '#ffffff45';
 
 const md = (t) => String(t).split(/(\*\*[^*]+\*\*)/g).map((seg, i) =>
   seg.startsWith('**') ? <b key={i} className="text-white/95">{seg.slice(2, -2)}</b> : seg);
@@ -40,7 +46,13 @@ function ChatSextaFeira() {
     }).catch(() => {});
   }, []);
 
-  useEffect(() => { fim.current?.scrollIntoView({ behavior: 'smooth' }); }, [mensagens, pensando]);
+  // `scrollIntoView` rola o ancestral rolável mais próximo, e o mais próximo
+  // aqui é a página: abrir a ponte pulava direto por cima do reator. Rolar a
+  // caixa de mensagens à mão mantém o movimento dentro dela.
+  useEffect(() => {
+    const caixa = fim.current?.parentElement;
+    if (caixa) caixa.scrollTop = caixa.scrollHeight;
+  }, [mensagens, pensando]);
 
   const enviar = async (e) => {
     e.preventDefault();
@@ -62,16 +74,16 @@ function ChatSextaFeira() {
   };
 
   return (
-    <div className="zd-card-glow rounded-2xl flex flex-col overflow-hidden h-[560px]">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-white/[.03]">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg border border-[#00c8ff55]"
-          style={{ background: 'linear-gradient(135deg,#00ff6422,#00c8ff22)' }}>🕶️</div>
-        <div className="flex-1">
-          <div className="text-sm font-bold zd-gradient-text">Sexta-Feira</div>
-          <div className="text-[10px] text-white/45">Inteligência-mestra do ecossistema</div>
+    <div className="nave-bloco nave-canto flex flex-col overflow-hidden h-[min(560px,70vh)]">
+      <div className="flex items-center gap-3 px-3.5 py-3" style={{ boxShadow: 'inset 0 -1px 0 var(--n-linha)' }}>
+        <div className="w-9 h-9 flex items-center justify-center text-base hud-corte"
+          style={{ '--c': '6px', background: 'var(--n-fundo)', boxShadow: 'inset 0 0 0 1px var(--n-linha-forte)' }}>🕶️</div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-bold text-white leading-none">Sexta-Feira</div>
+          <div className="nave-rot mt-1.5">inteligência-mestra</div>
         </div>
         {modo && (
-          <span className={modo === 'ia+internet' ? 'zd-tag rounded-full px-2 py-0.5' : 'zd-tag-blue rounded-full px-2 py-0.5'}>
+          <span className="nave-d !py-1 !px-2 !text-[8px]">
             {modo === 'ia+internet' ? '🌐 internet em tempo real' : modo === 'ia' ? 'IA' : 'demo'}
           </span>
         )}
@@ -80,8 +92,10 @@ function ChatSextaFeira() {
         style={{ backgroundImage: 'linear-gradient(180deg, rgba(4,14,8,.95), rgba(4,14,8,.97)), url(/assets/site/chat-bg.webp)', backgroundSize: 'cover' }}>
         {mensagens.map((m, i) => (
           <div key={i} className={`max-w-[90%] rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap ${
-            m.role === 'user' ? 'ml-auto bg-[#00c8ff1a] border border-[#00c8ff33]' : 'bg-white/[.05] border border-white/10 text-white/80'
-          }`}>
+            m.role === 'user' ? 'ml-auto' : 'text-white/80'
+          }`} style={m.role === 'user'
+            ? { background: 'color-mix(in srgb, var(--zd-acento) 12%, transparent)', boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--zd-acento) 30%, transparent)' }
+            : { background: 'var(--n-fundo)', boxShadow: 'inset 0 0 0 1px var(--n-linha)' }}>
             {md(m.content)}
             {m.buscas > 0 && <div className="text-[10px] zd-blue mt-1.5">🌐 {m.buscas} pesquisa(s) na internet</div>}
           </div>
@@ -101,12 +115,12 @@ function ChatSextaFeira() {
 // ── Radar Unicórnio ──────────────────────────────────────────────────────────
 function RadarUnicornio({ ranking }) {
   const [aberto, setAberto] = useState(null);
-  if (!ranking.length) return <div className="zd-card rounded-xl p-6 text-sm text-white/45">Sem projetos no ecossistema ainda: o radar acende com a primeira ideação.</div>;
+  if (!ranking.length) return <div className="nave-rot">radar sem projeto: acende na primeira ideação</div>;
   return (
     <div className="space-y-2">
       {ranking.map((r, i) => (
         <button key={r.projetoId} onClick={() => setAberto(a => a === r.projetoId ? null : r.projetoId)}
-          className="zd-card rounded-xl p-4 w-full text-left hover:border-[#00ff6444] transition-colors">
+          className="nave-bloco w-full text-left p-3.5 transition-shadow hover:shadow-[inset_0_0_0_1px_var(--n-linha-forte)]">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-white/35 font-heading font-bold w-6">{i + 1}</span>
             <div className="flex-1 min-w-[140px]">
@@ -119,7 +133,7 @@ function RadarUnicornio({ ranking }) {
               </div>
             </div>
             <div className="font-heading font-bold" style={{ color: corScore(r.score) }}>{r.score}<span className="text-white/30 text-xs">/100</span></div>
-            <span className="zd-tag rounded-full px-2.5 py-1">{r.tier.emoji} {r.tier.label}</span>
+            <span className="nave-d !py-1 !px-2.5 !text-[8.5px]">{r.tier.label}</span>
           </div>
           {aberto === r.projetoId && (
             <div className="grid sm:grid-cols-5 gap-2 mt-3 pt-3 border-t border-white/8">
@@ -140,9 +154,9 @@ function RadarUnicornio({ ranking }) {
 
 // ── Matriz editais × projetos ────────────────────────────────────────────────
 function MatrizEditais({ editais }) {
-  if (!editais.colunas.length) return <div className="zd-card rounded-xl p-6 text-sm text-white/45">Sem projetos para cruzar com os {editais.abertos} editais abertos.</div>;
+  if (!editais.colunas.length) return <div className="nave-rot">sem projeto para cruzar com os {editais.abertos} editais abertos</div>;
   return (
-    <div className="zd-card rounded-xl p-4 overflow-x-auto">
+    <div className="overflow-x-auto">
       <table className="w-full text-xs" style={{ minWidth: 520 }}>
         <thead>
           <tr className="text-white/45">
@@ -167,7 +181,10 @@ function MatrizEditais({ editais }) {
           ))}
         </tbody>
       </table>
-      <div className="text-[10px] text-white/35 mt-3">Score de aderência 0-100 · <span style={{ color: '#00ff64' }}>≥80 forte</span> · <span style={{ color: '#00c8ff' }}>≥60 boa</span> · <span style={{ color: '#ffd700' }}>≥40 parcial</span>: aderência ≥70 com prazo ≤60 dias dispara nudge automático do Editais IA.</div>
+      <p className="hud-tec text-[8.5px] leading-relaxed mt-3" style={{ color: 'var(--n-apagado)' }}>
+        SCORE DE ADERÊNCIA 0 A 100. QUANTO MAIS CLARO, MAIS FORTE. ADERÊNCIA ≥ 70 COM PRAZO ≤ 60 DIAS
+        DISPARA NUDGE AUTOMÁTICO DO EDITAIS IA.
+      </p>
     </div>
   );
 }
@@ -409,46 +426,38 @@ export default function Admin() {
   const [overview, setOverview] = useState(null);
   const [tab, setTab] = useState('ecossistema');
 
+  // A ponte pede o chassi recolhido: aqui o painel É a tela. Sair é `Esc`, que
+  // devolve a barra lateral e a barra superior de uma vez.
+  useFoco(true);
+
   useEffect(() => { api.adminOverview().then(setOverview).catch(() => {}); }, []);
 
-  const TABS = [
-    ['ecossistema', '🌐 Ecossistema'],
-    ['relatorios', '📊 Relatórios'],
-    ['pic', '🧬 PIC & Evolução'],
-    ['agentes', '🤖 PICs dos 25 agentes'],
-  ];
+  const ranking = overview?.radar?.ranking || [];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl border border-[#00c8ff44] zd-glow-green"
-          style={{ background: 'linear-gradient(135deg,#00ff6418,#00c8ff18)' }}>🕶️</div>
-        <div className="flex-1">
-          <h1 className="font-heading text-2xl font-bold"><span className="zd-gradient-text">Sexta-Feira</span> · Super Dashboard</h1>
-          <p className="text-white/50 text-sm mt-0.5">Visão total do ecossistema: orquestração dos 25 agentes, radar de unicórnios e fomento em tempo real.</p>
-        </div>
-        {overview && <span className="zd-tag rounded-full px-3 py-1.5">PIC v{overview.pic.versao}</span>}
-      </div>
+    <div className="nave max-w-[1800px] mx-auto space-y-4">
+      <Cabecalho overview={overview} />
 
-      {overview && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2.5">
-          <StatCard valor={overview.usuarios.total} label="Usuários" />
-          <StatCard valor={overview.projetos.total} label="Projetos" />
-          <StatCard valor={overview.projetos.comPlano} label="Planos gerados" />
-          <StatCard valor={`${overview.projetos.missoes.concluidas}/${overview.projetos.missoes.total}`} label="Missões" />
-          <StatCard valor={`${overview.radar.unicornios} 🦄`} label="Unicórnios em formação" destaque />
-          <StatCard valor={overview.editais.abertos} label="Editais abertos" />
-          <StatCard valor={`${overview.carbono.toneladas}t`} label="CO₂e compensado" />
-          <StatCard valor={overview.bus.enviados} label="Nudges enviados" />
+      <div className="nave-ponte">
+        {/* ── Coluna esquerda: leitura técnica densa ─────────────────────── */}
+        <div className="space-y-3">
+          <Telemetria overview={overview} />
+          <Escuta overview={overview} />
         </div>
-      )}
 
-      <div className="grid xl:grid-cols-[1fr_400px] gap-6 items-start">
-        <div className="space-y-5 min-w-0">
-          <div className="flex gap-1.5 flex-wrap">
-            {TABS.map(([id, label]) => (
-              <button key={id} onClick={() => setTab(id)}
-                className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${tab === id ? 'text-[#00ff64] bg-[#00ff6414] border border-[#00ff6433]' : 'text-white/50 hover:text-white/85 hover:bg-white/5 border border-transparent'}`}>
+        {/* ── Centro: o reator e o que a aba pedir ───────────────────────── */}
+        <div className="min-w-0 space-y-4">
+          <div className="nave-bloco nave-canto p-4 sm:p-6">
+            <div className="nave-nucleo">
+              <Reator indice={overview?.indice} tamanho={TAMANHO_REATOR} />
+              <Cinta ranking={ranking} />
+            </div>
+          </div>
+
+          <div className="flex gap-2 flex-wrap" role="tablist">
+            {ABAS.map(([id, label]) => (
+              <button key={id} role="tab" aria-selected={tab === id}
+                onClick={() => setTab(id)} className="nave-d">
                 {label}
               </button>
             ))}
@@ -456,36 +465,153 @@ export default function Admin() {
 
           {tab === 'ecossistema' && overview && (
             <>
-              <section>
-                <h2 className="font-heading text-lg font-bold mb-3">🦄 Radar Unicórnio <span className="text-xs text-white/40 font-normal">· score explicável em 5 dimensões: clique para decompor</span></h2>
-                <RadarUnicornio ranking={overview.radar.ranking} />
+              <section className="nave-bloco nave-canto p-4">
+                <div className="nave-rot mb-3">radar unicórnio · score em 5 dimensões</div>
+                <RadarUnicornio ranking={ranking} />
               </section>
-              <section>
-                <h2 className="font-heading text-lg font-bold mb-3">🔗 Matriz editais × projetos</h2>
+              <section className="nave-bloco nave-canto p-4">
+                <div className="nave-rot mb-3">matriz editais × projetos</div>
                 <MatrizEditais editais={overview.editais} />
-              </section>
-              <section className="grid sm:grid-cols-2 gap-3">
-                <div className="zd-card rounded-xl p-4">
-                  <div className="text-xs font-bold text-white/50 uppercase tracking-wider">Agent Bus</div>
-                  <div className="text-sm mt-2 text-white/70">{overview.bus.enviados} enviados · {overview.bus.aceitos} aceitos · {overview.bus.dispensados} dispensados</div>
-                  <div className="text-xs text-white/45 mt-1">{overview.bus.taxaAceite !== null ? `Taxa de aceite: ${overview.bus.taxaAceite}% (meta ≥ 35%)` : 'Aguardando os primeiros nudges aceitos.'}</div>
-                </div>
-                <div className="zd-card rounded-xl p-4">
-                  <div className="text-xs font-bold text-white/50 uppercase tracking-wider">CarbonPay</div>
-                  <div className="text-sm mt-2 text-white/70">{overview.carbono.pedidos} pedido(s) · {overview.carbono.toneladas} tCO₂e · R$ {overview.carbono.valorTotal}</div>
-                  <div className="text-xs text-white/45 mt-1">Emissões compensadas com créditos verificados.</div>
-                </div>
               </section>
             </>
           )}
-          {tab === 'relatorios' && <Relatorios notify={notify} />}
-          {tab === 'pic' && <PainelPic notify={notify} />}
-          {tab === 'agentes' && <PicsAgentes />}
+          {tab === 'relatorios' && <div className="nave-bloco nave-canto p-4"><Relatorios notify={notify} /></div>}
+          {tab === 'pic' && <div className="nave-bloco nave-canto p-4"><PainelPic notify={notify} /></div>}
+          {tab === 'agentes' && <div className="nave-bloco nave-canto p-4"><PicsAgentes /></div>}
         </div>
 
-        <div className="xl:sticky xl:top-4">
+        {/* ── Coluna direita: estado da Sexta-Feira e a conversa ─────────── */}
+        <div className="nave-lateral-dir space-y-3">
+          <EstadoSextaFeira overview={overview} />
           <ChatSextaFeira />
         </div>
+      </div>
+    </div>
+  );
+}
+
+const TAMANHO_REATOR = 'min(78vw, 380px)';
+
+const ABAS = [
+  ['ecossistema', 'Ecossistema'],
+  ['relatorios', 'Relatórios'],
+  ['pic', 'PIC · Evolução'],
+  ['agentes', 'PICs dos agentes'],
+];
+
+// ── Cabeçalho da ponte ────────────────────────────────────────────────────
+function Cabecalho({ overview }) {
+  const agora = overview?.geradoEm
+    ? new Date(overview.geradoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : '--:--:--';
+  return (
+    <div className="nave-bloco nave-canto px-4 py-3 flex items-center gap-4 flex-wrap">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <span className="hud-pulso" style={{ color: 'var(--zd-acento)' }} />
+        <div className="min-w-0">
+          <h1 className="font-heading text-[17px] sm:text-xl font-bold leading-none text-white">
+            SEXTA-FEIRA
+          </h1>
+          <div className="nave-rot mt-1.5">ponte de comando do ecossistema</div>
+        </div>
+      </div>
+      <div className="hud-tec text-[9.5px] uppercase tracking-[.18em] flex items-center gap-4 flex-wrap"
+        style={{ color: 'var(--n-fraco)' }}>
+        <span>leitura {agora}</span>
+        {overview && <span>pic v{overview.pic.versao}</span>}
+        <span className="hidden sm:inline">esc devolve o chassi</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Cinta segmentada: cada bloco é um projeto do radar ────────────────────
+function Cinta({ ranking }) {
+  if (!ranking.length) {
+    return <div className="nave-rot w-full">radar sem projeto para ler</div>;
+  }
+  return (
+    <div className="w-full">
+      <div className="nave-rot mb-2">carteira · {ranking.length} projeto(s) por score</div>
+      <div className="nave-cinta">
+        {ranking.slice(0, 48).map(r => (
+          <div key={r.id || r.nome} className="nave-seg"
+            data-alto={r.score >= 60 ? 'sim' : 'nao'}
+            style={{ height: `${Math.max(12, r.score)}%` }}
+            title={`${r.nome}: ${r.score}/100`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Telemetria: a lista técnica da coluna esquerda ────────────────────────
+function Telemetria({ overview }) {
+  const o = overview;
+  const linhas = o ? [
+    ['usuários', o.usuarios.total],
+    ['ativos hoje', o.usuarios.ativosHoje],
+    ['xp total', o.usuarios.xpTotal],
+    ['seiva circulante', o.usuarios.seivaCirculante],
+    ['projetos', o.projetos.total],
+    ['com plano', o.projetos.comPlano],
+    ['biostartups', o.projetos.porClassificacao.biostartup],
+    ['startups', o.projetos.porClassificacao.startup],
+    ['missões', `${o.projetos.missoes.concluidas}/${o.projetos.missoes.total}`],
+    ['unicórnios', o.radar.unicornios],
+    ['alto potencial', o.radar.altoPotencial],
+    ['editais abertos', o.editais.abertos],
+    ['co₂e compensado', `${o.carbono.toneladas}t`],
+    ['carbonpay', `R$ ${o.carbono.valorTotal}`],
+  ] : [];
+
+  return (
+    <div className="nave-bloco nave-canto p-3.5">
+      <div className="nave-rot mb-2.5">telemetria</div>
+      <div className="nave-lista">
+        {linhas.length === 0 && <div className="nave-linha"><span>lendo</span><span>…</span></div>}
+        {linhas.map(([k, v]) => (
+          <div key={k} className="nave-linha"><span>{k}</span><span>{v}</span></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Escuta: o que o Agent Bus está fazendo ────────────────────────────────
+function Escuta({ overview }) {
+  const b = overview?.bus;
+  return (
+    <div className="nave-bloco nave-canto p-3.5">
+      <div className="nave-rot mb-2.5">agent bus</div>
+      <div className="nave-lista">
+        <div className="nave-linha forte"><span>enviados</span><span>{b?.enviados ?? '—'}</span></div>
+        <div className="nave-linha"><span>aceitos</span><span>{b?.aceitos ?? '—'}</span></div>
+        <div className="nave-linha"><span>dispensados</span><span>{b?.dispensados ?? '—'}</span></div>
+        <div className="nave-linha forte">
+          <span>taxa de aceite</span>
+          <span>{b?.taxaAceite !== null && b?.taxaAceite !== undefined ? `${b.taxaAceite}%` : 'sem base'}</span>
+        </div>
+      </div>
+      <p className="hud-tec text-[8.5px] leading-relaxed mt-2.5" style={{ color: 'var(--n-apagado)' }}>
+        META DE ACEITE ≥ 35%. ABAIXO DISSO O NUDGE VIRA RUÍDO.
+      </p>
+    </div>
+  );
+}
+
+// ── Estado da Sexta-Feira ─────────────────────────────────────────────────
+function EstadoSextaFeira({ overview }) {
+  return (
+    <div className="nave-bloco nave-canto aceso p-3.5">
+      <div className="nave-rot mb-2.5">estado do protocolo</div>
+      <div className="nave-lista">
+        <div className="nave-linha forte"><span>versão do pic</span><span>v{overview?.pic?.versao ?? '—'}</span></div>
+        <div className="nave-linha">
+          <span>propostas pendentes</span>
+          <span>{overview?.pic?.propostasPendentes ?? '—'}</span>
+        </div>
+        <div className="nave-linha"><span>agentes em campo</span><span>23/35</span></div>
       </div>
     </div>
   );

@@ -1,0 +1,352 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAINEL DE NAVE — o chassi da Sexta-Feira.
+
+   Uma regra de cor manda em tudo aqui:
+
+     O REATOR usa a cor do tema. TODO O RESTO é cinza translúcido.
+
+   É o que faz a composição funcionar. Na referência, o azul aparece num lugar
+   só e o resto é estrutura apagada; se tudo brilhasse, nada brilharia. Por
+   isso as variáveis abaixo não tocam em --zd-acento: elas são níveis de
+   branco sobre o fundo, e ficam iguais em qualquer tema.
+
+   O que dá o realismo não é efeito nenhum: é densidade de informação com
+   hierarquia forte. Muitos elementos pequenos alinhados a uma grade, e dois
+   ou três elementos grandes mandando na leitura.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nave {
+  --n-linha: #ffffff1c;
+  --n-linha-forte: #ffffff40;
+  --n-texto: #ffffff8f;
+  --n-fraco: #ffffff4d;
+  --n-apagado: #ffffff26;
+  --n-fundo: #ffffff05;
+
+  position: relative;
+  color: var(--n-texto);
+}
+
+/* Vinheta e grade de pontos: o "chão" escuro da referência. Fica atrás de
+   tudo, não captura clique e não custa uma imagem sequer. */
+.nave::before {
+  content: '';
+  position: absolute;
+  inset: -40px -24px;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 50% 38%, #ffffff08, transparent 62%),
+    radial-gradient(circle at 50% 120%, #00000080, transparent 70%),
+    radial-gradient(#ffffff0a 1px, transparent 1px);
+  background-size: auto, auto, 22px 22px;
+}
+.nave > * { position: relative; z-index: 1; }
+
+:root[data-textura='off'] .nave::before { background: none; }
+
+/* ── Bloco ────────────────────────────────────────────────────────────────
+   O painel da nave é transparente de propósito: o preenchimento vem do fundo
+   da página, e só a moldura de um pixel desenha o limite. */
+.nave-bloco {
+  position: relative;
+  background: var(--n-fundo);
+  clip-path: polygon(
+    12px 0, calc(100% - 12px) 0, 100% 12px,
+    100% calc(100% - 12px), calc(100% - 12px) 100%,
+    12px 100%, 0 calc(100% - 12px), 0 12px
+  );
+  box-shadow: inset 0 0 0 1px var(--n-linha);
+}
+.nave-bloco.aceso { box-shadow: inset 0 0 0 1px var(--n-linha-forte); }
+
+/* Cantoneiras em L, o detalhe que faz o bloco parecer instrumento */
+.nave-canto {
+  position: relative;
+}
+.nave-canto::before,
+.nave-canto::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  border: 1px solid var(--n-linha-forte);
+  pointer-events: none;
+}
+.nave-canto::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.nave-canto::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+
+/* ── Rótulo de instrumento ───────────────────────────────────────────────*/
+.nave-rot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--zd-fonte-tec);
+  font-size: 9px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--n-fraco);
+  white-space: nowrap;
+}
+.nave-rot::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  min-width: 12px;
+  background: linear-gradient(90deg, var(--n-linha-forte), transparent);
+}
+
+/* ── Lista técnica densa ─────────────────────────────────────────────────
+   Rótulo à esquerda, valor monoespaçado à direita, linha pontilhada ligando
+   os dois. É a coluna esquerda da referência, e o que ela faz pelo desenho é
+   dar densidade sem pedir atenção. */
+.nave-lista { display: flex; flex-direction: column; }
+.nave-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3.5px 0;
+  font-family: var(--zd-fonte-tec);
+  font-size: 10px;
+  line-height: 1.35;
+}
+.nave-linha > span:first-child {
+  color: var(--n-fraco);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nave-linha::before {
+  content: '';
+  order: 1;
+  flex: 1;
+  min-width: 10px;
+  height: 1px;
+  align-self: center;
+  background: repeating-linear-gradient(90deg, var(--n-apagado) 0 2px, transparent 2px 5px);
+}
+.nave-linha > span:last-child {
+  order: 2;
+  color: var(--n-texto);
+  white-space: nowrap;
+}
+.nave-linha.forte > span:last-child { color: #ffffffdb; }
+
+/* ── Cinta segmentada ────────────────────────────────────────────────────
+   Cada bloco é um projeto do radar, aceso conforme o score. Blocos vazios
+   seriam enfeite; assim a cinta é um gráfico. */
+.nave-cinta {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 34px;
+}
+.nave-seg {
+  flex: 1 1 0;
+  min-width: 3px;
+  background: var(--n-apagado);
+  box-shadow: inset 0 0 0 1px #ffffff14;
+  transition: background .25s ease, height .4s cubic-bezier(.22,1,.36,1);
+  cursor: default;
+}
+.nave-seg[data-alto='sim'] {
+  background: var(--zd-acento);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--zd-acento) 45%, transparent);
+}
+.nave-seg:hover { background: #ffffff8c; }
+
+/* ── Botão em D ──────────────────────────────────────────────────────────
+   Um lado reto e outro chanfrado, como as cápsulas da referência. */
+.nave-d {
+  position: relative;
+  padding: 9px 18px;
+  font-family: var(--zd-fonte-tec);
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--n-fraco);
+  background: var(--n-fundo);
+  border: 0;
+  clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px));
+  box-shadow: inset 0 0 0 1px var(--n-linha);
+  transition: color .2s ease, box-shadow .2s ease, background .2s ease;
+  white-space: nowrap;
+}
+.nave-d:hover { color: #ffffffd6; box-shadow: inset 0 0 0 1px var(--n-linha-forte); }
+.nave-d[aria-selected='true'] {
+  color: var(--zd-pagina);
+  background: var(--zd-acento);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--zd-acento) 35%, transparent);
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REATOR — a única peça colorida.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.reator {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--zd-acento);
+}
+
+/* Coroa de traços radiais: um gradiente cônico repetido, recortado em anel
+   por máscara. Duzentos traços sem duzentos elementos. */
+.reator-coroa {
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--zd-acento) 55%, transparent) 0deg .55deg,
+    transparent .55deg 2deg
+  );
+  -webkit-mask: radial-gradient(closest-side, transparent 88%, #000 88.5%, #000 100%);
+  mask: radial-gradient(closest-side, transparent 88%, #000 88.5%, #000 100%);
+  opacity: .5;
+}
+
+/* Varredura: um setor claro girando por cima da coroa. */
+.reator-varredura {
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 300deg,
+    color-mix(in srgb, var(--zd-acento) 30%, transparent) 340deg,
+    color-mix(in srgb, var(--zd-acento) 85%, #fff) 358deg,
+    transparent 360deg
+  );
+  -webkit-mask: radial-gradient(closest-side, transparent 86%, #000 86.5%, #000 100%);
+  mask: radial-gradient(closest-side, transparent 86%, #000 86.5%, #000 100%);
+  animation: reatorGira 7s linear infinite;
+  filter: blur(.4px);
+}
+@keyframes reatorGira { to { transform: rotate(360deg); } }
+
+.reator-arcos {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.reator-trilho {
+  fill: none;
+  stroke: #ffffff14;
+  stroke-width: 7;
+}
+.reator-valor {
+  fill: none;
+  stroke: var(--zd-acento);
+  stroke-width: 7;
+  stroke-linecap: butt;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--zd-acento) 60%, transparent));
+  transition: stroke-dasharray .8s cubic-bezier(.22,1,.36,1);
+}
+
+.reator-miolo {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+.reator-rotulo {
+  font-family: var(--zd-fonte-tec);
+  font-size: 8.5px;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: #ffffff45;
+  margin-bottom: 10px;
+}
+.reator-numero {
+  font-family: var(--zd-fonte-titulo);
+  font-weight: 700;
+  font-size: clamp(38px, 13cqw, 62px);
+  color: #fff;
+  text-shadow: 0 0 24px color-mix(in srgb, var(--zd-acento) 55%, transparent);
+  display: flex;
+  align-items: baseline;
+}
+.reator-unidade {
+  font-size: .38em;
+  color: var(--zd-acento);
+  margin-left: 3px;
+  letter-spacing: .04em;
+}
+.reator-base {
+  font-family: var(--zd-fonte-tec);
+  font-size: 8.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #ffffff33;
+  margin-top: 10px;
+}
+
+/* Legendas nos quatro cantos, presas às diagonais do anel */
+.reator-legenda {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--zd-fonte-tec);
+  font-size: 8.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  pointer-events: auto;
+}
+.reator-legenda-nome { color: #ffffff45; }
+.reator-legenda-valor { color: var(--zd-acento); font-size: 11px; letter-spacing: .06em; }
+.reator-legenda-valor.vazio { color: #ffffff30; font-size: 8.5px; }
+
+.reator-legenda.canto-0 { top: 4%;  right: -2%; align-items: flex-end; text-align: right; }
+.reator-legenda.canto-1 { bottom: 4%; right: -2%; align-items: flex-end; text-align: right; }
+.reator-legenda.canto-2 { bottom: 4%; left: -2%; }
+.reator-legenda.canto-3 { top: 4%;  left: -2%; }
+
+:root[data-movimento='reduzido'] .reator-varredura { animation-duration: 18s; }
+:root[data-movimento='desligado'] .reator-varredura { animation: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ARRANJO E RESPONSIVIDADE
+
+   O desenho de três colunas da referência só existe em tela larga. Abaixo
+   disso ele não encolhe: ele se reorganiza. Encolher um instrumento até
+   caber é como o painel deixa de ser legível.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nave-ponte {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .nave-ponte { grid-template-columns: 240px minmax(0, 1fr); }
+}
+@media (min-width: 1536px) {
+  .nave-ponte { grid-template-columns: 260px minmax(0, 1fr) 340px; }
+}
+
+/* A coluna da direita (estado e conversa) só vira coluna em tela muito larga;
+   antes disso ela desce para o fim, inteira, em vez de virar uma tira. */
+.nave-lateral-dir { grid-column: 1 / -1; }
+@media (min-width: 1536px) {
+  .nave-lateral-dir { grid-column: auto; position: sticky; top: 12px; }
+}
+
+.nave-nucleo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  container-type: inline-size;
+}

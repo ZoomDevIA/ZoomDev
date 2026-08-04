@@ -45,14 +45,14 @@ export function radarProjeto(projeto, user) {
     if (projeto.geracao?.status === 'concluida') plano += 5;
     planoMotivo = `Plano gerado pelos 5 agentes com ${secoes}/5 seções completas${projeto.geracao?.status === 'concluida' ? ', aprovado no QA-gate' : ''}.`;
   } else {
-    plano = Math.min(6, Math.round(projeto.descricao.length / 60));
+    plano = Math.min(6, Math.round((projeto.descricao || '').length / 60));
     planoMotivo = 'Ainda sem plano de negócios: apenas a ideia estruturada.';
   }
   dims.push({ id: 'plano', label: 'Plano', pontos: Math.min(25, plano), max: 25, motivo: planoMotivo });
 
   // ── Execução (0-25): quão longe o projeto chegou na jornada ──
   const exec = PONTOS_FASE[projeto.fase] ?? 3;
-  dims.push({ id: 'execucao', label: 'Execução', pontos: exec, max: 25, motivo: `Fase atual: ${projeto.fase} (${projeto.fasesConcluidas.length} fase(s) concluída(s)).` });
+  dims.push({ id: 'execucao', label: 'Execução', pontos: exec, max: 25, motivo: `Fase atual: ${projeto.fase} (${(projeto.fasesConcluidas || []).length} fase(s) concluída(s)).` });
 
   // ── Validação (0-20): missões cumpridas = evidência real ──
   const missoes = projeto.missoes || [];

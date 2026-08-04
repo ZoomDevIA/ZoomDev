@@ -60,6 +60,66 @@ function bumpMinor(versao) {
 
 // ── Snapshot do ecossistema (fonte de verdade da Sexta-Feira) ────────────────
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ÍNDICE DO ECOSSISTEMA — o número do reator.
+//
+// Quatro subíndices, cada um medindo uma etapa da esteira, e uma média
+// ponderada por cima. Existe porque um painel com oito números soltos não
+// responde a pergunta que o administrador faz primeiro: "está indo bem?".
+//
+// A regra que sustenta a honestidade do medidor: subíndice sem base para
+// medir devolve `null`, não zero. Zero por cento de missões concluídas quando
+// não existe missão nenhuma é uma afirmação falsa, e o painel inteiro perde
+// crédito na primeira vez que alguém repara.
+// ═══════════════════════════════════════════════════════════════════════════
+function razao(parte, todo) {
+  if (!todo) return null;
+  return Math.round((parte / todo) * 100);
+}
+
+export function indiceEcossistema(s) {
+  const cruzamentosFortes = s.editais.cruzamentos.filter(c => c.score >= 60).length;
+
+  const partes = [
+    {
+      id: 'estrutura',
+      label: 'Estrutura',
+      descricao: 'projetos que já viraram plano de negócios',
+      valor: razao(s.projetos.comPlano, s.projetos.total),
+      peso: 3,
+    },
+    {
+      id: 'execucao',
+      label: 'Execução',
+      descricao: 'missões concluídas sobre as abertas',
+      valor: razao(s.projetos.missoes.concluidas, s.projetos.missoes.total),
+      peso: 3,
+    },
+    {
+      id: 'captacao',
+      label: 'Captação',
+      descricao: 'cruzamentos edital × projeto com aderência de 60 ou mais',
+      valor: razao(cruzamentosFortes, s.editais.cruzamentos.length),
+      peso: 2,
+    },
+    {
+      id: 'adesao',
+      label: 'Adesão',
+      descricao: 'nudges aceitos sobre enviados',
+      valor: s.bus.taxaAceite ?? null,
+      peso: 2,
+    },
+  ];
+
+  const medidas = partes.filter(p => p.valor !== null);
+  const pesoTotal = medidas.reduce((t, p) => t + p.peso, 0);
+  const geral = pesoTotal
+    ? Math.round(medidas.reduce((t, p) => t + p.valor * p.peso, 0) / pesoTotal)
+    : null;
+
+  return { geral, partes, medidos: medidas.length, de: partes.length };
+}
+
 export function snapshotEcossistema() {
   const usuarios = Object.values(store.users);
   const projetos = Object.values(store.projects);
@@ -71,9 +131,14 @@ export function snapshotEcossistema() {
   let missoesTotal = 0, missoesFeitas = 0;
   for (const p of projetos) {
     porFase[p.fase] = (porFase[p.fase] || 0) + 1;
-    porClassificacao[p.classificacao] = (porClassificacao[p.classificacao] || 0) + 1;
-    missoesTotal += p.missoes.length;
-    missoesFeitas += p.missoes.filter(m => m.concluida).length;
+    if (porClassificacao[p.classificacao] !== undefined) porClassificacao[p.classificacao] += 1;
+    // Projeto sem lista de missões derrubava o painel inteiro com 500. Um
+    // registro incompleto, vindo de uma versão antiga ou de uma gravação pela
+    // metade, não pode apagar a visão do ecossistema: aqui ele conta como zero
+    // e o resto continua legível.
+    const missoes = Array.isArray(p.missoes) ? p.missoes : [];
+    missoesTotal += missoes.length;
+    missoesFeitas += missoes.filter(m => m.concluida).length;
   }
 
   const radar = projetos
@@ -95,7 +160,7 @@ export function snapshotEcossistema() {
     .sort((a, b) => b.score - a.score)
     .slice(0, 10);
 
-  return {
+  const base = {
     geradoEm: new Date().toISOString(),
     usuarios: {
       total: usuarios.length,
@@ -123,6 +188,11 @@ export function snapshotEcossistema() {
     bus: estatisticasBus(),
     pic: { versao: initPic().versaoAtual, propostasPendentes: initPic().propostas.filter(p => p.status === 'pendente').length },
   };
+
+  // O índice é derivado do resto, então é calculado depois e vai junto: assim
+  // o painel não precisa refazer a conta e nunca mostra número diferente do
+  // que a Sexta-Feira usa para raciocinar.
+  return { ...base, indice: indiceEcossistema(base) };
 }
 
 /** Versão textual compacta do snapshot: injetada no system prompt. */
