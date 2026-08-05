@@ -37,6 +37,26 @@ function urlBase() {
 }
 
 /**
+ * O bloco que aparece no log.
+ *
+ * O TOKEN vai impresso separado do link de propósito. Sem ZOOMDEV_URL
+ * definida, `urlBase()` cai em localhost e o link não serve para nada; com o
+ * token na mão, dá para montar o endereço do domínio certo à mão. É a
+ * diferença entre recuperar a conta e não recuperar.
+ */
+function blocoDeLink(titulo, email, url, token, rodape) {
+  const risca = '='.repeat(72);
+  return `\n${risca}\n${titulo}`
+    + `\nconta:  ${email}`
+    + `\nlink:   ${url}`
+    + `\ntoken:  ${token}`
+    + `\nSe o link acima apontar para localhost, monte o endereço à mão:`
+    + `\n  https://SEU-DOMINIO/redefinir?token=${token}`
+    + `\nVale por ${VALIDADE_MIN} minutos, uso único.`
+    + `\n${rodape}\n${risca}\n`;
+}
+
+/**
  * Pede a redefinição. Devolve sempre o mesmo formato, com `link` preenchido
  * apenas quando não há provedor de e-mail E o ambiente não é produção: é o
  * que mantém o desenvolvimento possível sem abrir uma porta em produção.
@@ -86,16 +106,8 @@ export async function pedirRedefinicao(email) {
   // quem já controla a hospedagem, e quem controla a hospedagem já poderia
   // trocar a senha no banco de qualquer jeito.
   if (!envio.entregue) {
-    console.warn(
-      '\n' + '='.repeat(72)
-      + '\nRECUPERAÇÃO DE SENHA SEM PROVEDOR DE E-MAIL'
-      + `\nconta: ${user.email}`
-      + `\nlink:  ${url}`
-      + `\nvale por ${VALIDADE_MIN} minutos, uso único.`
-      + '\nEste link aparece aqui porque RESEND_API_KEY e SMTP_URL não estão'
-      + '\nconfigurados. Configure um dos dois e ele para de ser impresso.'
-      + '\n' + '='.repeat(72) + '\n',
-    );
+    console.warn(blocoDeLink('RECUPERAÇÃO DE SENHA SEM PROVEDOR DE E-MAIL', user.email, url, token,
+      'Este link aparece aqui porque RESEND_API_KEY e SMTP_URL não estão\nconfigurados. Configure um dos dois e ele para de ser impresso.'));
   }
 
   return resposta;
@@ -134,16 +146,8 @@ export async function destravarNaPartida() {
   save();
 
   const url = `${urlBase()}/redefinir?token=${token}`;
-  console.warn(
-    '\n' + '='.repeat(72)
-    + '\nDESTRAVAMENTO DE EMERGÊNCIA (ZOOMDEV_RECUPERAR)'
-    + `\nconta: ${user.email}`
-    + `\nlink:  ${url}`
-    + `\nvale por ${VALIDADE_MIN} minutos, uso único.`
-    + '\nApague a variável ZOOMDEV_RECUPERAR depois de usar: enquanto ela'
-    + '\nexistir, um link novo é impresso a cada reinício do servidor.'
-    + '\n' + '='.repeat(72) + '\n',
-  );
+  console.warn(blocoDeLink('DESTRAVAMENTO DE EMERGÊNCIA (ZOOMDEV_RECUPERAR)', user.email, url, token,
+    'Apague a variável ZOOMDEV_RECUPERAR depois de usar: enquanto ela\nexistir, um link novo é impresso a cada reinício do servidor.'));
   return { email: user.email };
 }
 
