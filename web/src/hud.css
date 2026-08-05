@@ -71,6 +71,13 @@
   --c: var(--chanfro);
   isolation: isolate;
 }
+/* O conteúdo fica ACIMA das duas camadas do chanfro.
+   `> *` cobre elementos filhos. O que ele NÃO cobre é texto solto: um nó de
+   texto não é `*`, então ele ficava embaixo do preenchimento e sumia. Foi
+   assim que quatro botões do painel viraram caixas vazias.
+   Por isso as camadas vão para z-index -1: aí tudo o que o elemento contém,
+   texto solto inclusive, passa a ser desenhado por cima. O `isolation:
+   isolate` acima é o que impede o -1 de escapar para trás da página. */
 .hud-painel > * { position: relative; z-index: 1; }
 .hud-painel::before,
 .hud-painel::after {
@@ -83,8 +90,8 @@
   );
   transition: background .25s ease;
 }
-.hud-painel::before { inset: 0;   background: var(--cor); z-index: 0; }
-.hud-painel::after  { inset: 1px; background: var(--fundo); z-index: 0; }
+.hud-painel::before { inset: 0;   background: var(--cor); z-index: -1; }
+.hud-painel::after  { inset: 1px; background: var(--fundo); z-index: -1; }
 
 /* Variação de quatro cantos, para cartões maiores */
 .hud-painel.hud-4::before,
@@ -415,13 +422,15 @@
   position: relative;
   z-index: 1;
 }
+/* z-index -1 pelo mesmo motivo do painel: texto solto dentro do cartão não é
+   alcançado pela regra `> *` e ficava coberto pelo preenchimento. */
 .zd-card::before, .zd-card::after,
 .zd-card-glow::before, .zd-card-glow::after,
 .zd-agent-card::before, .zd-agent-card::after,
 .zd-stat-card::before, .zd-stat-card::after {
   content: '';
   position: absolute;
-  z-index: 0;
+  z-index: -1;
   clip-path: polygon(
     var(--c) 0, 100% 0,
     100% calc(100% - var(--c)), calc(100% - var(--c)) 100%,

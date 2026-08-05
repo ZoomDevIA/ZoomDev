@@ -174,3 +174,51 @@ server/src/routes/home.js           texto dos módulos, encurtado na origem
   decidir se abre para cima. Se o texto de um módulo crescer muito, a decisão
   fica conservadora, nunca errada, mas pode escolher o lado de baixo quando o
   de cima ainda caberia.
+
+
+---
+
+## 4. Os quatro botões que viraram caixas vazias
+
+No Dashboard, os atalhos de análise apareciam como quatro molduras sem rótulo
+nenhum. Os textos estavam no código o tempo todo.
+
+### A causa
+
+O chanfro com contorno é feito em duas camadas: `::before` pinta a linha e
+`::after` pinta o preenchimento um pixel menor. Para o conteúdo não ficar
+embaixo do preenchimento, existia esta regra:
+
+```css
+.hud-painel > * { position: relative; z-index: 1; }
+```
+
+Ela levanta os **elementos** filhos. O que ela não alcança é **texto solto**:
+um nó de texto não é `*`, não aceita `position` nem `z-index`, e continuava
+sendo pintado abaixo do `::after`.
+
+Os botões eram exatamente isso:
+
+```jsx
+<button className="zd-stat-card …">{a.icon} {a.label}</button>
+```
+
+Texto direto, sem elemento em volta. O preenchimento passava por cima.
+
+### A correção
+
+As duas camadas foram para `z-index: -1`, em `.hud-painel` e no bloco de
+retrofit das classes antigas. Assim **tudo** o que o elemento contém, texto
+solto inclusive, é desenhado por cima. O `isolation: isolate` que já existia é
+o que impede o `-1` de escapar para trás da página.
+
+Corrigir na folha de estilo, e não nos quatro botões, foi a escolha certa: o
+mesmo defeito esperava em qualquer tela que escrevesse texto direto dentro de
+um bloco chanfrado, e ninguém iria lembrar da regra na décima tela.
+
+### Verificação
+
+Uma varredura em 13 rotas mediu, para cada bloco chanfrado, se o preenchimento
+continuava presente e se algo cobria o conteúdo. Resultado: **nenhum painel
+perdeu o fundo** e a única sobreposição restante é o widget da Maiá sobre si
+mesmo, igual em todas as rotas.
