@@ -4,6 +4,7 @@ import { useUser } from '../App.jsx';
 import { api, setToken, baixarMeusDados } from '../lib/api.js';
 import Icon from '../components/Icon.jsx';
 import Aparencia from '../components/configuracoes/Aparencia.jsx';
+import Sessoes from '../components/conta/Sessoes.jsx';
 import { Painel, Rotulo, Etiqueta, Botao, Campo, Secao, Barra } from '../components/hud/index.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -26,90 +27,15 @@ export default function Configuracoes() {
 
       <Perfil user={user} refreshUser={refreshUser} />
       <Aparencia user={user} refreshUser={refreshUser} />
-      <Sessoes onSaiuDeTudo={() => { setToken(null); setUser(null); }} />
+      <Secao rotulo="ACESSO" titulo="Aparelhos conectados"
+        descricao="Cada navegador em que você entrou tem uma sessão própria. Desconectar derruba o acesso na hora.">
+        <Sessoes onSaiuDeTudo={() => { setToken(null); setUser(null); }} />
+      </Secao>
       <TrocarSenha onEncerrou={() => { setToken(null); setUser(null); }} />
       <PlanoECreditos user={user} />
       <Gamificacao user={user} />
       <DadosEPrivacidade user={user} onExcluiu={() => { setToken(null); setUser(null); }} />
     </div>
-  );
-}
-
-// ── Sessões abertas ───────────────────────────────────────────────────────
-// Existe para um momento específico: lembrar que a conta ficou aberta num
-// computador que não é seu. Nesse minuto, a resposta precisa ser um clique.
-//
-// O botão principal mantém este aparelho conectado, porque quem está usando a
-// plataforma para resolver o susto não deveria ser deslogado no meio do
-// caminho. O segundo botão derruba tudo, para quando o computador esquecido
-// pode ser justamente este.
-function Sessoes({ onSaiuDeTudo }) {
-  const [lista, setLista] = useState(null);
-  const [ocupado, setOcupado] = useState(false);
-  const [aviso, setAviso] = useState(null);
-
-  const carregar = useCallback(async () => {
-    try { setLista((await api.sessoes()).sessoes); } catch { setLista([]); }
-  }, []);
-  useEffect(() => { carregar(); }, [carregar]);
-
-  const encerrar = async (manterAtual) => {
-    setOcupado(true); setAviso(null);
-    try {
-      const r = await api.encerrarSessoes(manterAtual);
-      if (!manterAtual) { onSaiuDeTudo(); return; }
-      setAviso(r.encerradas === 0
-        ? 'Nenhuma outra sessão estava aberta. Só este aparelho.'
-        : `${r.encerradas} sessão(ões) encerrada(s). Este aparelho continua conectado.`);
-      await carregar();
-    } catch (e) { setAviso(e.message); }
-    finally { setOcupado(false); }
-  };
-
-  const outras = (lista || []).filter(s => !s.atual).length;
-
-  return (
-    <Secao rotulo="ACESSO" titulo="Aparelhos conectados"
-      descricao="Cada navegador em que você entrou tem uma sessão própria. Encerrar derruba o acesso na hora.">
-      <Painel className="p-5 space-y-4">
-        {lista === null ? (
-          <div className="text-[12px] text-white/40">Lendo as sessões…</div>
-        ) : (
-          <div className="space-y-1.5">
-            {lista.map((s, i) => (
-              <div key={i} className="flex items-center gap-3 flex-wrap text-[12px]">
-                <Icon nome={s.atual ? 'check' : 'cadeadoAberto'} tam={14}
-                  className={s.atual ? 'text-[color:var(--zd-marca)]' : 'text-white/25'} />
-                <span className="text-white/75">{s.aparelho}</span>
-                {s.atual && <Etiqueta cor="#00ff64">este aparelho</Etiqueta>}
-                <span className="hud-tec text-[10px] text-white/30 ml-auto">
-                  entrou em {new Date(s.criadoEm).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <p className="text-[11px] text-white/38 leading-relaxed">
-          Guardamos apenas o navegador e o sistema, nunca o endereço de onde você acessou.
-          Sessão sem uso por 30 dias cai sozinha.
-        </p>
-
-        <div className="flex items-center gap-3 flex-wrap pt-1">
-          <Botao onClick={() => encerrar(true)} disabled={ocupado || outras === 0}
-            className="px-4 py-2 text-xs">
-            <Icon nome="escudo" tam={13} />
-            {outras === 0 ? 'Nenhuma outra sessão' : `Encerrar as outras (${outras})`}
-          </Botao>
-          <button onClick={() => encerrar(false)} disabled={ocupado}
-            className="text-[11px] text-white/35 hover:text-[#ff4d8d] transition-colors px-2 py-1.5">
-            sair de todos, inclusive deste
-          </button>
-        </div>
-
-        {aviso && <div className="text-[11.5px] zd-green">{aviso}</div>}
-      </Painel>
-    </Secao>
   );
 }
 

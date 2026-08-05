@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';
 import { save } from '../store.js';
-import { publicUser, encerrarSessoesDe, sessoesDe } from '../auth.js';
+import { publicUser, encerrarSessao, encerrarSessoesDe, sessoesDe } from '../auth.js';
 import { trocarSenha } from '../services/recuperacaoSenha.js';
 import { exportarDados, excluirConta, registrarAceiteTermos, VERSAO_TERMOS } from '../services/lgpd.js';
 import { limitar } from '../services/limite.js';
@@ -91,6 +91,16 @@ contaRouter.post('/senha', limitar({ max: 5, janelaSeg: 900, campo: 'atual', men
 // em vez de a favor.
 contaRouter.get('/sessoes', (req, res) => {
   res.json({ sessoes: sessoesDe(req.user.id, req.sessionToken) });
+});
+
+// Desconectar UM aparelho. Encerrar tudo é a resposta do pânico; esta é a do
+// dia a dia, quando você reconhece na lista o computador que não deveria estar
+// lá e quer só aquele fora.
+contaRouter.delete('/sessoes/:id', (req, res) => {
+  const r = encerrarSessao(req.user.id, String(req.params.id || ''));
+  if (!r.encerrada) return res.status(404).json({ error: 'Esta sessão já não está aberta.' });
+  save();
+  res.json({ ok: true, aparelho: r.aparelho, eraAtual: r.token === req.sessionToken });
 });
 
 contaRouter.post('/sessoes/encerrar', async (req, res, next) => {

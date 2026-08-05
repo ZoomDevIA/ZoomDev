@@ -172,6 +172,7 @@ export const api = {
   trocarSenha: (body) => req('/conta/senha', { method: 'POST', body: JSON.stringify(body) }),
   atualizarPerfil: (body) => req('/conta', { method: 'PATCH', body: JSON.stringify(body) }),
   sessoes: () => req('/conta/sessoes'),
+  desconectarSessao: (id) => req(`/conta/sessoes/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   encerrarSessoes: (manterAtual) => req('/conta/sessoes/encerrar', {
     method: 'POST', body: JSON.stringify({ manterAtual }),
   }),

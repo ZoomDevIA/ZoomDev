@@ -295,14 +295,53 @@ Um e-mail sai a cada encerramento, dizendo quantas sessões caíram. Se não foi
 você, o e-mail é como você fica sabendo. O encerramento vale mesmo sem serviço
 de e-mail configurado.
 
+### Desconectar UM aparelho
+
+Encerrar tudo é a resposta do pânico. A do dia a dia é reconhecer na lista o
+computador que não deveria estar lá e tirar só aquele.
+
+Para isso cada sessão precisa de um nome, e o nome **não pode ser o token**:
+devolver o token na listagem entregaria a chave de uma sessão a quem está em
+outra, e bastaria ler a resposta para roubar o acesso do aparelho ao lado.
+
+O identificador é um resumo do token (`sha256`, dezesseis caracteres). Serve
+para dizer "encerre esta" e não serve para entrar. Como é derivado por hash em
+vez de gravado, as sessões que já existiam ganharam identificador sem migração
+nenhuma.
+
+O dono é conferido antes de encerrar: sem isso, quem descobrisse o
+identificador de outra pessoa derrubaria a sessão dela.
+
+### Onde o controle aparece
+
+| Lugar | Por quê |
+|---|---|
+| `Configurações → Aparelhos conectados` | é a conta de quem quer que seja |
+| `Administração → Acesso` | é a conta com o maior poder da plataforma, e é ali que se lembra do risco |
+
+É **o mesmo componente** nos dois lugares. Duplicar a tela garantiria que uma
+das duas ficasse para trás na primeira mudança.
+
+A aba Acesso não exige capacidade nenhuma além de já poder entrar no painel:
+ela fala da sua própria conta, e pedir permissão para ver onde a própria
+credencial está aberta seria pedir permissão para se proteger.
+
 ### Testes
 
-Cinco, em `server/test/sessoes.test.js`, porque a falha aqui é invisível: a
+Oito, em `server/test/sessoes.test.js`, porque a falha aqui é invisível: a
 tela diz "pronto", a pessoa acredita que derrubou o escritório e o token
 continua valendo.
 
 - as outras caem e a atual sobrevive
 - encerrar todas derruba inclusive quem pediu
 - a conta ao lado não é tocada
+- desconectar um aparelho derruba só aquele
+- o identificador de outra pessoa não derruba a sessão dela
+- o identificador é resumo do token, não pedaço dele, e não serve para entrar
 - a listagem marca a atual e **nunca devolve o token**
 - o rótulo não carrega a impressão digital do navegador
+
+**Conferido no navegador**, com três sessões reais de aparelhos diferentes:
+desconectar "Chrome · Windows" pela aba Acesso fez aquele token passar a
+devolver 401, enquanto o tablet e o aparelho de onde o pedido saiu seguiram
+em 200.

@@ -181,11 +181,44 @@ export function encerrarSessoesDe(userId, { exceto = null } = {}) {
   return encerradas;
 }
 
+/**
+ * Identificador público de uma sessão.
+ *
+ * É um resumo do token, não o token. Precisamos de um nome para dizer "encerre
+ * ESTA", e mandar o token de volta para o navegador só para ele poder citá-lo
+ * seria entregar a chave de uma sessão a quem está em outra: bastaria ler a
+ * resposta da listagem para roubar o acesso do aparelho ao lado.
+ *
+ * Derivado por hash em vez de gravado no registro: assim as sessões que já
+ * existiam ganham identificador sem migração nenhuma.
+ */
+export function idSessao(token) {
+  return crypto.createHash('sha256').update(String(token)).digest('hex').slice(0, 16);
+}
+
+/**
+ * Encerra UMA sessão, pelo identificador público.
+ *
+ * O dono é conferido antes: sem isso, quem descobrisse o identificador de
+ * outra pessoa derrubaria a sessão dela. Devolve o rótulo do aparelho para a
+ * interface poder dizer o que caiu, e não apenas "pronto".
+ */
+export function encerrarSessao(userId, sessaoId) {
+  for (const [tok, s] of Object.entries(store.sessions)) {
+    if (s.userId !== userId || idSessao(tok) !== sessaoId) continue;
+    const aparelho = s.aparelho || 'aparelho não identificado';
+    delete store.sessions[tok];
+    return { encerrada: true, aparelho, eraAtual: false, token: tok };
+  }
+  return { encerrada: false };
+}
+
 /** As sessões abertas de um usuário, sem expor o token de nenhuma delas. */
 export function sessoesDe(userId, tokenAtual = null) {
   return Object.entries(store.sessions)
     .filter(([, s]) => s.userId === userId)
     .map(([tok, s]) => ({
+      id: idSessao(tok),
       atual: tok === tokenAtual,
       aparelho: s.aparelho || 'aparelho não identificado',
       criadoEm: s.criadoEm,

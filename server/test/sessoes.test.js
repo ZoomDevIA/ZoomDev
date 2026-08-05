@@ -12,7 +12,7 @@ fs.rmSync(DIR_TESTE, { recursive: true, force: true });
 process.env.ZOOMDEV_DATA_DIR = DIR_TESTE;
 
 const { store } = await import('../src/store.js');
-const { register, login, authMiddleware, encerrarSessoesDe, sessoesDe, rotularAparelho } = await import('../src/auth.js');
+const { register, login, authMiddleware, encerrarSessao, encerrarSessoesDe, sessoesDe, idSessao, rotularAparelho } = await import('../src/auth.js');
 
 const UA_WIN = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36';
 const UA_IOS = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) AppleWebKit/605 Version/17.0 Mobile/15E148 Safari/604.1';
@@ -69,6 +69,42 @@ test('encerramento de sessões', async (t) => {
     assert.equal(passa(alheio), true, 'a conta ao lado segue conectada');
   });
 
+  await t.test('desconecta um aparelho só, pelo identificador público', () => {
+    const email = conta('f');
+    const escritorio = entrar(email, UA_WIN);
+    const celular = entrar(email, UA_IOS);
+    const aqui = entrar(email, UA_WIN);
+    const userId = store.sessions[aqui].userId;
+
+    const alvo = sessoesDe(userId, aqui).find(s => s.aparelho === 'Safari · iOS');
+    const r = encerrarSessao(userId, alvo.id);
+
+    assert.equal(r.encerrada, true);
+    assert.equal(r.aparelho, 'Safari · iOS', 'a interface pode dizer o que caiu');
+    assert.equal(passa(celular), false, 'só o alvo cai');
+    assert.equal(passa(escritorio), true, 'os outros seguem');
+    assert.equal(passa(aqui), true);
+  });
+
+  await t.test('não desconecta sessão de outra pessoa pelo identificador', () => {
+    const meu = entrar(conta('g'), UA_WIN);
+    const alheio = entrar(conta('h'), UA_IOS);
+    const idAlheio = idSessao(alheio);
+
+    const r = encerrarSessao(store.sessions[meu].userId, idAlheio);
+    assert.equal(r.encerrada, false, 'o dono é conferido antes');
+    assert.equal(passa(alheio), true, 'a sessão do outro sobrevive');
+  });
+
+  await t.test('o identificador é resumo do token, não o token', () => {
+    const tok = entrar(conta('i'), UA_WIN);
+    const sid = idSessao(tok);
+    assert.notEqual(sid, tok);
+    assert.equal(tok.includes(sid), false, 'não é um pedaço do token');
+    assert.equal(sid, idSessao(tok), 'é estável entre chamadas');
+    assert.equal(passa(sid), false, 'o identificador não serve para entrar');
+  });
+
   await t.test('a listagem identifica a atual e nunca devolve o token', () => {
     const email = conta('e');
     entrar(email, UA_IOS);
@@ -80,7 +116,7 @@ test('encerramento de sessões', async (t) => {
     assert.ok(lista.some(s => s.aparelho === 'Safari · iOS'));
     for (const s of lista) {
       assert.equal('token' in s, false, 'token nunca sai do servidor');
-      assert.deepEqual(Object.keys(s).sort(), ['aparelho', 'atual', 'criadoEm', 'expiraEm']);
+      assert.deepEqual(Object.keys(s).sort(), ['aparelho', 'atual', 'criadoEm', 'expiraEm', 'id']);
     }
   });
 });

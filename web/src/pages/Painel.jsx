@@ -5,6 +5,7 @@ import { useUser } from '../App.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
 import Icon from '../components/Icon.jsx';
 import { Painel as Bloco, Rotulo, Etiqueta, Botao, Campo, Abas, Estatistica } from '../components/hud/index.jsx';
+import Sessoes from '../components/conta/Sessoes.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PAINEL DE ADMINISTRAÇÃO: área com porta própria.
@@ -19,6 +20,10 @@ import { Painel as Bloco, Rotulo, Etiqueta, Botao, Campo, Abas, Estatistica } fr
 
 const ABAS = [
   { id: 'usuarios', label: 'Usuários', icone: 'usuarios', cap: 'usuarios.ler' },
+  // Sem capacidade exigida: esta aba fala da SUA conta, e quem já entrou aqui
+  // é dono dela. Pedir permissão para ver onde a própria credencial está
+  // aberta seria pedir permissão para se proteger.
+  { id: 'acesso', label: 'Acesso', icone: 'escudo', cap: null },
   { id: 'vitrine', label: 'Vitrine', icone: 'vitrine', cap: 'comunidade.curar' },
   { id: 'papeis', label: 'Níveis de acesso', icone: 'chave', cap: 'usuarios.ler' },
   { id: 'auditoria', label: 'Auditoria', icone: 'lista', cap: 'sistema.configurar' },
@@ -73,7 +78,7 @@ export default function Painel() {
   if (!estado.elevado || !contexto) return <Cadeado user={user} onEntrou={sincronizar} />;
 
   const pode = (cap) => contexto?.capacidades?.includes(cap);
-  const abasVisiveis = ABAS.filter(a => pode(a.cap));
+  const abasVisiveis = ABAS.filter(a => !a.cap || pode(a.cap));
   const abaAtual = abasVisiveis.some(a => a.id === aba) ? aba : abasVisiveis[0]?.id;
 
   const sair = async () => { await api.painelSair(); sincronizar(); };
@@ -104,10 +109,44 @@ export default function Painel() {
         className="border-b border-[#00e5ff1f] pb-3"
       />
 
+      {abaAtual === 'acesso' && <Acesso user={user} />}
       {abaAtual === 'usuarios' && <Usuarios contexto={contexto} />}
       {abaAtual === 'vitrine' && <Vitrine />}
       {abaAtual === 'papeis' && <Papeis contexto={contexto} />}
       {abaAtual === 'auditoria' && <Auditoria />}
+    </div>
+  );
+}
+
+// ── Acesso: onde esta credencial está aberta ──────────────────────────────
+// A conta que abre este painel enxerga o ecossistema inteiro. Uma sessão dela
+// esquecida num computador de escritório vale mais que qualquer outra da
+// plataforma, e por isso o controle mora aqui também, e não só em
+// Configurações: é aqui que se lembra do risco.
+function Acesso({ user }) {
+  return (
+    <div className="space-y-4 max-w-3xl">
+      <div>
+        <Rotulo cor="#ffc531">SUA CREDENCIAL</Rotulo>
+        <h2 className="font-heading text-lg font-bold mt-1.5">Onde este login está aberto</h2>
+        <p className="text-white/45 text-[13px] mt-1">
+          Cada navegador em que <b className="text-white/70">{user.email}</b> entrou mantém uma sessão
+          própria. Desconectar derruba o acesso daquele aparelho na hora.
+        </p>
+      </div>
+
+      <Sessoes />
+
+      <Bloco cor="#ffc531" tamanho="p" className="p-3.5">
+        <div className="flex gap-2.5">
+          <Icon nome="alerta" tam={14} className="text-[#ffc531] shrink-0 mt-0.5" />
+          <p className="text-[12px] text-white/70 leading-relaxed">
+            Se você suspeita que a senha vazou, desconectar não basta: quem a tem entra de novo.
+            Nesse caso, <Link to="/configuracoes" className="text-[color:var(--zd-acento)] hover:underline">troque
+            a senha</Link>, que encerra todas as sessões junto.
+          </p>
+        </div>
+      </Bloco>
     </div>
   );
 }
