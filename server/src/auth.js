@@ -178,6 +178,20 @@ export function encerrarSessoesDe(userId, { exceto = null } = {}) {
     delete store.sessions[tok];
     encerradas += 1;
   }
+
+  // A elevação do painel administrativo vive num armazém separado, e não
+  // caía junto. Sozinha ela não abre nada, porque toda rota de /api passa
+  // antes pelo authMiddleware e a sessão de login já morreu. O problema é
+  // outro: se a pessoa entrar de novo naquele mesmo navegador dentro dos 30
+  // minutos, a elevação velha ainda vale e o painel abre SEM pedir a senha de
+  // novo. E o cadeado do painel existe justamente para reconfirmar quem é,
+  // depois de um evento de credencial.
+  //
+  // Encerrar sessão é encerrar tudo o que aquela sessão conquistou.
+  for (const [tok, s] of Object.entries(store.sessoesPainel || {})) {
+    if (s.userId === userId) delete store.sessoesPainel[tok];
+  }
+
   return encerradas;
 }
 

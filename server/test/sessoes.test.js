@@ -105,6 +105,28 @@ test('encerramento de sessões', async (t) => {
     assert.equal(passa(sid), false, 'o identificador não serve para entrar');
   });
 
+  await t.test('a elevação do painel cai junto com as sessões', () => {
+    const email = conta('j');
+    const tok = entrar(email, UA_WIN);
+    const userId = store.sessions[tok].userId;
+
+    // Simula a janela elevada de 30 minutos aberta naquele navegador.
+    // `sessoesPainel` é getter no store: dá para mexer no conteúdo, não para
+    // trocar o objeto.
+    store.sessoesPainel.elev1 = {
+      userId,
+      criadoEm: new Date().toISOString(),
+      expiraEm: new Date(Date.now() + 30 * 60_000).toISOString(),
+    };
+    store.sessoesPainel.deOutro = { userId: 'usr_outro', expiraEm: new Date(Date.now() + 30 * 60_000).toISOString() };
+
+    encerrarSessoesDe(userId);
+
+    assert.equal(store.sessoesPainel.elev1, undefined,
+      'elevação velha reabriria o painel sem pedir a senha de novo');
+    assert.ok(store.sessoesPainel.deOutro, 'a elevação de outra pessoa não é tocada');
+  });
+
   await t.test('a listagem identifica a atual e nunca devolve o token', () => {
     const email = conta('e');
     entrar(email, UA_IOS);

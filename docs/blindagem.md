@@ -400,6 +400,20 @@ com prazo, não uma credencial.
 Quem define variável de ambiente já manda no processo inteiro: isto não abaixa
 nenhuma barreira que já não estivesse abaixada.
 
+### A elevação do painel cai junto
+
+Encerrar sessão passou a encerrar também a **janela elevada do painel
+administrativo**, que vive num armazém separado e antes sobrevivia.
+
+Sozinha ela nunca abriu nada: toda rota de `/api` passa primeiro pelo
+`authMiddleware`, e sem sessão de login válida a requisição morre antes de
+chegar ao painel. O problema era outro: quem entrasse de novo **no mesmo
+navegador, dentro dos 30 minutos**, encontraria a elevação velha ainda válida
+e abriria o painel **sem reconfirmar a senha**. E o cadeado do painel existe
+justamente para reconfirmar quem é, logo depois de um evento de credencial.
+
+Encerrar sessão é encerrar tudo o que aquela sessão conquistou.
+
 ### Duas notas operacionais que valem lembrar
 
 - **O freio de tentativas mora em memória.** Reiniciar o serviço zera o
