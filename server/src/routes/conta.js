@@ -8,10 +8,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';
 import { save } from '../store.js';
-import { publicUser } from '../auth.js';
+import { publicUser, encerrarSessoesDe, sessoesDe } from '../auth.js';
 import { trocarSenha } from '../services/recuperacaoSenha.js';
 import { exportarDados, excluirConta, registrarAceiteTermos, VERSAO_TERMOS } from '../services/lgpd.js';
 import { limitar } from '../services/limite.js';
+import { enviar } from '../services/email.js';
 
 export const contaRouter = Router();
 
@@ -78,6 +79,46 @@ contaRouter.post('/senha', limitar({ max: 5, janelaSeg: 900, campo: 'atual', men
       res.json({ ok: true, sessoesEncerradas: true });
     } catch (e) { next(e); }
   });
+
+// ── Sessões abertas ───────────────────────────────────────────────────────
+// Lembrar de um computador deixado aberto num escritório é um momento de
+// pressa. Estas duas rotas existem para que a resposta seja um clique, e não
+// "troque a senha, decore a nova e entre de novo em todos os aparelhos".
+//
+// Nenhuma delas pede a senha, de propósito. Quem já está autenticado só pode
+// se derrubar da própria conta, o que no pior caso é um inconveniente, e
+// exigir a senha justamente no minuto do susto trabalharia contra a segurança
+// em vez de a favor.
+contaRouter.get('/sessoes', (req, res) => {
+  res.json({ sessoes: sessoesDe(req.user.id, req.sessionToken) });
+});
+
+contaRouter.post('/sessoes/encerrar', async (req, res, next) => {
+  try {
+    const manterAtual = req.body?.manterAtual !== false;
+    const encerradas = encerrarSessoesDe(req.user.id, {
+      exceto: manterAtual ? req.sessionToken : null,
+    });
+    save();
+
+    // O aviso por e-mail é o que fecha o ciclo: se este encerramento não foi
+    // você, o e-mail é como você fica sabendo.
+    await enviar({
+      para: req.user.email,
+      assunto: 'Sessões encerradas na ZoomDev',
+      texto: `Olá, ${req.user.nome.split(' ')[0]}.\n\n`
+        + `${encerradas} sessão(ões) da sua conta foram encerradas em ${new Date().toLocaleString('pt-BR')}.\n`
+        + `${manterAtual ? 'O aparelho de onde o pedido saiu continua conectado.' : 'Todos os aparelhos foram desconectados, inclusive o de onde o pedido saiu.'}\n\n`
+        + 'Se não foi você, troque sua senha agora mesmo.',
+      html: `<p>Olá, ${req.user.nome.split(' ')[0]}.</p>`
+        + `<p><b>${encerradas}</b> sessão(ões) da sua conta foram encerradas em ${new Date().toLocaleString('pt-BR')}.</p>`
+        + `<p>${manterAtual ? 'O aparelho de onde o pedido saiu continua conectado.' : 'Todos os aparelhos foram desconectados, inclusive o de onde o pedido saiu.'}</p>`
+        + '<p>Se não foi você, troque sua senha agora mesmo.</p>',
+    }).catch(() => { /* o encerramento vale mesmo sem e-mail configurado */ });
+
+    res.json({ ok: true, encerradas, sessaoAtualMantida: manterAtual });
+  } catch (e) { next(e); }
+});
 
 contaRouter.post('/termos', (req, res) => {
   res.json(registrarAceiteTermos(req.user));

@@ -245,3 +245,64 @@ ativa e avisando quando ela está vazia.
 Cada um existe porque a falha correspondente é silenciosa. Um token que não
 vence continua funcionando e ninguém percebe. Uma exportação incompleta parece
 completa. Um expurgo que não roda não deixa rastro.
+
+---
+
+## 8. Encerrar sessões: o computador esquecido no escritório
+
+Trocar a senha sempre derrubou todas as sessões, e continua derrubando. Mas
+essa é uma resposta cara para o problema mais comum: lembrar que a conta ficou
+aberta num computador que não é seu. Quem faz isso troca uma senha que
+funcionava, decora a nova e volta a entrar em todos os aparelhos.
+
+Agora existe a resposta barata.
+
+### O que a pessoa vê
+
+`Configurações → Aparelhos conectados` lista cada sessão aberta, com o
+aparelho e a data de entrada, e marca a atual. Dois caminhos:
+
+| Ação | O que faz |
+|---|---|
+| **Encerrar as outras** | derruba todas menos esta. É o caso comum: você está resolvendo o susto de dentro da plataforma e não deveria ser deslogado no meio |
+| **sair de todos, inclusive deste** | derruba tudo, para quando o aparelho esquecido pode ser justamente este |
+
+### Nenhuma das duas pede a senha
+
+De propósito. Quem já está autenticado só consegue se derrubar da própria
+conta, o que no pior caso é um inconveniente resolvido com um login. Exigir a
+senha no minuto do susto trabalharia contra a segurança, não a favor.
+
+A exclusão de conta continua exigindo, porque ali o custo do erro é
+irreversível.
+
+### O rótulo do aparelho, e o que ele não guarda
+
+Sem saber de qual aparelho veio cada sessão, a lista vira uma coluna de datas e
+ninguém decide qual encerrar, que é justamente quando é preciso decidir rápido.
+
+Mas guardar o User-Agent inteiro seria guardar uma impressão digital: versão de
+build, arquitetura, capacidades. Isso identifica a pessoa e nunca foi
+necessário aqui.
+
+O que fica gravado são duas palavras, `Chrome · Windows`, e mais nada. **O
+endereço de IP não é guardado em nenhum momento.** Um teste verifica que a
+versão de build não sobrevive ao rótulo.
+
+### O aviso fecha o ciclo
+
+Um e-mail sai a cada encerramento, dizendo quantas sessões caíram. Se não foi
+você, o e-mail é como você fica sabendo. O encerramento vale mesmo sem serviço
+de e-mail configurado.
+
+### Testes
+
+Cinco, em `server/test/sessoes.test.js`, porque a falha aqui é invisível: a
+tela diz "pronto", a pessoa acredita que derrubou o escritório e o token
+continua valendo.
+
+- as outras caem e a atual sobrevive
+- encerrar todas derruba inclusive quem pediu
+- a conta ao lado não é tocada
+- a listagem marca a atual e **nunca devolve o token**
+- o rótulo não carrega a impressão digital do navegador

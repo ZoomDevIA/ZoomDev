@@ -7,7 +7,7 @@ import { cabecalhos, cors, POLITICA_PREVIA, POLITICA_SITE } from './services/bli
 import { lerPrevia, montarPrevia } from './services/previa.js';
 import { migrarConteudo } from './services/conteudo.js';
 import { siteDoSlug, montarPagina, registrarLead, registrarVisita, paginaObrigado, PREFIXO } from './services/publicacao.js';
-import { register, login, authMiddleware, adminMiddleware, publicUser } from './auth.js';
+import { register, login, authMiddleware, adminMiddleware, publicUser, rotularAparelho } from './auth.js';
 import { save, store } from './store.js';
 import { projectsRouter } from './routes/projects.js';
 import { carbonRouter } from './routes/carbon.js';
@@ -159,7 +159,7 @@ app.post('/api/auth/register',
   limitar({ max: 5, janelaSeg: 3600, mensagem: 'Muitas contas criadas deste endereço. Tente mais tarde.' }),
   (req, res, next) => {
     try {
-      const r = register(req.body || {});
+      const r = register(req.body || {}, rotularAparelho(req.headers['user-agent']));
       // Aceite dos termos gravado com a versão vigente no momento do cadastro.
       registrarAceiteTermos(store.users[r.user.id]);
       res.json({ ...r, user: { ...r.user, termosAceitos: store.users[r.user.id].termosAceitos } });
@@ -169,7 +169,7 @@ app.post('/api/auth/register',
 app.post('/api/auth/login',
   limitar({ max: 8, janelaSeg: 600, mensagem: 'Muitas tentativas de login. Aguarde alguns minutos.' }),
   (req, res, next) => {
-    try { res.json(login(req.body || {})); } catch (e) { next(e); }
+    try { res.json(login(req.body || {}, rotularAparelho(req.headers['user-agent']))); } catch (e) { next(e); }
   });
 
 // ── Recuperação de senha (pública: quem esqueceu não consegue autenticar) ──

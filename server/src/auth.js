@@ -22,7 +22,7 @@ function verify(password, stored) {
 export function hashSenha(senha) { return hash(senha); }
 export function conferirSenha(senha, hashArmazenado) { return verify(String(senha || ''), hashArmazenado); }
 
-export function register({ email, password, nome }) {
+export function register({ email, password, nome }, aparelho) {
   email = String(email || '').trim().toLowerCase();
   if (!email.includes('@') || String(password || '').length < 8) {
     throw Object.assign(new Error('E-mail inválido ou senha com menos de 8 caracteres.'), { status: 400 });
@@ -46,7 +46,7 @@ export function register({ email, password, nome }) {
     gamification: newUserGamification(),
   };
   save();
-  return createSession(userId);
+  return createSession(userId, aparelho);
 }
 
 /** Criação por um administrador: papel explícito, sem sessão automática. */
@@ -76,7 +76,7 @@ export function criarUsuario({ email, nome, senha, papel }) {
   return publicUser(store.users[userId]);
 }
 
-export function login({ email, password }) {
+export function login({ email, password }, aparelho) {
   email = String(email || '').trim().toLowerCase();
   const user = Object.values(store.users).find(u => u.email === email);
   if (!user || !verify(String(password || ''), user.passwordHash)) {
@@ -85,7 +85,7 @@ export function login({ email, password }) {
   if (user.ativo === false) {
     throw Object.assign(new Error('Esta conta está desativada. Fale com o administrador.'), { status: 403 });
   }
-  return createSession(user.id);
+  return createSession(user.id, aparelho);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -107,11 +107,38 @@ export function login({ email, password }) {
 const VALIDADE_MS = 30 * 24 * 60 * 60 * 1000;   // 30 dias sem uso encerram
 const RENOVA_A_PARTIR_DE = 24 * 60 * 60 * 1000; // grava a renovação uma vez por dia
 
-function createSession(userId) {
+// ── De qual aparelho veio esta sessão ─────────────────────────────────────
+// Guardar o User-Agent inteiro seria guardar uma impressão digital: versão de
+// build, arquitetura, fontes. Isso identifica a pessoa e nunca foi preciso
+// aqui. O que serve é distinguir "esta é a do meu celular" de "esta é a do
+// computador do escritório", e para isso bastam duas palavras.
+//
+// Sem esse rótulo, a lista de sessões vira uma coluna de datas e a pessoa não
+// consegue decidir qual encerrar, que é justamente o momento em que ela mais
+// precisa decidir rápido.
+const NAVEGADORES = [
+  [/edg/i, 'Edge'], [/opr|opera/i, 'Opera'], [/chrome|crios/i, 'Chrome'],
+  [/firefox|fxios/i, 'Firefox'], [/safari/i, 'Safari'],
+];
+const SISTEMAS = [
+  [/iphone|ipad|ipod/i, 'iOS'], [/android/i, 'Android'], [/windows/i, 'Windows'],
+  [/mac os|macintosh/i, 'macOS'], [/linux/i, 'Linux'],
+];
+
+export function rotularAparelho(ua) {
+  const texto = String(ua || '');
+  if (!texto) return 'aparelho não identificado';
+  const nav = NAVEGADORES.find(([re]) => re.test(texto))?.[1] || 'navegador';
+  const sis = SISTEMAS.find(([re]) => re.test(texto))?.[1] || 'sistema';
+  return `${nav} · ${sis}`;
+}
+
+function createSession(userId, aparelho) {
   const token = crypto.randomBytes(32).toString('hex');
   const agora = Date.now();
   store.sessions[token] = {
     userId,
+    aparelho: aparelho || 'aparelho não identificado',
     criadoEm: new Date(agora).toISOString(),
     expiraEm: new Date(agora + VALIDADE_MS).toISOString(),
   };
@@ -135,11 +162,36 @@ export function limparSessoesVencidas() {
   return removidas;
 }
 
-/** Encerra todas as sessões de um usuário (usado ao desativar ou trocar papel). */
-export function encerrarSessoesDe(userId) {
+/**
+ * Encerra as sessões de um usuário. `exceto` preserva um token, para quem está
+ * derrubando as outras de dentro da própria conta não se derrubar junto e
+ * ficar sem saber se funcionou.
+ *
+ * Devolve quantas caíram: sem esse número, a interface só pode dizer "pronto",
+ * e "pronto" não tranquiliza ninguém que acabou de lembrar de um computador
+ * aberto num escritório.
+ */
+export function encerrarSessoesDe(userId, { exceto = null } = {}) {
+  let encerradas = 0;
   for (const [tok, s] of Object.entries(store.sessions)) {
-    if (s.userId === userId) delete store.sessions[tok];
+    if (s.userId !== userId || tok === exceto) continue;
+    delete store.sessions[tok];
+    encerradas += 1;
   }
+  return encerradas;
+}
+
+/** As sessões abertas de um usuário, sem expor o token de nenhuma delas. */
+export function sessoesDe(userId, tokenAtual = null) {
+  return Object.entries(store.sessions)
+    .filter(([, s]) => s.userId === userId)
+    .map(([tok, s]) => ({
+      atual: tok === tokenAtual,
+      aparelho: s.aparelho || 'aparelho não identificado',
+      criadoEm: s.criadoEm,
+      expiraEm: s.expiraEm,
+    }))
+    .sort((a, b) => (b.atual ? 1 : 0) - (a.atual ? 1 : 0) || String(b.criadoEm).localeCompare(String(a.criadoEm)));
 }
 
 export function publicUser(u) {
