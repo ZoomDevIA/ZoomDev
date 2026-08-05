@@ -19,6 +19,7 @@ import { diagnosticoRouter } from './routes/diagnostico.js';
 import { homeRouter } from './routes/home.js';
 import { painelRouter } from './routes/painel.js';
 import { contaRouter } from './routes/conta.js';
+import { destravarNaPartida } from './services/recuperacaoSenha.js';
 import { studioRouter } from './routes/studio.js';
 import { pedirRedefinicao, redefinir } from './services/recuperacaoSenha.js';
 import { limitar } from './services/limite.js';
@@ -258,6 +259,9 @@ agendarBackup();
 
 process.on('SIGINT', () => { save(); process.exit(0); });
 
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
   console.log(`ZoomDev OS API na porta ${config.port}: modo ${config.hasApiKey ? 'IA (' + config.model + ')' : 'DEMO'}`);
+  // Destravamento de emergência: só faz alguma coisa se ZOOMDEV_RECUPERAR
+  // estiver definida. Imprime um link de uso único no log e nada mais.
+  await destravarNaPartida().catch(e => console.error('ZOOMDEV_RECUPERAR falhou:', e.message));
 });

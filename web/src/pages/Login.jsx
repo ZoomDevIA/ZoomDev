@@ -208,9 +208,28 @@ function RecuperarSenha({ email, onEmail, resultado, erro, enviando, onEnviar, o
           <Painel cor="#ffc531" className="p-3.5 text-left">
             <div className="hud-caps text-[9px] text-[#ffc531] mb-1.5">Ambiente sem provedor de e-mail</div>
             <p className="text-[11px] text-white/50 mb-2">{resultado.aviso}</p>
-            <a href={resultado.link} className="text-[11px] text-[#00e5ff] break-all hover:underline">
+            <a href={resultado.link} className="text-[11px] text-[color:var(--zd-acento)] break-all hover:underline">
               {resultado.link}
             </a>
+          </Painel>
+        )}
+
+        {/* Sem provedor configurado, dizer "o link chega em instantes" é
+            mentira: ele não chega nunca, e quem está trancado do lado de fora
+            fica esperando. Melhor dizer onde o link está de verdade. */}
+        {!resultado.link && resultado.modoEmail === 'registro' && (
+          <Painel cor="#ffc531" className="p-3.5 text-left">
+            <div className="hud-caps text-[9px] text-[#ffc531] mb-1.5">O e-mail não vai sair</div>
+            <p className="text-[11.5px] text-white/60 leading-relaxed">
+              Esta instalação está sem serviço de e-mail (<span className="hud-tec">RESEND_API_KEY</span> ou
+              <span className="hud-tec"> SMTP_URL</span>), então nenhuma mensagem é entregue.
+            </p>
+            <p className="text-[11.5px] text-white/60 leading-relaxed mt-2">
+              Se existir uma conta com este e-mail, o link está <b className="text-white/85">no log do
+              servidor</b>, na hospedagem. Procure por
+              <span className="hud-tec text-[10.5px]"> RECUPERAÇÃO DE SENHA</span>. Ele vale por 30
+              minutos, e são no máximo 3 pedidos por hora na mesma conta.
+            </p>
           </Painel>
         )}
 

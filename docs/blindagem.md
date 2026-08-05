@@ -345,3 +345,77 @@ continua valendo.
 desconectar "Chrome · Windows" pela aba Acesso fez aquele token passar a
 devolver 401, enquanto o tablet e o aparelho de onde o pedido saiu seguiram
 em 200.
+
+---
+
+## 9. Quando o e-mail não sai e a conta tranca
+
+Isto entrou depois de um incidente real. O dono da plataforma trocou a senha,
+não conseguiu mais entrar, e o "esqueci minha senha" não tinha como ajudar:
+sem `RESEND_API_KEY` nem `SMTP_URL`, o pedido funcionava, o link era gerado e
+**ninguém o recebia**. O fluxo dizia "o link chega em instantes" e o link não
+chegava nunca.
+
+Três coisas foram feitas.
+
+### O link vai para o log do servidor
+
+Sem provedor de e-mail, o link de redefinição é impresso no log, com aviso em
+destaque. Quem hospeda a plataforma lê o log e recupera a conta.
+
+**Nunca na resposta HTTP.** A diferença é tudo: a resposta HTTP qualquer pessoa
+provoca, para qualquer e-mail, e sairia com o link de tomada de conta na mão. O
+log do servidor só é lido por quem já controla a hospedagem, e quem controla a
+hospedagem já poderia editar o banco de qualquer jeito.
+
+Fora de produção o link continua aparecendo na tela, como sempre, para o
+desenvolvimento não travar.
+
+### A tela para de mentir
+
+Sem provedor configurado, dizer "o link chega em instantes" é falso. Agora a
+tela diz que a instalação está sem serviço de e-mail e onde o link está de
+verdade.
+
+O texto é condicional (*"se existir uma conta com este e-mail"*) e lembra o
+teto de três pedidos por hora, porque afirmar que o link foi gerado revelaria
+que a conta existe, e seria um oráculo de enumeração pela porta dos fundos.
+
+### Destravamento de emergência: `ZOOMDEV_RECUPERAR`
+
+Para quando nem o formulário está ao alcance, por freio de tentativas ou tela
+fora do ar. Basta a variável com o e-mail da conta:
+
+```
+ZOOMDEV_RECUPERAR=voce@exemplo.com
+```
+
+Na partida, o servidor imprime um link de uso único no log. Apague a variável
+depois: enquanto existir, um link novo sai a cada reinício.
+
+**Ela não recebe senha, só e-mail.** Senha em variável de ambiente ficaria em
+texto claro no painel da hospedagem, para sempre. O que ela emite é um caminho
+com prazo, não uma credencial.
+
+Quem define variável de ambiente já manda no processo inteiro: isto não abaixa
+nenhuma barreira que já não estivesse abaixada.
+
+### Duas notas operacionais que valem lembrar
+
+- **O freio de tentativas mora em memória.** Reiniciar o serviço zera o
+  bloqueio de login na hora. É a saída mais rápida para quem errou a senha
+  oito vezes e ficou preso por dez minutos.
+- **Trocar a senha encerra todas as sessões**, inclusive a de quem trocou. Isso
+  é intencional, e é por isso que a tela manda de volta para o login.
+
+### Testes
+
+Nove, em `server/test/recuperacao.test.js`:
+
+- o link vai para o log, e **não** para a resposta em produção
+- o link do log realmente redefine, e a senha nova entra
+- o link é de uso único
+- sem a variável, o destravamento não faz nada
+- com a variável, o link impresso funciona
+- e-mail inexistente não cria pedido nenhum
+- **destravar não troca a senha**: a anterior segue valendo até alguém usar o link
