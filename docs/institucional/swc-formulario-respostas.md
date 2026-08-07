@@ -424,6 +424,40 @@ Cita os 27 agentes e o Selo de Evidência porque é o que nenhum concorrente das
 duas categorias tem. Sobram cerca de 25 caracteres em cada, se for preciso
 encaixar cidade ou estado.
 
+### What was the last stage of funding you raised?
+
+Lista de escolha única. Opções lidas na tela:
+
+```
+( ) Please Select        ( ) Series B
+( ) Pre-Seed             ( ) Series C
+( ) Seed                 ( ) Series D
+( ) Series A             ( ) Other
+                         ( ) No Funding Raised
+```
+
+**Resposta: `No Funding Raised`**, se nenhum recurso de terceiro entrou.
+
+A pergunta é sobre o último estágio **captado**, não sobre o estágio em que a
+empresa está. Marcar Pre-Seed sem ter fechado rodada pre-seed é declarar
+captação que não houve, e o júri confere.
+
+| Se | Marque |
+|---|---|
+| Só recurso próprio | `No Funding Raised` |
+| Entrou dinheiro de amigo, família ou anjo, mesmo sem contrato formal | `Pre-Seed` |
+
+Produto em produção com zero captação é posição forte, não fraca: a rodada
+compra verificação e não protótipo, que é o que a lâmina 13 do deck diz.
+
+### Industry / Vertical
+
+Múltipla escolha. Visto de relance atrás da lista anterior, com `Transportation`
+entre as opções. Falta a lista completa.
+
+Marcar, se existirem: **ClimateTech**, **AgTech**, **Artificial Intelligence**,
+**Carbon Markets** ou **Sustainability**. Não marcar Transportation.
+
 ---
 
 ## Parte 3 · Campos de cadastro previstos
