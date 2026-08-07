@@ -222,3 +222,56 @@ scripts/gerar-deck.mjs                   gerador parametrizado, embute marca e i
   a margem virar número com selo.
 - As taxas de conversão do financeiro são a linha mais frágil do deck, e estão
   marcadas como tal na própria lâmina. É onde o Q&A vai bater.
+
+---
+
+## 4. A versão em português
+
+`docs/institucional/swc-pitch-2026-pt.html` e o PDF de mesmo nome. Mesmas 14
+lâminas, mesmos números, mesma composição.
+
+A inscrição oficial exige inglês, então quem vai para o formulário é o
+`swc-pitch-2026`. A versão em português existe para investidor, prefeitura,
+cooperativa e edital no Brasil.
+
+**A folha de estilo não foi duplicada.** O arquivo em português é montado com o
+`<style>` copiado byte a byte do arquivo em inglês. Duas folhas de estilo
+separadas divergiriam na terceira alteração, e as duas versões precisam ficar
+visualmente idênticas. Quem for mexer no visual mexe no arquivo em inglês; o
+arquivo em português só carrega texto.
+
+### O conferidor de lâmina
+
+Escrever deck em HTML tem um defeito que não avisa: o flex da lâmina encolhe um
+filho quando o conteúdo aperta, e o `overflow: hidden` corta o que sobrou sem
+erro nenhum. Foi o que aconteceu com o par de fotos, que perdeu a legenda e o
+selo sem que nada quebrasse.
+
+Passou a existir um conferidor que, lâmina a lâmina, compara a altura pedida
+com a altura entregue e acusa quem está espremido. Ele achou dois problemas na
+primeira execução: o par de fotos, cortado em 35 px, e a lâmina de financeiro,
+estourando 28 px.
+
+---
+
+## 5. O formulário de inscrição
+
+`docs/institucional/swc-formulario-respostas.md`.
+
+**Não foi possível ler os campos do formulário.** A página é feita em Wix e o
+formulário é um widget montado no navegador depois que a página carrega. Três
+caminhos tentados:
+
+| Caminho | Resultado |
+|---|---|
+| HTML da página por `curl` | 854 KB, só instruções, zero campo |
+| Chromium headless | `ERR_CONNECTION_RESET` em qualquer endereço, inclusive `example.com`: o navegador desta sessão não atravessa o proxy de saída |
+| JSON de página do Wix | veio o JSON do menu do site, não o do widget |
+
+O banco de respostas cobre os 11 tópicos que a página exige textualmente, cada
+um em três tamanhos, com a contagem de caracteres **medida** e não estimada,
+para escolher a variante pelo limite do campo. Mais uma tabela de campos de
+cadastro previstos, marcada como previsão.
+
+Três respostas ficaram com colchetes à mostra, de propósito: **Current
+Traction**, **Team** e **Current Funding Status**.
