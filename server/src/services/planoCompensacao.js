@@ -8,7 +8,7 @@
 // apenas o residual, por área própria regenerada ou por crédito verificado.
 // ═══════════════════════════════════════════════════════════════════════════
 import { simular360 } from './impactoRegenerativo.js';
-import { CULTURAS } from '../science/biogenesis.js';
+import { CULTURAS } from '../science/coinmax.js';
 import { PROJETOS_CARBONPAY } from './carbon.js';
 
 const r2 = (v) => Math.round(v * 100) / 100;

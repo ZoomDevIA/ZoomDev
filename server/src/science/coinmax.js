@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// BIOGENESIS COT BIOTECHNOLOGY: perfil técnico da tecnologia
+// COIN MAX (COT BIOTECHNOLOGY): perfil técnico da tecnologia
 //
 // Base científica destilada do acervo interno (ver science/corpus.js).
 // Este módulo expõe apenas CONHECIMENTO TÉCNICO e níveis de confiança:
@@ -8,7 +8,8 @@
 import { PROTOCOLO, RESPOSTA_POR_SOLO, EFEITOS } from './corpus.js';
 
 export const IDENTIDADE = {
-  marca: 'Biogenesis COT BioTechnology',
+  marca: 'Coin Max',
+  fabricante: 'COT BioTechnology',
   classe: 'Bioestimulante organomineral de aplicação foliar',
   natureza: 'Composto orgânico bioestimulante com nutrientes minerais',
   regularizacao: 'Insumo agrícola regularizado no órgão federal competente',

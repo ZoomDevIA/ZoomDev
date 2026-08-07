@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { store, save, id } from '../store.js';
 import {
   PROJETOS_CARBONPAY, FATORES as FATORES_LEGADO,
-  sequestroBiogenesis, CULTURAS_BIOGENESIS, CENARIOS_BIOGENESIS,
+  sequestroCoinMax, CULTURAS_COINMAX, CENARIOS_COINMAX,
 } from '../services/carbon.js';
 import { calcularPassivo, benchmark, PERFIS, CAMPOS, FATORES } from '../services/passivoAmbiental.js';
 import { montarPlano } from '../services/planoCompensacao.js';
@@ -100,16 +100,16 @@ carbonRouter.get('/fatores', (_req, res) => {
   res.json({ fatores: FATORES, projetos: PROJETOS_CARBONPAY });
 });
 
-// Sequestro adicional com Biogenesis COT: modo ESTIMATIVA vs CRÉDITO VERIFICÁVEL
-carbonRouter.get('/biogenesis/opcoes', (_req, res) => {
-  res.json({ culturas: CULTURAS_BIOGENESIS, cenarios: CENARIOS_BIOGENESIS });
+// Sequestro adicional com Coin Max: modo ESTIMATIVA vs CRÉDITO VERIFICÁVEL
+carbonRouter.get('/coinmax/opcoes', (_req, res) => {
+  res.json({ culturas: CULTURAS_COINMAX, cenarios: CENARIOS_COINMAX });
 });
 
-carbonRouter.post('/biogenesis', (req, res, next) => {
+carbonRouter.post('/coinmax', (req, res, next) => {
   try {
     const { culturaId, hectares, cenarioId, passivoTco2eAno } = req.body || {};
     if (!culturaId || !hectares) return res.status(400).json({ error: 'Informe culturaId e hectares.' });
-    res.json(sequestroBiogenesis({ culturaId, hectares, cenarioId, passivoTco2eAno }));
+    res.json(sequestroCoinMax({ culturaId, hectares, cenarioId, passivoTco2eAno }));
   } catch (e) { next(e); }
 });
 

@@ -1,7 +1,7 @@
 <!--
   ═══════════════════════════════════════════════════════════════════════════
   DECK INSTITUCIONAL — CIDADES REGENERATIVAS
-  ZoomDev OS · Biogenesis COT BioTechnology
+  ZoomDev OS · Coin Max · COT BioTechnology
 
   Regra que governa este documento: NENHUM número aqui é estimado à mão.
   Todos os valores de impacto saem do motor da própria plataforma
@@ -37,7 +37,7 @@
 
   body {
     margin: 0;
-    background: #000;
+    background: var(--fundo);
     color: var(--tinta);
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
     -webkit-print-color-adjust: exact;
@@ -59,8 +59,27 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    /* SANGRIA. O cartão tem exatamente o tamanho da página, e a conversão de
+       milímetro para pixel não fecha em número inteiro. Sobrava uma fração de
+       pixel na borda direita e na de baixo que elemento nenhum pintava, e o
+       fundo padrão de página PDF é branco: era a linha clara que separava um
+       cartão do outro. Esta sombra é só espalhamento, pinta 3 mm para fora da
+       caixa e o recorte da página apara o excesso. */
+    box-shadow: 0 0 0 3mm var(--fundo);
   }
   .slide:last-child { page-break-after: auto; }
+
+  /* A sombra acima resolve as doze primeiras páginas. A última não tem quebra
+     forçada depois dela, e ali o Chromium apara o transbordo de tinta na altura
+     exata do documento, devolvendo um filete de um pixel. Elemento fixo é
+     repetido em toda página impressa e não depende do fluxo, então esta camada
+     cobre o caso que sobrou. Fica antes das lâminas no HTML, logo é pintada
+     atrás delas, sem z-index. */
+  .sangria {
+    position: fixed;
+    inset: -4mm;
+    background: var(--fundo);
+  }
 
   /* Grade técnica de fundo, discreta */
   .slide::before {
@@ -215,6 +234,8 @@
   }
 </style>
 
+<div class="sangria"></div>
+
 <!-- ══════════════════════════ 01 · CAPA ══════════════════════════ -->
 <section class="slide capa" data-n="01">
   <div class="marca">
@@ -239,7 +260,7 @@
 
   <div class="rodape">
     <span>Documento institucional · Cidades Regenerativas</span>
-    <span>Biogenesis COT BioTechnology × ZoomDev OS</span>
+    <span>Coin Max · COT BioTechnology × ZoomDev OS</span>
   </div>
 </section>
 
@@ -264,7 +285,7 @@
       <div class="bloco">
         <div class="num v">1</div>
         <div class="cap">o catalisador</div>
-        <div class="desc"><b style="color:var(--tinta)">Biogenesis</b>, bioestimulante cuja resposta
+        <div class="desc"><b style="color:var(--tinta)">Coin Max</b>, bioestimulante cuja resposta
         é inversamente proporcional à qualidade do solo. Quanto pior a terra, maior o ganho.</div>
       </div>
       <div class="bloco">
@@ -288,10 +309,10 @@
   <div class="rot">o achado que inverte o setor</div>
   <div class="corpo">
     <h2 class="tit">O agro convencional entrega mais<br>para <span style="color:var(--tenue)">quem já tem</span>.
-      O Biogenesis faz <span class="luz">o contrário</span>.</h2>
+      O Coin Max faz <span class="luz">o contrário</span>.</h2>
     <p class="sub">
       Insumo tradicional rende bem em solo corrigido e pouco em solo pobre, o que concentra ganho
-      em quem já podia investir. A curva de resposta do Biogenesis é invertida: o maior salto
+      em quem já podia investir. A curva de resposta do Coin Max é invertida: o maior salto
       acontece exatamente na terra que ninguém quis.
     </p>
 
@@ -338,7 +359,7 @@
 
 <!-- ══════════════════════════ 04 · O CATALISADOR ══════════════════════════ -->
 <section class="slide" data-n="04">
-  <div class="rot">biogenesis cot biotechnology · o catalisador</div>
+  <div class="rot">coinmax cot biotechnology · o catalisador</div>
   <div class="corpo">
     <h2 class="tit">Um insumo foliar.<br><span class="ciano">Sete efeitos medidos.</span></h2>
 

@@ -1,7 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// BIOGEN: o ativo digital regenerativo da tecnologia Biogenesis COT
-// (unifica o conceito antes chamado "Token Coin Max / CMX": é a MESMA
-//  tecnologia Biogenesis, agora com um design de token lastreado e auditável).
+// BIOGEN: o ativo digital regenerativo da tecnologia Coin Max
+// (unifica o conceito antes chamado "Token CMX": é a MESMA tecnologia,
+//  agora com um design de token lastreado e auditável).
+//
+// O nome do token permanece BIOGEN mesmo depois de o bioinsumo passar a se
+// chamar Coin Max: o lastro do token é tonelada verificada de CO₂e, não o
+// insumo que a gerou. Trocar a sigla renomearia um ativo por causa de um
+// fornecedor, e um dia haverá mais de um.
 //
 // PRINCÍPIO INEGOCIÁVEL: BIOGEN não é promessa nem especulação. Cada unidade é
 // lastreada em impacto REAL, VERIFICADO e APOSENTADO em registro público. É a
@@ -15,7 +20,7 @@ export const BIOGEN = {
   nome: 'BIOGEN',
   simbolo: 'BGN',
   subtitulo: 'O ativo digital da regeneração planetária',
-  tecnologia: 'Biogenesis COT BioTechnology',
+  tecnologia: 'Coin Max',
   principio: '1 BIOGEN = 1 tonelada de CO₂ equivalente, mitigada por impacto verificado e aposentada em registro público, com serial rastreável.',
 
   // ── Lastro em camadas: nenhuma unidade nasce sem evidência ────────────────
@@ -39,7 +44,7 @@ export const BIOGEN = {
 
   // ── Ciclo de vida de 1 BIOGEN ─────────────────────────────────────────────
   ciclo: [
-    { etapa: 1, nome: 'Aplicação', desc: 'Biogenesis COT aplicado em campo com responsável técnico (ART).' },
+    { etapa: 1, nome: 'Aplicação', desc: 'Coin Max aplicado em campo com responsável técnico (ART).' },
     { etapa: 2, nome: 'Mensuração (MRV)', desc: 'Medição instrumentada de biomassa, solo, água e energia: sensores, imagens de satélite e laudos.' },
     { etapa: 3, nome: 'Verificação', desc: 'Auditoria por terceira parte acreditada e independente do fabricante (ex.: monitoramento IFAP + certificadora).' },
     { etapa: 4, nome: 'Emissão', desc: 'Crédito emitido em registro público reconhecido; 1 crédito = 1 BIOGEN cunhado, com serial vinculado.' },
@@ -72,7 +77,7 @@ export const BIOGEN = {
   // ── Utilidade dentro do ecossistema ZoomDev ───────────────────────────────
   utilidade: [
     'Compensar o passivo ambiental calculado no CarbonPay com lastro rastreável.',
-    'Financiar aplicações de Biogenesis em novas comunidades (cada aplicação verificada gera novos BIOGEN).',
+    'Financiar aplicações de Coin Max em novas comunidades (cada aplicação verificada gera novos BIOGEN).',
     'Remunerar cooperativas e agricultores familiares pela regeneração que produzem: renda por serviço ambiental.',
     'Dar aos investidores exposição a impacto real, auditável, alinhado a ODS e à agenda climática da ONU.',
   ],

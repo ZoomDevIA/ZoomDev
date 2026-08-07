@@ -125,23 +125,23 @@ function round2(v) { return Math.round(v * 100) / 100; }
 // SEMPRE em modo ESTIMATIVA. A conversão em crédito exige MRV + verificação.
 // ═══════════════════════════════════════════════════════════════════════════
 import { simular360 } from './impactoRegenerativo.js';
-import { CULTURAS, CENARIOS_UPLIFT } from '../science/biogenesis.js';
+import { CULTURAS, CENARIOS_UPLIFT } from '../science/coinmax.js';
 
-export const CULTURAS_BIOGENESIS = Object.entries(CULTURAS).map(([id, c]) => ({
+export const CULTURAS_COINMAX = Object.entries(CULTURAS).map(([id, c]) => ({
   id, nome: c.nome, emoji: c.emoji, prioridadeAmapa: Boolean(c.prioridadeAmapa),
 }));
 
-export const CENARIOS_BIOGENESIS = Object.values(CENARIOS_UPLIFT).map(c => ({
+export const CENARIOS_COINMAX = Object.values(CENARIOS_UPLIFT).map(c => ({
   id: c.id, nome: c.nome, base: c.base, selo: c.selo,
   upliftPercentual: Math.round(c.upliftProdutividade * 100),
 }));
 
 /**
  * Calcula quanto do passivo (tCO2e/ano) pode ser compensado por uma área
- * cultivada com Biogenesis, apresentando as duas leituras separadas:
+ * cultivada com Coin Max, apresentando as duas leituras separadas:
  * ESTIMATIVA (o que a área faz) e CRÉDITO VERIFICÁVEL (o que exige MRV).
  */
-export function sequestroBiogenesis({ culturaId, hectares, cenarioId = 'conservador', passivoTco2eAno = 0 }) {
+export function sequestroCoinMax({ culturaId, hectares, cenarioId = 'conservador', passivoTco2eAno = 0 }) {
   const sim = simular360({ culturaId, hectares, cenarioId });
   const sequestro = sim.dimensoes.carbono.co2eSequestradoTonAno;
   const evitado = sim.dimensoes.energetico.co2EvitadoTonAno;
@@ -149,7 +149,7 @@ export function sequestroBiogenesis({ culturaId, hectares, cenarioId = 'conserva
   const passivo = Math.max(0, Number(passivoTco2eAno) || 0);
 
   return {
-    insumo: 'Biogenesis COT BioTechnology',
+    insumo: 'Coin Max',
     cultura: sim.dimensoes.carbono.cultura,
     cenario: sim.entrada.cenario,
     modo: 'ESTIMATIVA',

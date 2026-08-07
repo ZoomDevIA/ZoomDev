@@ -13,7 +13,7 @@ O que ele carrega é **conhecimento**: como a tecnologia se comporta, em que con
 com que confiança. O usuário sente a qualidade do dado sem nunca ver a fonte.
 
 ### O achado que organiza tudo
-A resposta do Biogenesis é **inversamente proporcional à qualidade inicial do solo**:
+A resposta do Coin Max é **inversamente proporcional à qualidade inicial do solo**:
 
 | Condição do solo | Ganho de produtividade | Confiança | Faixa |
 |---|---|---|---|

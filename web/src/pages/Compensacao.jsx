@@ -49,7 +49,7 @@ export default function Compensacao() {
 
   useEffect(() => {
     api.carbonPerfis().then(setCfg).catch(() => {});
-    api.biogenesis().then(d => setCulturas(d.culturas || [])).catch(() => {});
+    api.coinMax().then(d => setCulturas(d.culturas || [])).catch(() => {});
   }, []);
 
   const perfilAtivo = cfg?.perfis?.find(p => p.id === perfil);

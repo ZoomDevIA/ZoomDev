@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // MOTOR DE IMPACTO REGENERATIVO 360°
-// Traduz a aplicação prática do Biogenesis COT BioTechnology em impacto real e
+// Traduz a aplicação prática do Coin Max em impacto real e
 // mensurável, nas cinco dimensões que o fundador pediu:
 //   1. Segurança alimentar    2. Transição energética verde justa
 //   3. Bioeconomia/economia    4. Carbono e ecossistemas    5. ODS/ONU
@@ -8,7 +8,7 @@
 // Toda saída carrega um Selo de Evidência e o cenário é CONSERVADOR por padrão.
 // Nada aqui vira crédito de carbono sem MRV instrumentado + verificação de 3ª parte.
 // ═══════════════════════════════════════════════════════════════════════════
-import { CULTURAS, CENARIOS_UPLIFT, IDENTIDADE } from '../science/biogenesis.js';
+import { CULTURAS, CENARIOS_UPLIFT, IDENTIDADE } from '../science/coinmax.js';
 import { seloResultante, disclaimerConformidade } from '../science/selos.js';
 
 const round = (v, c = 2) => { const p = 10 ** c; return Math.round(v * p) / p; };
@@ -49,8 +49,8 @@ export function impactoAlimentar({ culturaId, hectares, cenarioId = 'conservador
   const ha = n(hectares);
 
   const producaoBase = cultura.produtividade * ha;            // t/ano
-  const producaoComBiogenesis = producaoBase * (1 + cen.upliftProdutividade);
-  const ganhoTon = producaoComBiogenesis - producaoBase;
+  const producaoComCoinMax = producaoBase * (1 + cen.upliftProdutividade);
+  const ganhoTon = producaoComCoinMax - producaoBase;
 
   const kcalGanho = ganhoTon * 1000 * cultura.kcalKg;          // kcal/ano
   const pessoasAlimentadasAno = cultura.kcalKg > 0
@@ -62,7 +62,7 @@ export function impactoAlimentar({ culturaId, hectares, cenarioId = 'conservador
     cenario: cen.nome,
     hectares: ha,
     producaoBaseTon: round(producaoBase, 1),
-    producaoComBiogenesisTon: round(producaoComBiogenesis, 1),
+    producaoComCoinMaxTon: round(producaoComCoinMax, 1),
     ganhoProducaoTon: round(ganhoTon, 1),
     upliftPercentual: Math.round(cen.upliftProdutividade * 100),
     pessoasAlimentadasAno,

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// IMPACTO REGENERATIVO 360°: Biogenesis COT BioTechnology
+// IMPACTO REGENERATIVO 360°: Coin Max
 // Simulador que traduz a aplicação prática da biotecnologia em impacto real:
 // segurança alimentar, transição energética justa, carbono, economia e ODS.
 // Cada número carrega o Selo de Evidência que o sustenta.
@@ -240,21 +240,19 @@ function Dossie({ dossie }) {
         <h3 className="font-heading font-bold">{dossie.identidade.marca}</h3>
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mt-3 text-xs">
           {[
-            ['Classe', dossie.identidade.classe],
-            ['Registro MAPA', dossie.identidade.registroMapa],
-            ['Registrante', dossie.identidade.registrante],
             ['Fabricante', dossie.identidade.fabricante],
-            ['Desenvolvedor', dossie.identidade.desenvolvedor],
-            ['Dosagem', `${dossie.identidade.dosagem.litrosPorHectare} L/ha · ${dossie.identidade.dosagem.aplicacoesPorCiclo} aplicações · ${dossie.identidade.dosagem.intervaloDias} dias`],
-          ].map(([k, v]) => (
+            ['Classe', dossie.identidade.classe],
+            ['Natureza', dossie.identidade.natureza],
+            ['Regularização', dossie.identidade.regularizacao],
+            ['Aplicação', dossie.identidade.aplicacao],
+          ].filter(([, v]) => v).map(([k, v]) => (
             <div key={k} className="flex gap-2">
               <span className="text-white/40 shrink-0">{k}:</span><span className="text-white/80">{v}</span>
             </div>
           ))}
         </div>
         <div className="text-[11px] text-white/40 mt-3 leading-relaxed">
-          Identidade histórica nos laudos: <b className="text-white/60">{dossie.identidade.nomeHistorico}</b>.
-          Em contexto técnico e regulatório citamos sempre o registro legal: marca não sobrescreve registro.
+          {dossie.identidade.diferencial}
         </div>
       </div>
 
@@ -397,7 +395,7 @@ export default function Impacto() {
   const [dossie, setDossie] = useState(null);
   const [tab, setTab] = useState('simulador');
 
-  useEffect(() => { api.biogenesis().then(setDossie).catch(() => {}); }, []);
+  useEffect(() => { api.coinMax().then(setDossie).catch(() => {}); }, []);
 
   const TABS = [
     ['simulador', '🌍 Simulador 360°'],
@@ -412,7 +410,7 @@ export default function Impacto() {
           Impacto <span className="zd-gradient-text">Regenerativo 360°</span>
         </h1>
         <p className="text-white/55 text-sm mt-1.5">
-          Biogenesis COT BioTechnology aplicada a segurança alimentar, transição energética justa,
+          Coin Max aplicado a segurança alimentar, transição energética justa,
           carbono e bioeconomia, com cada número ancorado em evidência rastreável.
         </p>
       </div>

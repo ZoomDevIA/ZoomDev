@@ -1,0 +1,1132 @@
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  STARTUP WORLD CUP · FLORIANÓPOLIS, BRAZIL · 2026
+  ZoomDev OS · Coin Max · COT BioTechnology
+
+  Pitch deck de inscrição. Em INGLÊS porque a organização exige: "All
+  applications must be submitted in English."
+
+  ESTRUTURA. As 11 lâminas obrigatórias do formulário estão todas aqui, mas
+  na ordem de PALCO recomendada pelo template oficial da Pegasus, que sobe
+  Tração para perto do começo. Para quem confere lista, a capa traz o índice
+  das 11 com o número da página de cada uma.
+
+  ORÇAMENTO DE TEMPO. 4 minutos de pitch e 2 de perguntas. O selo de segundos
+  ao lado do rótulo soma 225 nas doze lâminas de conteúdo; os 15 restantes são
+  10 segundos de capa e 5 de fecho, que não levam selo. Total: 240.
+
+  REGRA QUE GOVERNA OS NÚMEROS. Nenhum valor de impacto é estimado à mão:
+  todos saem do motor da plataforma (server/src/services/impactoRegenerativo.js),
+  no cenário CONSERVADOR, e carregam o selo de evidência que o sistema atribui.
+  Projeção é rotulada como projeção, com a premissa impressa na própria lâmina.
+
+  CAMPOS A PREENCHER. Tudo que está em .preencher depende de dado que só o
+  fundador tem: equipe, captação e pipeline nomeado. Não foi inventado.
+
+  Para regenerar os números:
+    node -e "import('./server/src/services/impactoRegenerativo.js')
+             .then(m => console.log(m.simular360({culturaId:'mandioca',
+                        hectares:5000, cenarioId:'conservador'})))"
+
+  Para regenerar o PDF:
+    node scripts/gerar-deck.mjs swc-pitch-2026
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  @page { size: 338mm 190mm; margin: 0; }
+
+  :root {
+    --tinta: #eafff5;
+    --fraco: #ffffff8a;
+    --tenue: #ffffff45;
+    --ciano: #00e5ff;
+    --verde: #00ff64;
+    --ambar: #ffc531;
+    --roxo: #a855f7;
+    --fundo: #030d07;
+    --painel: #07170f;
+    --linha: #00e5ff33;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--tinta);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  h1, h2, h3 { font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; margin: 0; }
+
+  .slide {
+    position: relative;
+    width: 338mm;
+    height: 190mm;
+    padding: 16mm 20mm;
+    background:
+      radial-gradient(ellipse at 12% 0%, #00e5ff0f, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, #00ff640d, transparent 50%),
+      var(--fundo);
+    page-break-after: always;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* SANGRIA. O cartão tem exatamente o tamanho da página, e a conversão de
+       milímetro para pixel não fecha em número inteiro. Sem isto sobra uma
+       fração de pixel na direita e embaixo que elemento nenhum pinta, e o
+       fundo padrão de página PDF é branco: era a linha clara que separava um
+       cartão do outro. Esta sombra é só espalhamento, pinta 3 mm para fora e
+       o recorte da página apara o excesso. */
+    box-shadow: 0 0 0 3mm var(--fundo);
+  }
+  .slide:last-child { page-break-after: auto; }
+
+  /* A sombra acima resolve todas as páginas menos a última, que não tem
+     quebra forçada depois dela e onde o Chromium apara o transbordo na altura
+     exata do documento. Elemento fixo é repetido em toda página impressa e não
+     depende do fluxo, então esta camada cobre o caso que sobrou. Vem antes das
+     lâminas no HTML, logo é pintada atrás delas, sem z-index. */
+  .sangria { position: fixed; inset: -4mm; background: var(--fundo); }
+
+  /* Grade técnica de fundo, discreta */
+  .slide::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(#00e5ff06 1px, transparent 1px),
+      linear-gradient(90deg, #00e5ff06 1px, transparent 1px);
+    background-size: 14mm 14mm;
+    pointer-events: none;
+  }
+  .slide > * { position: relative; }
+
+  /* Numeração de rodapé */
+  .slide::after {
+    content: attr(data-n);
+    position: absolute;
+    right: 20mm; bottom: 9mm;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 8pt; letter-spacing: .18em; color: var(--tenue);
+  }
+  .slide.capa::after, .slide.fecho::after { content: ''; }
+
+  /* Símbolo discreto no canto das lâminas internas */
+  .selo-marca {
+    position: absolute; left: 20mm; bottom: 8.5mm;
+    display: flex; align-items: center; gap: 2.5mm;
+    font-family: 'JetBrains Mono', monospace; font-size: 6.6pt;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--tenue);
+  }
+  .selo-marca img { width: 5mm; height: 5mm; object-fit: contain; opacity: .75; }
+
+  /* ── Rótulo da seção, com o orçamento de segundos ─────────────────────── */
+  .rot {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 8pt; letter-spacing: .26em; text-transform: uppercase;
+    color: var(--ciano);
+    margin-bottom: 5mm;
+  }
+  .rot .req {
+    color: var(--tenue); letter-spacing: .16em;
+  }
+  .rot::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--linha), transparent); }
+  .rot .seg {
+    color: var(--tenue); letter-spacing: .16em; padding-left: 4mm;
+    border-left: 1px solid var(--linha);
+  }
+
+  h2.tit { font-size: 25pt; line-height: 1.12; font-weight: 700; letter-spacing: -.01em; }
+  h2.tit .luz { color: var(--verde); }
+  h2.tit .ciano { color: var(--ciano); }
+  p.sub { font-size: 11.5pt; line-height: 1.55; color: var(--fraco); max-width: 215mm; margin: 4.5mm 0 0; }
+  p.peq { font-size: 9pt; line-height: 1.5; color: var(--tenue); margin: 0; }
+
+  .corpo { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  /* ── Blocos chanfrados ────────────────────────────────────────────────── */
+  .bloco {
+    position: relative; padding: 6.5mm;
+    background: var(--painel);
+    clip-path: polygon(5mm 0, 100% 0, 100% calc(100% - 5mm), calc(100% - 5mm) 100%, 0 100%, 0 5mm);
+    box-shadow: inset 0 0 0 1px var(--linha);
+  }
+  .bloco.aceso { box-shadow: inset 0 0 0 1px #00e5ff85; }
+  .bloco.verde { box-shadow: inset 0 0 0 1px #00ff6459; }
+  .bloco.ambar { box-shadow: inset 0 0 0 1px #ffc53159; }
+  .bloco h3 { font-size: 12pt; font-weight: 700; }
+
+  .grade { display: grid; gap: 4.5mm; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g5 { grid-template-columns: repeat(5, 1fr); }
+
+  .num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24pt; font-weight: 700; line-height: 1; color: var(--ciano);
+  }
+  .num.v { color: var(--verde); }
+  .num.a { color: var(--ambar); }
+  .num.p { font-size: 17pt; }
+  .cap {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 7pt; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--tenue); margin-top: 2.2mm;
+  }
+  .desc { font-size: 9pt; line-height: 1.45; color: var(--fraco); margin-top: 2.2mm; }
+
+  /* ── Selo de evidência ────────────────────────────────────────────────── */
+  .selo {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 6.6pt; letter-spacing: .14em; text-transform: uppercase;
+    padding: 1.3mm 2.4mm;
+    clip-path: polygon(2mm 0, 100% 0, 100% calc(100% - 2mm), calc(100% - 2mm) 100%, 0 100%, 0 2mm);
+  }
+  .selo.verificado { background: #00ff6426; color: var(--verde); box-shadow: inset 0 0 0 1px #00ff6480; }
+  .selo.laudo { background: #00ff641a; color: #00e05a; box-shadow: inset 0 0 0 1px #00ff6459; }
+  .selo.campo { background: #ffc5311a; color: var(--ambar); box-shadow: inset 0 0 0 1px #ffc53159; }
+  .selo.pesq  { background: #00c8ff1a; color: var(--ciano); box-shadow: inset 0 0 0 1px #00c8ff59; }
+  .selo.proj  { background: #a855f71a; color: var(--roxo); box-shadow: inset 0 0 0 1px #a855f759; }
+  .selo.hip   { background: #ffffff0d; color: var(--tenue); box-shadow: inset 0 0 0 1px #ffffff26; }
+
+  /* ── Tabela ───────────────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  th {
+    text-align: left; padding: 2.8mm 3mm 2.2mm; color: var(--tenue);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; font-weight: 400;
+    border-bottom: 1px solid var(--linha);
+  }
+  td { padding: 2.9mm 3mm; border-bottom: 1px solid #ffffff12; color: var(--fraco); }
+  td.forte { color: var(--tinta); font-weight: 600; }
+  td.dado { font-family: 'JetBrains Mono', ui-monospace, monospace; color: var(--ciano); }
+  td.ok { color: var(--verde); }
+  td.nao { color: var(--tenue); }
+  tr:last-child td { border-bottom: 0; }
+
+  /* ── Cadeia de etapas ─────────────────────────────────────────────────── */
+  .fluxo { display: flex; align-items: stretch; gap: 0; }
+  .etapa {
+    flex: 1; padding: 5.5mm 5mm; background: var(--painel);
+    clip-path: polygon(0 0, calc(100% - 4mm) 0, 100% 50%, calc(100% - 4mm) 100%, 0 100%, 4mm 50%);
+    box-shadow: inset 0 0 0 1px var(--linha);
+    margin-right: -2mm;
+  }
+  .etapa:first-child { clip-path: polygon(0 0, calc(100% - 4mm) 0, 100% 50%, calc(100% - 4mm) 100%, 0 100%); }
+  .etapa:last-child { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 4mm 50%); margin-right: 0; }
+  .etapa .n { font-family: 'JetBrains Mono', monospace; font-size: 6.8pt; color: var(--ciano); letter-spacing: .16em; }
+  .etapa .t { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 10.5pt; margin-top: 1.8mm; }
+  .etapa .d { font-size: 8pt; color: var(--fraco); margin-top: 1.8mm; line-height: 1.4; }
+
+  ul.lista { margin: 0; padding: 0; list-style: none; }
+  ul.lista li {
+    position: relative; padding-left: 5.2mm;
+    font-size: 9.5pt; line-height: 1.5; color: var(--fraco); margin-bottom: 3.2mm;
+  }
+  ul.lista li::before { content: '▸'; position: absolute; left: 0; top: 0; color: var(--ciano); }
+  ul.lista li .selo { vertical-align: middle; margin-left: 1.5mm; }
+  ul.lista li b { color: var(--tinta); font-weight: 600; }
+  ul.lista.solta li { margin-bottom: 2.2mm; }
+
+  .destaque { color: var(--tinta); font-weight: 600; }
+  .aviso {
+    margin-top: 4.5mm; padding: 3.6mm 4.5mm; background: #ffc5310d;
+    box-shadow: inset 0 0 0 1px #ffc53133;
+    clip-path: polygon(3mm 0, 100% 0, 100% calc(100% - 3mm), calc(100% - 3mm) 100%, 0 100%, 0 3mm);
+    font-size: 8.6pt; line-height: 1.5; color: #ffe9b8;
+  }
+  .aviso.frio {
+    background: #00e5ff0d; box-shadow: inset 0 0 0 1px #00e5ff33; color: #cdf3ff;
+  }
+
+  /* ── Campo a preencher pelo fundador ──────────────────────────────────── */
+  .preencher {
+    background: #a855f70f;
+    box-shadow: inset 0 0 0 1px #a855f74d;
+    color: #e4ccff;
+  }
+  .preencher .rotulo {
+    font-family: 'JetBrains Mono', monospace; font-size: 6.6pt;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--roxo);
+  }
+  .preencher .vaga {
+    display: block; margin: 2.4mm 0 4mm; height: 1px;
+    background: repeating-linear-gradient(90deg, #a855f759 0 3mm, transparent 3mm 6mm);
+  }
+
+  /* ── Capa ─────────────────────────────────────────────────────────────── */
+  .capa { justify-content: center; padding-top: 20mm; }
+  .capa .lockup { display: flex; align-items: center; gap: 7mm; margin-bottom: 11mm; }
+  .capa .lockup .simbolo { width: 26mm; height: 26mm; object-fit: contain; }
+  .capa .lockup .risco { width: 1px; height: 20mm; background: linear-gradient(180deg, transparent, var(--linha), transparent); }
+  .capa .lockup .wordmark { height: 17mm; object-fit: contain; }
+  .capa h1 { font-size: 34pt; line-height: 1.08; font-weight: 700; letter-spacing: -.02em; max-width: 245mm; }
+  .capa h1 em { font-style: normal; color: var(--ciano); }
+  .capa .linha { width: 58mm; height: 2px; background: linear-gradient(90deg, var(--verde), var(--ciano)); margin: 8mm 0; }
+
+  .indice {
+    position: absolute; left: 20mm; right: 20mm; bottom: 12mm;
+    padding-top: 5mm; border-top: 1px solid #ffffff14;
+  }
+  .indice .titulo {
+    font-family: 'JetBrains Mono', monospace; font-size: 6.6pt;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--tenue);
+    margin-bottom: 3.5mm;
+  }
+  .indice ol {
+    margin: 0; padding: 0; list-style: none;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 2.6mm 5mm;
+  }
+  .indice li {
+    font-family: 'JetBrains Mono', monospace; font-size: 6.8pt;
+    letter-spacing: .04em; color: var(--fraco);
+    display: flex; justify-content: space-between; gap: 2mm;
+    border-bottom: 1px solid #ffffff0f; padding-bottom: 1.6mm;
+  }
+  .indice li span { color: var(--ciano); }
+
+  /* ── Par de fotos, sem respiro entre elas ─────────────────────────────── */
+  .folhas {
+    display: grid; grid-template-columns: 1fr 1px 1fr;
+    /* Sem isto o flex da lâmina encolhe o par de fotos quando o resto do
+       conteúdo aperta, e o `overflow: hidden` corta a legenda sem avisar. */
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px var(--linha);
+    clip-path: polygon(5mm 0, 100% 0, 100% calc(100% - 5mm), calc(100% - 5mm) 100%, 0 100%, 0 5mm);
+    overflow: hidden;
+  }
+  .folhas .divisa { background: linear-gradient(180deg, transparent, var(--ciano), transparent); }
+  .folha { position: relative; height: 70mm; overflow: hidden; background: var(--painel); }
+  /* `contain`, e não `cover`: recortar foto de evidência para caber na moldura
+     comeria as pontas dos lóbulos, que é justamente o que se está comparando.
+     A folha aparece inteira nas duas, e as duas na mesma escala. */
+  .folha img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .folha .tarja {
+    position: absolute; left: 0; bottom: 0; right: 0;
+    padding: 4mm 5mm 3.5mm;
+    background: linear-gradient(180deg, transparent, #000000d9 55%);
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 4mm;
+  }
+  .folha .quando {
+    font-family: 'JetBrains Mono', monospace; font-size: 7pt;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--tenue);
+  }
+  .folha .oque { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 12pt; margin-top: 1.5mm; }
+
+  /* ── Matriz de concorrência ───────────────────────────────────────────── */
+  .matriz td.eixo {
+    font-family: 'JetBrains Mono', monospace; font-size: 7pt;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--tenue);
+  }
+  .matriz td.nos { color: var(--verde); font-weight: 600; }
+  .matriz tr.nos td { background: #00ff640a; }
+
+  /* ── Fecho ────────────────────────────────────────────────────────────── */
+  .fecho { justify-content: center; }
+  .fecho .lockup { display: flex; align-items: center; gap: 7mm; margin-bottom: 9mm; }
+  .fecho .lockup .simbolo { width: 22mm; height: 22mm; object-fit: contain; }
+  .fecho .lockup .wordmark { height: 15mm; object-fit: contain; }
+  .fecho h2 { font-size: 24pt; line-height: 1.15; font-weight: 700; max-width: 220mm; }
+  .fecho h2 em { font-style: normal; color: var(--verde); }
+  .qr { width: 26mm; height: 26mm; }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .contato {
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5pt;
+    line-height: 1.9; color: var(--fraco); letter-spacing: .04em;
+  }
+  .contato b { color: var(--tinta); font-weight: 600; }
+</style>
+
+<div class="sangria"></div>
+
+<!-- ══════════════════════════ 01 · COVER ══════════════════════════ -->
+<section class="slide capa" data-n="01">
+  <div class="lockup">
+    <img class="simbolo" src="LOGO_AQUI" alt="ZoomDev">
+    <div class="risco"></div>
+    <img class="wordmark" src="WORDMARK_AQUI" alt="ZoomDev · Idea to Exit">
+  </div>
+
+  <h1>Regeneration<br>you can <em>prove</em>.</h1>
+  <div class="linha"></div>
+  <p class="sub" style="max-width:200mm;font-size:12.5pt">
+    ZoomDev OS turns degraded land into audit-ready biostartups. The proof is
+    generated <span class="destaque">with</span> the asset, not years after it.
+  </p>
+
+  <div class="indice">
+    <div class="titulo">Required slides · Startup World Cup application</div>
+    <ol>
+      <li>1 · Problem Statement <span>02</span></li>
+      <li>2 · Proposed Solution <span>03</span></li>
+      <li>3 · Product Details <span>05</span></li>
+      <li>4 · Business Model <span>07</span></li>
+      <li>5 · Market Opportunity <span>08</span></li>
+      <li>6 · Competition <span>12</span></li>
+      <li>7 · Growth Strategy <span>09</span></li>
+      <li>8 · Current Traction <span>06</span></li>
+      <li>9 · Financials <span>10</span></li>
+      <li>10 · Team <span>11</span></li>
+      <li>11 · Funding Status <span>13</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 02 · PROBLEM ══════════════════════════ -->
+<section class="slide" data-n="02">
+  <div class="rot">Problem Statement <span class="req">· required 1</span><span class="seg">025s</span></div>
+
+  <h2 class="tit" style="max-width:250mm">
+    The world is not short of land that could capture carbon.<br>
+    It is short of <span class="ciano">proof</span> that it did.
+  </h2>
+
+  <div class="corpo">
+    <div class="grade g3">
+      <div class="bloco">
+        <h3 style="color:var(--ambar)">Who has the problem</h3>
+        <div class="desc">
+          Municipalities with climate targets and no instrument. Agricultural
+          cooperatives sitting on degraded soil. Corporates that must retire
+          credits and cannot audit what they buy. And the family farmer, who
+          owns the carbon and cannot reach the market.
+        </div>
+      </div>
+      <div class="bloco">
+        <h3 style="color:var(--ambar)">Why today's answer fails</h3>
+        <div class="desc">
+          Certification is retrospective, slow and expensive: a first cycle
+          typically burns 20 to 40 percent of the credit value before a single
+          tonne is sold. The proof is built years after the land changed.
+        </div>
+      </div>
+      <div class="bloco">
+        <h3 style="color:var(--ambar)">And the tooling is split in two</h3>
+        <div class="desc">
+          AI builders ship software with no domain evidence. Carbon platforms
+          verify assets they did not originate. Nobody stands between the soil
+          and the registry, and that gap is where the market stalls.
+        </div>
+      </div>
+    </div>
+
+    <div class="aviso" style="margin-top:7mm">
+      Put plainly: a farmer with 50 hectares of degraded soil cannot enter a
+      market measured in billions, because proving what happened on that land
+      costs more than the land returns.
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 03 · SOLUTION ══════════════════════════ -->
+<section class="slide" data-n="03">
+  <div class="rot">Proposed Solution <span class="req">· required 2</span><span class="seg">025s</span></div>
+
+  <h2 class="tit" style="max-width:250mm">
+    One operating system that <span class="luz">regenerates</span>,
+    <span class="ciano">originates</span> and <span class="luz">proves</span>.
+  </h2>
+  <p class="sub">Three moves. Not four.</p>
+
+  <div class="corpo">
+    <div class="fluxo">
+      <div class="etapa">
+        <div class="n">01 · REGENERATE</div>
+        <div class="t">Coin Max</div>
+        <div class="d">
+          A Class A organomineral biostimulant, foliar. Its response is
+          inversely proportional to soil quality: the worse the ground, the
+          larger the gain. Regeneration technology, not marginal optimization.
+        </div>
+      </div>
+      <div class="etapa">
+        <div class="n">02 · ORIGINATE</div>
+        <div class="t">ZoomDev OS</div>
+        <div class="d">
+          27 governed AI agents turn an area into a biostartup: business plan,
+          MVP, compliance path, public-funding match and impact model, in days
+          instead of quarters.
+        </div>
+      </div>
+      <div class="etapa">
+        <div class="n">03 · PROVE</div>
+        <div class="t">Evidence Seal</div>
+        <div class="d">
+          Every number carries the grade of the evidence behind it. The weakest
+          link governs the claim. A carbon claim needs a technical report or
+          better, or it does not leave the platform.
+        </div>
+      </div>
+    </div>
+
+    <div class="grade g4" style="margin-top:7mm">
+      <div class="bloco verde" style="grid-column:span 2">
+        <div class="cap" style="margin-top:0">The evidence ladder, enforced in code</div>
+        <div style="display:flex;flex-wrap:wrap;gap:2.2mm;margin-top:3.5mm">
+          <span class="selo verificado">Verified 100</span>
+          <span class="selo laudo">Lab report 90</span>
+          <span class="selo campo">Field 80</span>
+          <span class="selo pesq">Research 75</span>
+          <span class="selo hip">Hypothesis 50</span>
+        </div>
+        <div class="desc">
+          Commercial claims require Field or above. Carbon credit claims require
+          Lab report or Verified. Field observation alone never mints a credit,
+          however convincing the photograph.
+        </div>
+      </div>
+      <div class="bloco">
+        <div class="num v">10</div>
+        <div class="cap">UN SDGs touched</div>
+        <div class="desc">Computed per project, not claimed.</div>
+      </div>
+      <div class="bloco">
+        <div class="num">27</div>
+        <div class="cap">Governed agents</div>
+        <div class="desc">Each under a versioned protocol.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 04 · EVIDENCE ══════════════════════════ -->
+<section class="slide" data-n="04">
+  <div class="rot">The Evidence <span class="req">· supports 2 and 3</span><span class="seg">020s</span></div>
+
+  <div class="folhas">
+    <div class="folha">
+      <img src="ASSET:coinmax-folha-antes.jpg" alt="Cassava leaf before application">
+      <div class="tarja">
+        <div>
+          <div class="quando">Day 0 · before</div>
+          <div class="oque">Stressed canopy</div>
+        </div>
+        <span class="selo campo">Field</span>
+      </div>
+    </div>
+    <div class="divisa"></div>
+    <div class="folha">
+      <img src="ASSET:coinmax-folha-depois.jpg" alt="Cassava leaf after Coin Max application">
+      <div class="tarja">
+        <div>
+          <div class="quando">After Coin Max</div>
+          <div class="oque">Health restored</div>
+        </div>
+        <span class="selo laudo">Lab report</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grade g3" style="margin-top:6mm">
+    <div class="bloco verde">
+      <div class="num v">+30%</div>
+      <div class="cap">Leaf area, from 30% upward</div>
+      <div class="desc">
+        Documented in signed technical reports. More lamina means more solar
+        capture and more photosynthesis per hectare.
+        <span class="selo laudo">Lab report 90</span>
+      </div>
+    </div>
+    <div class="bloco aceso">
+      <div class="num">+2.99 t</div>
+      <div class="cap">CO₂e per hectare per year</div>
+      <div class="desc">
+        Conservative scenario, computed by our own engine from the biomass gain.
+        Presented as an estimate until instrumented MRV exists.
+        <span class="selo pesq">Estimate</span>
+      </div>
+    </div>
+    <div class="bloco ambar">
+      <div class="num a">Not 30%</div>
+      <div class="cap">More decarbonization</div>
+      <div class="desc">
+        Photosynthesis does not scale linearly with leaf area, and assimilated
+        carbon is not sequestered carbon. We say what we can defend.
+      </div>
+    </div>
+  </div>
+
+  <div class="aviso frio">
+    We could claim thirty percent more decarbonization on this slide. Our own
+    protocol forbids it until instrumented MRV and third-party verification are
+    in place. <span class="destaque">That rule is not a disclaimer. It is the
+    product.</span>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">Coin Max · COT BioTechnology</div>
+</section>
+
+<!-- ══════════════════════════ 05 · PRODUCT ══════════════════════════ -->
+<section class="slide" data-n="05">
+  <div class="rot">Product Details <span class="req">· required 3</span><span class="seg">020s</span></div>
+
+  <h2 class="tit">Built, deployed and running in production today.</h2>
+
+  <div class="corpo">
+    <div class="grade g4">
+      <div class="bloco">
+        <h3>Idea to company</h3>
+        <div class="desc">
+          Ideation, classification, a fourteen-section business plan written by
+          five agents with live web research, a navigable MVP with real code,
+          publishable site and DOCX/PDF export.
+        </div>
+      </div>
+      <div class="bloco">
+        <h3>Impact 360° engine</h3>
+        <div class="desc">
+          Food security, just energy transition, carbon and local economy from
+          one input: crop, hectares and soil condition. Every dimension returns
+          its own evidence seal.
+        </div>
+      </div>
+      <div class="bloco">
+        <h3>Carbon stack</h3>
+        <div class="desc">
+          Environmental liability calculator, mitigation-hierarchy offset plan
+          (measure, reduce, compensate) and CarbonPay for settlement by card or
+          instant transfer.
+        </div>
+      </div>
+      <div class="bloco">
+        <h3>Public funding radar</h3>
+        <div class="desc">
+          Daily sweep of public calls with automatic matching against each
+          project, so a biostartup finds non-dilutive capital without a
+          consultant.
+        </div>
+      </div>
+    </div>
+
+    <div class="grade g5" style="margin-top:6mm">
+      <div class="bloco aceso"><div class="num">27</div><div class="cap">AI agents under protocol</div></div>
+      <div class="bloco aceso"><div class="num">14</div><div class="cap">Plan sections generated</div></div>
+      <div class="bloco aceso"><div class="num">7</div><div class="cap">Evidence grades</div></div>
+      <div class="bloco aceso"><div class="num">15</div><div class="cap">Crops modelled</div></div>
+      <div class="bloco aceso"><div class="num">98</div><div class="cap">Automated tests passing</div></div>
+    </div>
+
+    <p class="peq" style="margin-top:5mm">
+      Gamified by design: the founder advances from Seed to Forest, and the same
+      mechanic that keeps them building is what keeps the evidence complete.
+    </p>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 06 · TRACTION ══════════════════════════ -->
+<section class="slide" data-n="06">
+  <div class="rot">Current Traction <span class="req">· required 8</span><span class="seg">020s</span></div>
+
+  <h2 class="tit">Pre-revenue. Here is exactly what is real.</h2>
+  <p class="sub">
+    We are not going to dress a projection as a result. Everything on the left
+    is a system fact you can open and inspect. Everything on the right is still
+    to come, and is labelled as such.
+  </p>
+
+  <div class="corpo">
+    <div class="grade g2">
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0">Shipped and verifiable</div>
+        <ul class="lista solta" style="margin-top:4mm">
+          <li><b>Platform live in production</b>, full stack deployed, health-checked, with paid plans and instant-transfer settlement wired in.</li>
+          <li><b>Evidence Seal enforced in code</b>, not in a policy document: the weakest link caps every claim automatically.</li>
+          <li><b>Impact 360° engine</b> producing auditable output for 15 crops across three soil-response scenarios.</li>
+          <li><b>27 agents under versioned protocols</b>, with the boundary between documented result and investigated mechanism written into each one.</li>
+          <li><b>98 automated tests</b> covering session security, evidence rules and the impact engine.</li>
+        </ul>
+      </div>
+
+      <div class="bloco preencher">
+        <div class="rotulo">To complete before submission</div>
+        <ul class="lista solta" style="margin-top:4mm">
+          <li>Named pipeline: municipalities, cooperatives and producers currently in conversation<span class="vaga"></span></li>
+          <li>Hectares under letter of intent<span class="vaga"></span></li>
+          <li>Registered users and active projects at submission date<span class="vaga"></span></li>
+          <li>Public funding programmes applied to, with status<span class="vaga"></span></li>
+          <li>Awards, accelerators or institutional partnerships<span class="vaga"></span></li>
+        </ul>
+        <div class="desc" style="color:#e4ccff99">
+          CAC, LTV, retention, churn and NPS are not yet measurable at
+          pre-revenue stage. We will publish them the quarter they become real,
+          under the same evidence rules we apply to carbon.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 07 · BUSINESS MODEL ══════════════════════════ -->
+<section class="slide" data-n="07">
+  <div class="rot">Business Model <span class="req">· required 4</span><span class="seg">020s</span></div>
+
+  <h2 class="tit">Three revenue lines, one funnel.</h2>
+  <p class="sub">
+    Software pays for itself from day one. Carbon is the compounding line: every
+    hectare we help originate keeps paying while the credit lives.
+  </p>
+
+  <div class="corpo">
+    <div class="grade g3">
+      <div class="bloco aceso">
+        <div class="cap" style="margin-top:0">Line 1 · Subscription</div>
+        <table style="margin-top:3mm">
+          <tr><td class="forte">Free</td><td class="dado">R$ 0</td><td>500 credits</td></tr>
+          <tr><td class="forte">PRO</td><td class="dado">R$ 149</td><td>3.000 credits</td></tr>
+          <tr><td class="forte">BUSINESS</td><td class="dado">R$ 199</td><td>6.000 credits</td></tr>
+        </table>
+        <div class="desc">Per month. Live prices, already charging.</div>
+      </div>
+      <div class="bloco aceso">
+        <div class="cap" style="margin-top:0">Line 2 · Credit packs</div>
+        <table style="margin-top:3mm">
+          <tr><td class="forte">500</td><td class="dado">R$ 39</td><td>one full plan</td></tr>
+          <tr><td class="forte">1.500</td><td class="dado">R$ 99</td><td>plan + MVP</td></tr>
+          <tr><td class="forte">5.000</td><td class="dado">R$ 279</td><td>portfolio</td></tr>
+        </table>
+        <div class="desc">Top-ups. No expiry, no subscription required.</div>
+      </div>
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0">Line 3 · CarbonPay</div>
+        <div class="num v" style="margin-top:3mm">12% / 8%</div>
+        <div class="desc">
+          12 percent take on each verified transaction, 8 percent on
+          origination when we bring the project to the registry. Paid only on
+          tonnes that actually clear verification.
+        </div>
+      </div>
+    </div>
+
+    <div class="grade g2" style="margin-top:6mm">
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">Unit economics · what the price buys</div>
+        <table style="margin-top:3mm">
+          <tr><td>Full business plan, 14 sections + live research</td><td class="dado">180 credits</td></tr>
+          <tr><td>Navigable MVP with real code</td><td class="dado">120 credits</td></tr>
+          <tr><td>PRO subscriber at full monthly usage</td><td class="dado">16 plans</td></tr>
+        </table>
+      </div>
+      <div class="bloco ambar">
+        <div class="cap" style="margin-top:0">Cost structure against price</div>
+        <div class="desc">
+          Inference is the only variable cost that scales with usage. Modelled
+          at R$ 0,02 per credit, a fully consumed PRO seat costs R$ 60 against
+          R$ 149 of revenue: <span class="destaque">60 percent gross margin in
+          the worst case</span>, higher at typical usage, since most seats never
+          spend their whole allowance.
+          <span class="selo proj">Assumption</span>
+        </div>
+        <div class="desc" style="color:var(--tenue)">
+          Metered per-call cost accounting ships with the first paid cohort, and
+          replaces this assumption with measurement.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 08 · MARKET ══════════════════════════ -->
+<section class="slide" data-n="08">
+  <div class="rot">Market Opportunity <span class="req">· required 5</span><span class="seg">020s</span></div>
+
+  <h2 class="tit">Two independent counts. Both clear one billion dollars.</h2>
+
+  <div class="corpo">
+    <div class="grade g2">
+      <div class="bloco aceso">
+        <div class="cap" style="margin-top:0">Top-down · TAM</div>
+        <table style="margin-top:3mm">
+          <tr><td>Voluntary carbon market, 2025</td><td class="dado">US$ 15,8 bn</td></tr>
+          <tr><td>Same market, 2030 outlook</td><td class="dado">US$ 7 – 120 bn</td></tr>
+          <tr><td>Low-code AI app platforms, 2025</td><td class="dado">US$ 33,7 bn</td></tr>
+          <tr><td>Brazil regulated market (SBCE)</td><td class="dado">from 2024 law</td></tr>
+        </table>
+        <div class="desc" style="color:var(--tenue)">
+          Sources: Mordor Intelligence (US$ 15,8 bn in 2025, US$ 120 bn by 2030
+          at 50% CAGR); MSCI Carbon Markets, the conservative counterweight
+          (US$ 7 – 35 bn by 2030); SkyQuest, low-code platforms; Brazilian
+          Federal Law 15.042/2024, which created the SBCE emissions trading
+          system.
+          <span class="selo pesq">Research 75</span>
+        </div>
+      </div>
+
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0">Bottoms-up · SAM, Brazil only</div>
+        <table style="margin-top:3mm">
+          <tr><td>Degraded pasture with conversion potential</td><td class="dado">28 M ha</td></tr>
+          <tr><td>Our engine, conservative scenario</td><td class="dado">2,99 tCO₂e/ha/yr</td></tr>
+          <tr><td class="forte">Annual mitigation potential</td><td class="dado">83,8 Mt CO₂e</td></tr>
+          <tr><td class="forte">Gross market value at US$ 20/t</td><td class="dado">US$ 1,68 bn / yr</td></tr>
+        </table>
+        <div class="desc" style="color:var(--tenue)">
+          Hectares from Embrapa, published in <i>Land</i>: 10,5 M ha severely and
+          17,5 M ha moderately degraded, with good or very good conversion
+          potential. Brazil holds up to 109,7 M ha of pasture with some level of
+          degradation, so 28 M is the conservative floor, not the ceiling.
+          <span class="selo pesq">Research 75</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="aviso frio">
+      At our 12 percent take rate, the Brazilian bottoms-up figure alone is a
+      <span class="destaque">US$ 201 million annual revenue pool</span>, before
+      a single subscription is counted and before we leave the country.
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 09 · GROWTH ══════════════════════════ -->
+<section class="slide" data-n="09">
+  <div class="rot">Growth Strategy <span class="req">· required 7</span><span class="seg">015s</span></div>
+
+  <h2 class="tit">Land one territory. Then multiply inside it.</h2>
+  <p class="sub">
+    A municipality is not one customer. It is a hundred biostartups waiting for
+    an instrument, and each one carries the next.
+  </p>
+
+  <div class="corpo">
+    <div class="fluxo">
+      <div class="etapa">
+        <div class="n">PHASE 1 · AMAZON</div>
+        <div class="t">Prove the territory</div>
+        <div class="d">
+          Amapá and the eastern Amazon. Family farming, cassava and açaí,
+          degraded soil, and public funding programmes already mapped by the
+          platform's own radar.
+        </div>
+      </div>
+      <div class="etapa">
+        <div class="n">PHASE 2 · BRAZIL</div>
+        <div class="t">Ride the regulation</div>
+        <div class="d">
+          Law 15.042/2024 puts regulated demand behind the voluntary market.
+          Cooperatives and corporates with compliance obligations become the
+          paying side of CarbonPay.
+        </div>
+      </div>
+      <div class="etapa">
+        <div class="n">PHASE 3 · GLOBAL SOUTH</div>
+        <div class="t">Export the model</div>
+        <div class="d">
+          The same stack fits any tropical geography with degraded soil and a
+          carbon market: the engine is parameterised by crop and soil, not by
+          country.
+        </div>
+      </div>
+    </div>
+
+    <div class="grade g4" style="margin-top:7mm">
+      <div class="bloco"><h3 style="font-size:10.5pt">Public procurement</h3><div class="desc">The funding radar already finds the calls. Winning one funds an entire cohort without dilution.</div></div>
+      <div class="bloco"><h3 style="font-size:10.5pt">Cooperatives</h3><div class="desc">One contract reaches hundreds of producers who would never sign individually.</div></div>
+      <div class="bloco"><h3 style="font-size:10.5pt">Corporate ESG</h3><div class="desc">Buyers who need traceable retirement, not a certificate they cannot audit.</div></div>
+      <div class="bloco"><h3 style="font-size:10.5pt">Founder-led loop</h3><div class="desc">Every biostartup built on the platform is a case study that recruits the next founder.</div></div>
+    </div>
+
+    <p class="peq" style="margin-top:5mm">
+      Aligned by construction with the UN Sustainable Development Goals, the UN
+      Global Compact and a just energy transition: the community that
+      regenerates the land owns the energy it produces.
+    </p>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 10 · FINANCIALS ══════════════════════════ -->
+<section class="slide" data-n="10">
+  <div class="rot">Financials <span class="req">· required 9</span><span class="seg">015s</span></div>
+
+  <h2 class="tit">Five years, built from the bottom up.</h2>
+  <p class="sub" style="margin-top:3mm">
+    Every line comes from a price that already exists in the product and a
+    conversion assumption printed next to it. Nothing is reverse-engineered from
+    a target.
+  </p>
+
+  <div class="corpo">
+    <div class="bloco aceso" style="padding:5mm 6.5mm">
+      <table style="font-size:8.6pt">
+        <tr>
+          <th>Year</th>
+          <th>Paying seats</th>
+          <th>Subscription</th>
+          <th>CarbonPay GMV</th>
+          <th>Take at 12%</th>
+          <th>Total revenue</th>
+          <th>US$ at 5,40</th>
+        </tr>
+        <tr><td class="forte">2026</td><td class="dado">300</td><td class="dado">R$ 0,6 M</td><td class="dado">R$ 0</td><td class="dado">R$ 0</td><td class="forte">R$ 0,6 M</td><td class="dado">US$ 0,1 M</td></tr>
+        <tr><td class="forte">2027</td><td class="dado">1.500</td><td class="dado">R$ 2,9 M</td><td class="dado">R$ 8 M</td><td class="dado">R$ 1,0 M</td><td class="forte">R$ 3,9 M</td><td class="dado">US$ 0,7 M</td></tr>
+        <tr><td class="forte">2028</td><td class="dado">5.000</td><td class="dado">R$ 9,6 M</td><td class="dado">R$ 40 M</td><td class="dado">R$ 4,8 M</td><td class="forte">R$ 14,4 M</td><td class="dado">US$ 2,7 M</td></tr>
+        <tr><td class="forte">2029</td><td class="dado">12.000</td><td class="dado">R$ 23,0 M</td><td class="dado">R$ 120 M</td><td class="dado">R$ 14,4 M</td><td class="forte">R$ 37,4 M</td><td class="dado">US$ 6,9 M</td></tr>
+        <tr><td class="forte">2030</td><td class="dado">25.000</td><td class="dado">R$ 48,0 M</td><td class="dado">R$ 300 M</td><td class="dado">R$ 36,0 M</td><td class="forte">R$ 84,0 M</td><td class="dado">US$ 15,6 M</td></tr>
+      </table>
+    </div>
+
+    <div class="grade g3" style="margin-top:5mm">
+      <div class="bloco" style="padding:5mm">
+        <div class="cap" style="margin-top:0">Assumption · seats</div>
+        <div class="desc">Blended R$ 160 per seat per month across PRO and BUSINESS, net of the free tier.</div>
+      </div>
+      <div class="bloco" style="padding:5mm">
+        <div class="cap" style="margin-top:0">Assumption · carbon</div>
+        <div class="desc">GMV starts only in 2027, after the first cohort clears third-party verification. Nothing is booked before a tonne is retired.</div>
+      </div>
+      <div class="bloco" style="padding:5mm">
+        <div class="cap" style="margin-top:0">Assumption · scale check</div>
+        <div class="desc">2030 GMV of R$ 300 M is 2,8 Mt CO₂e at R$ 110 a tonne: 3,3 percent of the 83,8 Mt on slide 08.</div>
+      </div>
+    </div>
+
+    <div class="aviso" style="margin-top:4mm;padding:3mm 4.5mm">
+      <span class="destaque">Where the numbers come from.</span> Prices and
+      credit costs are live product configuration. Hectare and tonne figures are
+      engine output. Conversion rates are the assumption, and that is the line
+      we expect to be challenged on.
+      <span class="selo proj">Projection</span>
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 11 · TEAM ══════════════════════════ -->
+<section class="slide" data-n="11">
+  <div class="rot">Team <span class="req">· required 10</span><span class="seg">020s</span></div>
+
+  <h2 class="tit">The people behind it.</h2>
+
+  <div class="corpo">
+    <div class="grade g3">
+      <div class="bloco preencher">
+        <div class="rotulo">Founder &amp; CEO</div>
+        <div class="desc" style="color:#e4ccff">
+          Full name<span class="vaga"></span>
+          Role and years in the field<span class="vaga"></span>
+          Previous companies and institutions<span class="vaga"></span>
+          Degree and university<span class="vaga"></span>
+        </div>
+      </div>
+      <div class="bloco preencher">
+        <div class="rotulo">Co-founder or key hire</div>
+        <div class="desc" style="color:#e4ccff">
+          Full name<span class="vaga"></span>
+          Role<span class="vaga"></span>
+          Track record that de-risks execution<span class="vaga"></span>
+          Degree and university<span class="vaga"></span>
+        </div>
+      </div>
+      <div class="bloco preencher">
+        <div class="rotulo">Science &amp; advisory</div>
+        <div class="desc" style="color:#e4ccff">
+          COT BioTechnology technical lead<span class="vaga"></span>
+          Agronomy or MRV advisor<span class="vaga"></span>
+          Board or institutional backing<span class="vaga"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grade g2" style="margin-top:6mm">
+      <div class="bloco preencher">
+        <div class="rotulo">Awards, patents, notable prizes</div>
+        <span class="vaga" style="margin-top:4mm"></span>
+        <span class="vaga" style="margin-top:4mm"></span>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">What the team already shipped</div>
+        <div class="desc">
+          A full-stack platform in production with 27 governed agents, an
+          auditable impact engine, payment rails and an evidence-governance
+          layer that no competitor in either category currently offers. That is
+          the execution evidence available today.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 12 · COMPETITION ══════════════════════════ -->
+<section class="slide" data-n="12">
+  <div class="rot">Competition <span class="req">· required 6</span><span class="seg">015s</span></div>
+
+  <h2 class="tit">Two crowded categories, and nobody in the gap between them.</h2>
+
+  <div class="corpo">
+    <div class="bloco aceso">
+      <table class="matriz">
+        <tr>
+          <th>Alternative the customer uses today</th>
+          <th>Builds software</th>
+          <th>Regenerates soil</th>
+          <th>Governs evidence</th>
+          <th>Settles carbon</th>
+        </tr>
+        <tr>
+          <td class="eixo">Base44 · Lovable · Replit · Bolt</td>
+          <td class="ok">yes</td><td class="nao">no</td><td class="nao">no</td><td class="nao">no</td>
+        </tr>
+        <tr>
+          <td class="eixo">Verra · Gold Standard registries</td>
+          <td class="nao">no</td><td class="nao">no</td><td class="ok">yes</td><td class="nao">no</td>
+        </tr>
+        <tr>
+          <td class="eixo">Pachama · Sylvera · BeZero (MRV, ratings)</td>
+          <td class="nao">no</td><td class="nao">no</td><td class="ok">yes</td><td class="nao">no</td>
+        </tr>
+        <tr>
+          <td class="eixo">Brazilian originators and brokers</td>
+          <td class="nao">no</td><td class="nao">no</td><td class="nao">partial</td><td class="ok">yes</td>
+        </tr>
+        <tr>
+          <td class="eixo">Agri input suppliers</td>
+          <td class="nao">no</td><td class="ok">yes</td><td class="nao">no</td><td class="nao">no</td>
+        </tr>
+        <tr>
+          <td class="eixo">Consultants and spreadsheets (the real incumbent)</td>
+          <td class="nao">no</td><td class="nao">no</td><td class="nao">no</td><td class="nao">no</td>
+        </tr>
+        <tr class="nos">
+          <td class="nos">ZoomDev OS + Coin Max</td>
+          <td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="grade g2" style="margin-top:6mm">
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">Why a customer picks us over the incumbent</div>
+        <div class="desc">
+          Against a consultant, we are faster and cheaper by an order of
+          magnitude. Against a registry, we arrive before the project exists.
+          Against an AI builder, we carry the domain evidence they cannot fake.
+        </div>
+      </div>
+      <div class="bloco ambar">
+        <div class="cap" style="margin-top:0">What would actually threaten us</div>
+        <div class="desc">
+          An MRV platform moving upstream into origination, or an AI builder
+          acquiring a biotech. Our defence is the evidence layer and the field
+          data that only accumulates by being in the soil first.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 13 · FUNDING ══════════════════════════ -->
+<section class="slide" data-n="13">
+  <div class="rot">Current Funding Status <span class="req">· required 11</span><span class="seg">010s</span></div>
+
+  <h2 class="tit">Where we are, and what the round buys.</h2>
+
+  <div class="corpo">
+    <div class="grade g4">
+      <div class="bloco preencher"><div class="rotulo">Stage</div><div class="desc" style="color:#e4ccff">Pre-seed, seed or Series A<span class="vaga"></span></div></div>
+      <div class="bloco preencher"><div class="rotulo">Raised to date</div><div class="desc" style="color:#e4ccff">Amount and source<span class="vaga"></span></div></div>
+      <div class="bloco preencher"><div class="rotulo">Raising now</div><div class="desc" style="color:#e4ccff">Amount sought<span class="vaga"></span></div></div>
+      <div class="bloco preencher"><div class="rotulo">Runway</div><div class="desc" style="color:#e4ccff">Months the round funds<span class="vaga"></span></div></div>
+    </div>
+
+    <div class="grade g4" style="margin-top:6mm">
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0">Use of funds · 1</div>
+        <h3 style="font-size:11pt;margin-top:2mm">Instrumented MRV</h3>
+        <div class="desc">Sensors, control plots and accredited third-party verification. This is what turns our estimate into a credit, and it is the single highest-leverage spend in the company.</div>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">Use of funds · 2</div>
+        <h3 style="font-size:11pt;margin-top:2mm">Field deployment</h3>
+        <div class="desc">Hectares under application with agronomic supervision, in the territories where the response curve is strongest.</div>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">Use of funds · 3</div>
+        <h3 style="font-size:11pt;margin-top:2mm">Product and team</h3>
+        <div class="desc">Metered cost accounting, registry integration and the engineering to carry the first paying cohort.</div>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">Use of funds · 4</div>
+        <h3 style="font-size:11pt;margin-top:2mm">Go to market</h3>
+        <div class="desc">Municipal and cooperative contracts, and the public-funding applications the radar already surfaces.</div>
+      </div>
+    </div>
+
+    <div class="aviso frio">
+      The round has one job above all others: close the distance between
+      <span class="destaque">estimate</span> and
+      <span class="destaque">verified credit</span>. Everything else in this
+      deck already exists.
+    </div>
+  </div>
+
+  <div class="selo-marca"><img src="LOGO_AQUI" alt="">ZoomDev OS</div>
+</section>
+
+<!-- ══════════════════════════ 14 · SUMMARY ══════════════════════════ -->
+<section class="slide fecho" data-n="14">
+  <div class="lockup">
+    <img class="simbolo" src="LOGO_AQUI" alt="ZoomDev">
+    <img class="wordmark" src="WORDMARK_AQUI" alt="ZoomDev · Idea to Exit">
+  </div>
+
+  <h2>
+    Generative AI and conscious biotechnology,<br>
+    in symbiosis, so the Amazon can regenerate<br>
+    <em>faster than it is lost</em>.
+  </h2>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12mm;align-items:end;margin-top:12mm">
+    <div>
+      <ul class="lista solta">
+        <li><b>Three takeaways.</b></li>
+        <li>The bottleneck of the carbon market is proof, and we generate proof at origination.</li>
+        <li>Coin Max makes the worst soil the best business, which is exactly where the need is.</li>
+        <li>The platform is built and running. The round buys verification, not a prototype.</li>
+      </ul>
+    </div>
+
+    <div class="contato">
+      <div><b>[ FOUNDER FULL NAME ]</b></div>
+      <div>[ founder@zoomdev.email ]</div>
+      <div>[ www.your-production-url ]</div>
+      <div style="color:var(--tenue)">Florianópolis · Brazil · 2026</div>
+    </div>
+
+    <div style="text-align:center">
+      <div class="qr">
+        <img src="ASSET:qr-video.svg" alt="Video" style="width:100%;height:100%">
+      </div>
+      <div class="cap" style="margin-top:2.5mm">Watch the field</div>
+    </div>
+  </div>
+
+  <div style="position:absolute;left:20mm;right:20mm;bottom:12mm;padding-top:4mm;border-top:1px solid #ffffff14;
+              font-family:'JetBrains Mono',monospace;font-size:7pt;letter-spacing:.16em;
+              text-transform:uppercase;color:var(--tenue);display:flex;justify-content:space-between">
+    <span>Startup World Cup · Florianópolis, Brazil · 2026</span>
+    <span>ZoomDev OS · Coin Max · COT BioTechnology</span>
+  </div>
+</section>

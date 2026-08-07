@@ -8,7 +8,7 @@ import { simular360 } from '../services/impactoRegenerativo.js';
 import {
   IDENTIDADE, EFEITOS_TECNICOS, efeitosComunicaveis,
   CENARIOS_UPLIFT, culturasLista,
-} from '../science/biogenesis.js';
+} from '../science/coinmax.js';
 import { SELOS, ORDEM_SELOS } from '../science/selos.js';
 import { ARQUETIPOS } from '../science/corpus.js';
 import { BIOGEN, potencialBiogen } from '../science/biogen.js';
@@ -17,7 +17,7 @@ import { isAdmin } from '../auth.js';
 export const impactoRouter = Router();
 
 // Perfil técnico da tecnologia. Efeitos em investigação só aparecem para o admin.
-impactoRouter.get('/biogenesis', (req, res) => {
+impactoRouter.get('/coinmax', (req, res) => {
   res.json({
     identidade: IDENTIDADE,
     selos: ORDEM_SELOS.map(id => SELOS[id]),
