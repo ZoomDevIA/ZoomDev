@@ -363,10 +363,13 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 
 ### 11. Current Funding Status
 
-**Modelo**
+**Pronto para colar**
 
-> Stage: [PRE-SEED / SEED / SERIES A]. Raised to date: [AMOUNT AND SOURCE].
-> Raising now: [AMOUNT]. Estimated runway: [MONTHS].
+> Stage: no equity round raised to date, and no shares issued. Raised to date:
+> Programa Centelha 3, the Brazilian Federal Government innovation grant (MCTI,
+> FINEP, CNPq and the state research foundations), won through a competitive
+> public call and fully non-dilutive. Raising now: USD 1 million. Estimated
+> runway: 12 months.
 >
 > Use of funds, in order of leverage. First, instrumented MRV: sensors, control
 > plots and accredited third-party verification. This is what turns our
