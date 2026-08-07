@@ -406,6 +406,24 @@ Só o fundador sabe a resposta. Não há texto pronto aqui de propósito: marcar
 uma origem que não aconteceu é dado falso num formulário que a organização usa
 para medir canal.
 
+### Company One-Line?
+
+Limite de 250 caracteres. **É o que vai no formulário:**
+
+> ZoomDev OS turns degraded land into audit-ready biostartups. Coin Max
+> regenerates the soil, 27 AI agents originate the company, and the Evidence
+> Seal grades every number, so a carbon claim never outruns the proof behind it.
+
+223 caracteres. Versão em português, para uso local (228 caracteres):
+
+> A ZoomDev OS transforma terra degradada em biostartups auditáveis. O Coin Max
+> regenera o solo, 27 agentes de IA originam a empresa, e o Selo de Evidência
+> classifica cada número: alegação de carbono nunca passa à frente da prova.
+
+Cita os 27 agentes e o Selo de Evidência porque é o que nenhum concorrente das
+duas categorias tem. Sobram cerca de 25 caracteres em cada, se for preciso
+encaixar cidade ou estado.
+
 ---
 
 ## Parte 3 · Campos de cadastro previstos
