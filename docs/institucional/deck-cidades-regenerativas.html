@@ -1,0 +1,862 @@
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  DECK INSTITUCIONAL — CIDADES REGENERATIVAS
+  ZoomDev OS · Biogenesis COT BioTechnology
+
+  Regra que governa este documento: NENHUM número aqui é estimado à mão.
+  Todos os valores de impacto saem do motor da própria plataforma
+  (server/src/services/impactoRegenerativo.js), no cenário CONSERVADOR, e
+  carregam o selo de evidência que o sistema atribui.
+
+  Para regenerar os números:
+    node -e "import('./server/src/services/impactoRegenerativo.js')
+             .then(m => console.log(m.simular360({culturaId:'mandioca',
+                        hectares:5000, cenarioId:'conservador'})))"
+
+  Para regenerar o PDF:
+    node scripts/gerar-deck.mjs
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  @page { size: 338mm 190mm; margin: 0; }
+
+  :root {
+    --tinta: #eafff5;
+    --fraco: #ffffff8a;
+    --tenue: #ffffff45;
+    --ciano: #00e5ff;
+    --verde: #00ff64;
+    --ambar: #ffc531;
+    --roxo: #a855f7;
+    --fundo: #030d07;
+    --painel: #07170f;
+    --linha: #00e5ff33;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #000;
+    color: var(--tinta);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  h1, h2, h3 { font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; margin: 0; }
+
+  .slide {
+    position: relative;
+    width: 338mm;
+    height: 190mm;
+    padding: 18mm 20mm;
+    background:
+      radial-gradient(ellipse at 12% 0%, #00e5ff0f, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, #00ff640d, transparent 50%),
+      var(--fundo);
+    page-break-after: always;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .slide:last-child { page-break-after: auto; }
+
+  /* Grade técnica de fundo, discreta */
+  .slide::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(#00e5ff06 1px, transparent 1px),
+      linear-gradient(90deg, #00e5ff06 1px, transparent 1px);
+    background-size: 14mm 14mm;
+    pointer-events: none;
+  }
+  .slide > * { position: relative; }
+
+  /* Numeração e marca de rodapé */
+  .slide::after {
+    content: attr(data-n);
+    position: absolute;
+    right: 20mm; bottom: 11mm;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 8pt;
+    letter-spacing: .18em;
+    color: var(--tenue);
+  }
+
+  .slide.capa::after, .slide.fecho::after { content: ''; }
+
+  .rot {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 8pt; letter-spacing: .26em; text-transform: uppercase;
+    color: var(--ciano);
+    margin-bottom: 6mm;
+  }
+  .rot::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--linha), transparent); }
+
+  h2.tit { font-size: 27pt; line-height: 1.1; font-weight: 700; letter-spacing: -.01em; }
+  h2.tit .luz { color: var(--verde); }
+  h2.tit .ciano { color: var(--ciano); }
+  p.sub { font-size: 12pt; line-height: 1.55; color: var(--fraco); max-width: 210mm; margin: 5mm 0 0; }
+  p.peq { font-size: 9.5pt; line-height: 1.5; color: var(--tenue); margin: 0; }
+
+  .corpo { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  /* ── Blocos chanfrados ────────────────────────────────────────────────── */
+  .bloco {
+    position: relative;
+    padding: 7mm;
+    background: var(--painel);
+    clip-path: polygon(5mm 0, 100% 0, 100% calc(100% - 5mm), calc(100% - 5mm) 100%, 0 100%, 0 5mm);
+    box-shadow: inset 0 0 0 1px var(--linha);
+  }
+  .bloco.aceso { box-shadow: inset 0 0 0 1px #00e5ff85; }
+  .bloco.verde { box-shadow: inset 0 0 0 1px #00ff6459; }
+  .bloco.ambar { box-shadow: inset 0 0 0 1px #ffc53159; }
+
+  .grade { display: grid; gap: 5mm; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g5 { grid-template-columns: repeat(5, 1fr); }
+
+  .num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26pt; font-weight: 700; line-height: 1;
+    color: var(--ciano);
+  }
+  .num.v { color: var(--verde); }
+  .num.a { color: var(--ambar); }
+  .num.p { font-size: 19pt; }
+  .cap {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 7.5pt; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--tenue); margin-top: 2.5mm;
+  }
+  .desc { font-size: 9.5pt; line-height: 1.45; color: var(--fraco); margin-top: 2.5mm; }
+
+  /* ── Selo de evidência ────────────────────────────────────────────────── */
+  .selo {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 6.8pt; letter-spacing: .14em; text-transform: uppercase;
+    padding: 1.4mm 2.6mm;
+    clip-path: polygon(2mm 0, 100% 0, 100% calc(100% - 2mm), calc(100% - 2mm) 100%, 0 100%, 0 2mm);
+  }
+  .selo.laudo { background: #00ff641a; color: var(--verde); box-shadow: inset 0 0 0 1px #00ff6459; }
+  .selo.campo { background: #ffc5311a; color: var(--ambar); box-shadow: inset 0 0 0 1px #ffc53159; }
+  .selo.pesq  { background: #a855f71a; color: var(--roxo); box-shadow: inset 0 0 0 1px #a855f759; }
+  .selo.hip   { background: #ffffff0d; color: var(--tenue); box-shadow: inset 0 0 0 1px #ffffff26; }
+
+  /* ── Tabela ───────────────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  th {
+    text-align: left; padding: 3mm 3mm 2.4mm; color: var(--tenue);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 7.5pt; letter-spacing: .14em; text-transform: uppercase; font-weight: 400;
+    border-bottom: 1px solid var(--linha);
+  }
+  td { padding: 3.2mm 3mm; border-bottom: 1px solid #ffffff12; color: var(--fraco); }
+  td.forte { color: var(--tinta); font-weight: 600; }
+  td.dado { font-family: 'JetBrains Mono', ui-monospace, monospace; color: var(--ciano); }
+  tr:last-child td { border-bottom: 0; }
+
+  /* ── Cadeia de valor ──────────────────────────────────────────────────── */
+  .fluxo { display: flex; align-items: stretch; gap: 0; }
+  .etapa {
+    flex: 1; padding: 6mm 5mm; background: var(--painel);
+    clip-path: polygon(0 0, calc(100% - 4mm) 0, 100% 50%, calc(100% - 4mm) 100%, 0 100%, 4mm 50%);
+    box-shadow: inset 0 0 0 1px var(--linha);
+    margin-right: -2mm;
+  }
+  .etapa:first-child { clip-path: polygon(0 0, calc(100% - 4mm) 0, 100% 50%, calc(100% - 4mm) 100%, 0 100%); }
+  .etapa:last-child { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 4mm 50%); margin-right: 0; }
+  .etapa .n { font-family: 'JetBrains Mono', monospace; font-size: 7pt; color: var(--ciano); letter-spacing: .16em; }
+  .etapa .t { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 11pt; margin-top: 2mm; }
+  .etapa .d { font-size: 8.5pt; color: var(--fraco); margin-top: 2mm; line-height: 1.4; }
+
+  /* ── Capa ─────────────────────────────────────────────────────────────── */
+  .capa { justify-content: center; }
+  .capa .marca { display: flex; align-items: center; gap: 5mm; margin-bottom: 12mm; }
+  .capa img { width: 22mm; height: 22mm; object-fit: contain; }
+  .capa .nome { font-family: 'Space Grotesk', sans-serif; font-size: 17pt; font-weight: 700; letter-spacing: -.01em; }
+  .capa .nome span { color: var(--verde); }
+  .capa h1 { font-size: 40pt; line-height: 1.06; font-weight: 700; letter-spacing: -.02em; max-width: 250mm; }
+  .capa h1 em { font-style: normal; color: var(--ciano); }
+  .capa .linha { width: 60mm; height: 2px; background: linear-gradient(90deg, var(--verde), var(--ciano)); margin: 9mm 0; }
+  .capa .rodape {
+    position: absolute; left: 20mm; bottom: 14mm; right: 20mm;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-family: 'JetBrains Mono', monospace; font-size: 8pt;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--tenue);
+  }
+
+  ul.lista { margin: 0; padding: 0; list-style: none; }
+  ul.lista li {
+    position: relative; padding-left: 5.5mm;
+    font-size: 10pt; line-height: 1.55;
+    color: var(--fraco); margin-bottom: 3.6mm;
+  }
+  ul.lista li::before {
+    content: '▸'; position: absolute; left: 0; top: 0; color: var(--ciano);
+  }
+  /* O selo acompanha a linha do texto em vez de virar bloco solto */
+  ul.lista li .selo { vertical-align: middle; margin-left: 1.5mm; }
+  ul.lista li b { color: var(--tinta); font-weight: 600; }
+
+  .destaque { color: var(--tinta); font-weight: 600; }
+  .aviso {
+    margin-top: 5mm; padding: 4mm 5mm; background: #ffc5310d;
+    box-shadow: inset 0 0 0 1px #ffc53133;
+    clip-path: polygon(3mm 0, 100% 0, 100% calc(100% - 3mm), calc(100% - 3mm) 100%, 0 100%, 0 3mm);
+    font-size: 9pt; line-height: 1.5; color: #ffe9b8;
+  }
+</style>
+
+<!-- ══════════════════════════ 01 · CAPA ══════════════════════════ -->
+<section class="slide capa" data-n="01">
+  <div class="marca">
+    <img src="LOGO_AQUI" alt="ZoomDev">
+    <div>
+      <div class="nome">Zoom<span>Dev</span> OS</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:7.5pt;letter-spacing:.2em;color:var(--tenue);margin-top:1.5mm">
+        DA IDEIA AO EXIT
+      </div>
+    </div>
+  </div>
+
+  <h1>A cidade inteligente<br>começa no <em>solo</em> que<br>ninguém estava olhando.</h1>
+
+  <div class="linha"></div>
+
+  <p class="sub" style="max-width:170mm">
+    Um bioestimulante que entrega mais onde a terra está mais degradada, uma plataforma
+    que transforma cada lavoura recuperada em empresa, e um cinturão agrícola que passa a
+    produzir alimento, energia, crédito de carbono e renda ao mesmo tempo.
+  </p>
+
+  <div class="rodape">
+    <span>Documento institucional · Cidades Regenerativas</span>
+    <span>Biogenesis COT BioTechnology × ZoomDev OS</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 02 · A TESE ══════════════════════════ -->
+<section class="slide" data-n="02">
+  <div class="rot">a tese</div>
+  <div class="corpo">
+    <h2 class="tit" style="max-width:240mm">
+      Cidade inteligente não é a que tem <span style="color:var(--tenue)">mais sensor</span>.<br>
+      É a que fecha o ciclo entre <span class="luz">o que come</span>,
+      <span class="ciano">a energia que queima</span> e <span class="luz">o carbono que emite</span>.
+    </h2>
+    <p class="sub">
+      O debate de <i>smart cities</i> se concentrou em semáforo, câmera e painel de gestão. Enquanto
+      isso, o cinturão que alimenta a cidade continua com solo ácido, produtividade baixa, resíduo
+      queimado a céu aberto e energia térmica vinda de botijão transportado por centenas de
+      quilômetros. <span class="destaque">A infraestrutura mais atrasada da cidade inteligente é a
+      que fica fora dela.</span>
+    </p>
+
+    <div class="grade g3" style="margin-top:9mm">
+      <div class="bloco">
+        <div class="num v">1</div>
+        <div class="cap">o catalisador</div>
+        <div class="desc"><b style="color:var(--tinta)">Biogenesis</b>, bioestimulante cuja resposta
+        é inversamente proporcional à qualidade do solo. Quanto pior a terra, maior o ganho.</div>
+      </div>
+      <div class="bloco">
+        <div class="num">2</div>
+        <div class="cap">o multiplicador</div>
+        <div class="desc"><b style="color:var(--tinta)">ZoomDev OS</b>, plataforma que converte cada
+        produtor recuperado em biostartup com plano, MVP, edital e governança de evidência.</div>
+      </div>
+      <div class="bloco">
+        <div class="num a">3</div>
+        <div class="cap">o ativo</div>
+        <div class="desc"><b style="color:var(--tinta)">Quatro saídas</b> do mesmo hectare: alimento,
+        energia distribuída, crédito de carbono e renda. Sem competir entre si.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 03 · A INVERSÃO ══════════════════════════ -->
+<section class="slide" data-n="03">
+  <div class="rot">o achado que inverte o setor</div>
+  <div class="corpo">
+    <h2 class="tit">O agro convencional entrega mais<br>para <span style="color:var(--tenue)">quem já tem</span>.
+      O Biogenesis faz <span class="luz">o contrário</span>.</h2>
+    <p class="sub">
+      Insumo tradicional rende bem em solo corrigido e pouco em solo pobre, o que concentra ganho
+      em quem já podia investir. A curva de resposta do Biogenesis é invertida: o maior salto
+      acontece exatamente na terra que ninguém quis.
+    </p>
+
+    <div style="margin-top:8mm" class="bloco aceso">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34%">Condição do solo</th>
+            <th style="width:20%">Ganho de produtividade</th>
+            <th style="width:20%">Faixa medida</th>
+            <th>Nível de evidência</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="forte">Degradado · ácido, sem correção</td>
+            <td class="dado" style="color:var(--verde);font-size:13pt;font-weight:700">+200%</td>
+            <td class="dado">120% a 200%</td>
+            <td><span class="selo laudo">laudo</span></td>
+          </tr>
+          <tr>
+            <td class="forte">Em recuperação · parcialmente corrigido</td>
+            <td class="dado" style="font-size:13pt;font-weight:700">+80%</td>
+            <td class="dado">40% a 110%</td>
+            <td><span class="selo campo">campo</span></td>
+          </tr>
+          <tr>
+            <td class="forte">Corrigido e manejado</td>
+            <td class="dado" style="font-size:13pt;font-weight:700">+30%</td>
+            <td class="dado">15% a 45%</td>
+            <td><span class="selo laudo">laudo</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="sub" style="margin-top:6mm">
+      Isso deixa de ser característica técnica e vira <span class="destaque">instrumento de política
+      pública</span>: a tecnologia entrega o máximo onde a agricultura familiar mais sofre, e é
+      justamente ali que estão os cinturões periurbanos das cidades que queremos tornar inteligentes.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 04 · O CATALISADOR ══════════════════════════ -->
+<section class="slide" data-n="04">
+  <div class="rot">biogenesis cot biotechnology · o catalisador</div>
+  <div class="corpo">
+    <h2 class="tit">Um insumo foliar.<br><span class="ciano">Sete efeitos medidos.</span></h2>
+
+    <div class="grade g2" style="margin-top:7mm">
+      <div>
+        <ul class="lista">
+          <li><b>Área foliar a partir de +30%</b>, com mais captação solar e fotossíntese intensificada.
+            É a base física do sequestro adicional. <span class="selo laudo">laudo</span></li>
+          <li><b>Sistema radicular até 3× mais desenvolvido</b>, acessando água e nutrientes
+            indisponíveis na superfície. <span class="selo laudo">laudo</span></li>
+          <li><b>Resistência a fungos e bactérias</b>, com resposta visível em torno de 25 dias,
+            reduzindo dependência de defensivos. <span class="selo laudo">laudo</span></li>
+          <li><b>Ausência de organoclorados</b> nas áreas analisadas, abaixo do limite de detecção.
+            Requisito para certificação orgânica. <span class="selo laudo">laudo</span></li>
+        </ul>
+      </div>
+      <div>
+        <ul class="lista">
+          <li><b>Sobrevivência em estiagem prolongada</b>, com casos observados de quase dois meses
+            sem chuva. <span class="selo campo">campo</span></li>
+          <li><b>Recuperação da vida do solo</b> e retorno de polinizadores nas áreas tratadas.
+            <span class="selo campo">campo</span></li>
+          <li><b>Retenção de umidade</b> com efeito direto sobre necessidade de irrigação.
+            <span class="selo campo">campo</span></li>
+        </ul>
+
+        <div class="bloco" style="margin-top:5mm">
+          <div class="cap" style="margin-top:0">protocolo de aplicação</div>
+          <div class="desc" style="color:var(--tinta)">
+            Bioestimulante organomineral de aplicação foliar, regularizado como insumo agrícola no
+            órgão federal competente.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="aviso">
+      <b>Mecanismo e resultado são coisas separadas, e o sistema não confunde as duas.</b>
+      O desenvolvedor propõe uma explicação físico-química ainda em investigação. Ela é classificada
+      como <span class="selo hip" style="margin:0 2px">hipótese</span> e <b>não sustenta alegação
+      comercial nem cálculo de crédito</b>. Os efeitos acima foram medidos em campo e valem
+      independentemente da explicação, sendo compatíveis com a ação conhecida de bioestimulantes.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 05 · A CADEIA ══════════════════════════ -->
+<section class="slide" data-n="05">
+  <div class="rot">a cadeia · um insumo, quatro ativos</div>
+  <div class="corpo">
+    <h2 class="tit">O mesmo hectare passa a produzir<br><span class="luz">quatro coisas</span> em vez de uma.</h2>
+
+    <div class="fluxo" style="margin-top:9mm">
+      <div class="etapa">
+        <div class="n">01</div>
+        <div class="t">Solo</div>
+        <div class="d">Aplicação foliar em área degradada. O ganho é maior justamente onde a terra está pior.</div>
+      </div>
+      <div class="etapa">
+        <div class="n">02</div>
+        <div class="t">Alimento</div>
+        <div class="d">Produtividade sobe. O cinturão volta a abastecer a cidade que ele cerca.</div>
+      </div>
+      <div class="etapa">
+        <div class="n">03</div>
+        <div class="t">Energia</div>
+        <div class="d">O resíduo extra vira biogás em biodigestão local: cocção limpa e eletricidade.</div>
+      </div>
+      <div class="etapa">
+        <div class="n">04</div>
+        <div class="t">Carbono</div>
+        <div class="d">Mais biomassa e menos fóssil queimado. Sequestro somado a emissão evitada.</div>
+      </div>
+      <div class="etapa">
+        <div class="n">05</div>
+        <div class="t">Empresa</div>
+        <div class="d">A ZoomDev OS transforma o produtor em biostartup, com plano, MVP e edital.</div>
+      </div>
+    </div>
+
+    <div class="grade g3" style="margin-top:9mm">
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0">o que ninguém fecha hoje</div>
+        <div class="desc">Programas de fomento tratam alimento, energia e carbono como três editais
+        diferentes, com três consultorias e três prestações de contas.</div>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">o que a integração muda</div>
+        <div class="desc">Uma intervenção agronômica única alimenta as quatro contas ao mesmo tempo,
+        com um só conjunto de evidências e um só MRV.</div>
+      </div>
+      <div class="bloco ambar">
+        <div class="cap" style="margin-top:0">por que isso importa ao gestor</div>
+        <div class="desc">O custo por tonelada de CO₂e cai quando a mesma ação também resolve
+        segurança alimentar e acesso a energia.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 06 · O NÚMERO ══════════════════════════ -->
+<section class="slide" data-n="06">
+  <div class="rot">simulação · cinturão de 5.000 hectares · cenário conservador</div>
+  <div class="corpo">
+    <h2 class="tit">O que um <span class="ciano">cinturão municipal</span> devolve<br>por ano, no cenário mais cauteloso.</h2>
+
+    <div class="grade g4" style="margin-top:8mm">
+      <div class="bloco verde">
+        <div class="num v">+21.750 t</div>
+        <div class="cap">produção adicional</div>
+        <div class="desc">Equivale à necessidade calórica anual de <b style="color:var(--tinta)">45.401 pessoas</b>.</div>
+      </div>
+      <div class="bloco">
+        <div class="num">1,34 GWh</div>
+        <div class="cap">eletricidade por ano</div>
+        <div class="desc"><b style="color:var(--tinta)">746 domicílios</b> rurais atendidos, mais
+        <b style="color:var(--tinta)">1.827 famílias</b> com cocção limpa.</div>
+      </div>
+      <div class="bloco ambar">
+        <div class="num a">14.966 t</div>
+        <div class="cap">CO₂e por ano</div>
+        <div class="desc">13.119 t sequestradas mais 1.847 t evitadas por substituição de fóssil.</div>
+      </div>
+      <div class="bloco">
+        <div class="num">R$ 17,3 mi</div>
+        <div class="cap">valor gerado por ano</div>
+        <div class="desc">Receita agrícola, economia de energia e potencial de crédito somados.</div>
+      </div>
+    </div>
+
+    <div class="grade g2" style="margin-top:6mm">
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">o que mais sai da mesma conta</div>
+        <div class="desc" style="margin-top:3mm">
+          <b style="color:var(--tinta)">394.954 litros de diesel</b> deixam de ser queimados ·
+          <b style="color:var(--tinta)">21.924 botijões de GLP</b> deixam de subir o rio ·
+          <b style="color:var(--tinta)">2 milhões de m³ de água</b> retidos no solo ·
+          <b style="color:var(--tinta)">10 dos 17 ODS</b> tocados com métrica, não com retórica.
+        </div>
+      </div>
+      <div class="bloco aceso">
+        <div class="cap" style="margin-top:0">de onde vem cada número</div>
+        <div class="desc" style="margin-top:3mm">
+          Nenhum valor desta página foi estimado à mão. Todos saem do motor de impacto da própria
+          plataforma, no <b style="color:var(--tinta)">cenário conservador</b>, que é o piso da curva
+          de resposta e usa solo <i>já corrigido</i>. Em solo degradado, os mesmos 5.000 ha entregam
+          <b style="color:var(--verde)">+145.000 t</b> de produção e <b style="color:var(--verde)">87.459 t</b>
+          de CO₂e sequestrado.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 07 · ESCALA ══════════════════════════ -->
+<section class="slide" data-n="07">
+  <div class="rot">as três escalas de implantação</div>
+  <div class="corpo">
+    <h2 class="tit">Começa em um distrito.<br>Termina em uma <span class="luz">região metropolitana</span>.</h2>
+
+    <div class="bloco aceso" style="margin-top:8mm">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:22%">Escala</th>
+            <th>Área</th>
+            <th>Alimento</th>
+            <th>Energia</th>
+            <th>CO₂e/ano</th>
+            <th>Valor gerado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="forte">Distrito piloto</td>
+            <td class="dado">500 ha</td>
+            <td class="dado">4.540 pessoas</td>
+            <td class="dado">75 domicílios</td>
+            <td class="dado">1.497 t</td>
+            <td class="dado">R$ 1,7 mi</td>
+          </tr>
+          <tr>
+            <td class="forte">Cinturão municipal</td>
+            <td class="dado">5.000 ha</td>
+            <td class="dado">45.401 pessoas</td>
+            <td class="dado">746 domicílios</td>
+            <td class="dado">14.966 t</td>
+            <td class="dado">R$ 17,3 mi</td>
+          </tr>
+          <tr>
+            <td class="forte">Região metropolitana</td>
+            <td class="dado">25.000 ha</td>
+            <td class="dado" style="color:var(--verde)">227.006 pessoas</td>
+            <td class="dado" style="color:var(--verde)">3.730 domicílios</td>
+            <td class="dado" style="color:var(--verde)">74.828 t</td>
+            <td class="dado" style="color:var(--verde)">R$ 86,8 mi</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="sub" style="margin-top:6mm">
+      A escala é linear porque a intervenção é modular: cada distrito é uma unidade completa, com sua
+      biodigestão, sua cooperativa e seu MRV. <span class="destaque">Não existe uma obra central que
+      precise ficar pronta antes de a primeira família ver resultado.</span> É o oposto do modelo de
+      grande infraestrutura, e é o que permite começar em noventa dias.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 08 · ENERGIA ══════════════════════════ -->
+<section class="slide" data-n="08">
+  <div class="rot">transição energética justa</div>
+  <div class="corpo">
+    <h2 class="tit">A matriz não muda no <span style="color:var(--tenue)">datacenter</span>.<br>
+      Muda quando <span class="ciano">quem regenera o território</span> é dono da energia.</h2>
+
+    <div class="grade g2" style="margin-top:7mm">
+      <div>
+        <ul class="lista">
+          <li><b>O resíduo já existe.</b> O ganho de biomassa gera resíduo agrícola adicional que
+            hoje é queimado a céu aberto ou apodrece no terreno.</li>
+          <li><b>Biodigestão local, não usina distante.</b> Cada distrito processa o próprio resíduo
+            e usa a energia onde ela nasce.</li>
+          <li><b>Duas rotas, nunca somadas em dobro.</b> O biogás vai para cocção ou para geração
+            elétrica. O mesmo metro cúbico jamais é contado duas vezes.</li>
+          <li><b>Autonomia real.</b> Deixa de depender de botijão e diesel transportados por
+            centenas de quilômetros fluviais, com o custo e o risco que isso carrega.</li>
+        </ul>
+      </div>
+
+      <div class="bloco aceso">
+        <div class="cap" style="margin-top:0">balanço energético de um cinturão de 5.000 ha</div>
+        <div class="grade g2" style="margin-top:5mm">
+          <div>
+            <div class="num p">1.278.900</div>
+            <div class="cap">m³ de biogás/ano</div>
+          </div>
+          <div>
+            <div class="num p">7,67 GWh</div>
+            <div class="cap">energia bruta/ano</div>
+          </div>
+          <div style="margin-top:4mm">
+            <div class="num p v">21.924</div>
+            <div class="cap">botijões GLP evitados</div>
+          </div>
+          <div style="margin-top:4mm">
+            <div class="num p v">394.954 L</div>
+            <div class="cap">diesel evitado</div>
+          </div>
+        </div>
+        <div class="desc" style="margin-top:5mm;border-top:1px solid #ffffff14;padding-top:4mm">
+          Divisão de 50% térmica e 50% elétrica. A rota é um parâmetro do projeto, ajustável por
+          distrito conforme a necessidade local.
+        </div>
+      </div>
+    </div>
+
+    <div class="aviso">
+      <b>Transição justa não é slogan aqui, é desenho.</b> A energia é gerada e gerida pela própria
+      comunidade que regenerou o solo. Segundo a lógica da OIT para transição justa, quem carrega o
+      custo da mudança precisa ser quem colhe o benefício, e não há benefício mais direto que a
+      energia da própria casa.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 09 · CARBONO ══════════════════════════ -->
+<section class="slide" data-n="09">
+  <div class="rot">crédito de carbono · do estimado ao verificado</div>
+  <div class="corpo">
+    <h2 class="tit">O mercado não paga por <span style="color:var(--tenue)">estimativa</span>.<br>
+      Paga por <span class="luz">tonelada verificada e aposentada</span>.</h2>
+    <p class="sub">
+      Esta é a diferença entre um projeto que capta e um projeto que promete. A plataforma nasce
+      declarando onde está, em vez de vender o número final antes de tê-lo.
+    </p>
+
+    <div class="fluxo" style="margin-top:8mm">
+      <div class="etapa">
+        <div class="n">HOJE</div>
+        <div class="t">Estimativa</div>
+        <div class="d">Cálculo por balanço físico a partir da biomassa adicional. Serve para
+        dimensionar projeto e captar fomento. <b style="color:var(--ambar)">Não é crédito.</b></div>
+      </div>
+      <div class="etapa">
+        <div class="n">FASE 2</div>
+        <div class="t">MRV instrumentado</div>
+        <div class="d">Testemunha pareada, sensor de umidade, amostragem de solo e série temporal.
+        A estimativa vira medição.</div>
+      </div>
+      <div class="etapa">
+        <div class="n">FASE 3</div>
+        <div class="t">Verificação</div>
+        <div class="d">Auditoria por terceira parte acreditada, sob metodologia de um padrão
+        reconhecido.</div>
+      </div>
+      <div class="etapa">
+        <div class="n">FASE 4</div>
+        <div class="t">Registro</div>
+        <div class="d">Emissão com serial público e aposentadoria rastreável. Só aqui existe
+        <b style="color:var(--verde)">crédito vendável</b>.</div>
+      </div>
+    </div>
+
+    <div class="grade g3" style="margin-top:8mm">
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">o gargalo real do setor</div>
+        <div class="desc">MRV custa caro e não escala em pequena propriedade. É por isso que a
+        agricultura familiar está fora do mercado de carbono.</div>
+      </div>
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0">o que a plataforma resolve</div>
+        <div class="desc">Agrega centenas de produtores num único projeto, com coleta padronizada e
+        rastreio automático. O custo de MRV se dilui.</div>
+      </div>
+      <div class="bloco ambar">
+        <div class="cap" style="margin-top:0">o que não prometemos</div>
+        <div class="desc">Nenhuma tonelada é vendida antes de verificada. O sistema recusa emitir
+        crédito sobre evidência abaixo do limiar.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 10 · EVIDÊNCIA ══════════════════════════ -->
+<section class="slide" data-n="10">
+  <div class="rot">governança da evidência</div>
+  <div class="corpo">
+    <h2 class="tit">Todo número da plataforma carrega<br>o <span class="ciano">nível de prova</span> que o sustenta.</h2>
+    <p class="sub">
+      É o mecanismo anti-greenwashing embutido no produto. Não é relatório de sustentabilidade
+      escrito depois: é regra de código que impede a afirmação forte de nascer de base fraca.
+    </p>
+
+    <div class="grade g4" style="margin-top:8mm">
+      <div class="bloco verde">
+        <span class="selo laudo">verificado · 100</span>
+        <div class="desc" style="margin-top:4mm">Auditado por terceira parte acreditada, com registro público.</div>
+      </div>
+      <div class="bloco verde">
+        <span class="selo laudo">laudo · 90</span>
+        <div class="desc" style="margin-top:4mm">Ensaio documentado em laboratório ou campo controlado.</div>
+      </div>
+      <div class="bloco ambar">
+        <span class="selo campo">campo · 80</span>
+        <div class="desc" style="margin-top:4mm">Observado em produção real, sem instrumentação completa.</div>
+      </div>
+      <div class="bloco">
+        <span class="selo pesq">pesquisa · 75</span>
+        <div class="desc" style="margin-top:4mm">Literatura científica e fatores de referência (IPCC, FAO).</div>
+      </div>
+    </div>
+
+    <div class="grade g2" style="margin-top:6mm">
+      <div class="bloco aceso">
+        <div class="cap" style="margin-top:0">a regra do elo mais fraco</div>
+        <div class="desc" style="margin-top:3mm">
+          O selo de um resultado é o <b style="color:var(--tinta)">menor</b> selo entre os dados que
+          entraram nele. Uma conta com um único insumo de campo nunca sai carimbada como laudo,
+          por mais sólido que seja o resto. É o que impede a evidência forte de lavar a fraca.
+        </div>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">o limiar que separa discurso de ativo</div>
+        <div class="desc" style="margin-top:3mm">
+          Crédito de carbono só se sustenta a partir de <b style="color:var(--verde)">75</b>. Abaixo
+          disso o sistema mostra o número, mas <b style="color:var(--tinta)">recusa transformá-lo em
+          alegação comercial</b>. O mecanismo em investigação fica em hipótese, e hipótese não vende.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 11 · A PLATAFORMA ══════════════════════════ -->
+<section class="slide" data-n="11">
+  <div class="rot">zoomdev os · o multiplicador de biostartups</div>
+  <div class="corpo">
+    <h2 class="tit">Recuperar o solo cria a matéria-prima.<br>
+      A plataforma cria <span class="luz">a empresa</span>.</h2>
+    <p class="sub">
+      Sem isso, uma política de regeneração produz safra melhor e para por aí. O salto de escala vem
+      de transformar cada produtor recuperado em negócio com plano, produto e acesso a capital.
+    </p>
+
+    <div class="grade g3" style="margin-top:8mm">
+      <div class="bloco">
+        <div class="num p">35</div>
+        <div class="cap">agentes de IA especializados</div>
+        <div class="desc">Núcleo internacional, operacional e amazônico. Escrevem o plano, calculam
+        o impacto e mapeiam o edital certo.</div>
+      </div>
+      <div class="bloco">
+        <div class="num p">14</div>
+        <div class="cap">seções do plano de negócios</div>
+        <div class="desc">Documento editável de verdade, não resumo. Com pesquisa de mercado real e
+        território considerado.</div>
+      </div>
+      <div class="bloco">
+        <div class="num p">5</div>
+        <div class="cap">fases da jornada</div>
+        <div class="desc">Ideação, validação, MVP, tração e escala. Cada fase com missões e
+        evidência exigida para avançar.</div>
+      </div>
+    </div>
+
+    <div class="grade g2" style="margin-top:6mm">
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0">o que o produtor recebe</div>
+        <div class="desc" style="margin-top:3mm">
+          Plano de negócios completo · MVP publicado com endereço próprio · radar de editais com
+          aderência calculada · inventário de carbono pelo GHG Protocol · plano de compensação ·
+          leitura de impacto nos ODS.
+        </div>
+      </div>
+      <div class="bloco ambar">
+        <div class="cap" style="margin-top:0">o que o gestor público recebe</div>
+        <div class="desc" style="margin-top:3mm">
+          Painel do ecossistema inteiro em tempo real: índice de saúde do programa, radar dos
+          projetos de maior potencial, matriz de cruzamento entre editais abertos e projetos
+          aptos, e trilha de auditoria de cada decisão.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 12 · ROTEIRO ══════════════════════════ -->
+<section class="slide" data-n="12">
+  <div class="rot">roteiro de implantação</div>
+  <div class="corpo">
+    <h2 class="tit">Da assinatura ao primeiro crédito verificado.</h2>
+
+    <div class="grade g4" style="margin-top:9mm">
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0;color:var(--verde)">fase 1 · 90 dias</div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:13pt;margin-top:3mm">Distrito piloto</div>
+        <div class="desc">500 ha, uma cooperativa, testemunha pareada instalada desde o primeiro dia.
+        Produtores entram na plataforma e recebem plano.</div>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">fase 2 · 12 meses</div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:13pt;margin-top:3mm">Ciclo completo</div>
+        <div class="desc">Safra medida contra testemunha, primeira biodigestão em operação, série
+        temporal de solo iniciada. A estimativa vira medição.</div>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">fase 3 · 24 meses</div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:13pt;margin-top:3mm">Cinturão</div>
+        <div class="desc">5.000 ha, agregação de produtores num projeto único de carbono, submissão a
+        padrão reconhecido, auditoria de terceira parte.</div>
+      </div>
+      <div class="bloco ambar">
+        <div class="cap" style="margin-top:0;color:var(--ambar)">fase 4 · 36 meses</div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:13pt;margin-top:3mm">Região</div>
+        <div class="desc">25.000 ha, crédito emitido com serial público, receita retornando à
+        cooperativa e ao município. Modelo replicável.</div>
+      </div>
+    </div>
+
+    <div class="bloco aceso" style="margin-top:7mm">
+      <div class="cap" style="margin-top:0">a decisão que trava tudo, se for adiada</div>
+      <div class="desc" style="margin-top:3mm;font-size:10.5pt">
+        <b style="color:var(--tinta)">A testemunha pareada precisa ser instalada junto com a primeira
+        aplicação, não depois.</b> Sem área de controle medida desde o dia zero, nenhuma verificação
+        futura consegue provar adicionalidade, e três anos de trabalho não viram um único crédito
+        vendável. É o erro mais caro e mais comum do setor, e ele acontece na primeira semana.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 13 · FECHAMENTO ══════════════════════════ -->
+<section class="slide fecho" data-n="13">
+  <div class="rot">o convite</div>
+  <div class="corpo">
+    <h2 class="tit" style="font-size:31pt">
+      Toda cidade tem um cinturão degradado.<br>
+      <span class="luz">É o ativo mais barato</span> e o mais ignorado<br>
+      da transição energética mundial.
+    </h2>
+
+    <p class="sub" style="margin-top:8mm;font-size:13pt">
+      Não pedimos fé na tecnologia. Pedimos <span class="destaque">500 hectares e uma testemunha
+      pareada</span>. Em doze meses, a mesma metodologia que gerou os números deste documento vai
+      dizer, com medição própria, se eles se confirmam no seu território.
+    </p>
+
+    <div class="grade g3" style="margin-top:10mm">
+      <div class="bloco verde">
+        <div class="cap" style="margin-top:0">para o município</div>
+        <div class="desc">Segurança alimentar, energia distribuída e receita de carbono na mesma
+        rubrica orçamentária.</div>
+      </div>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">para o investidor</div>
+        <div class="desc">Ativo de carbono com co-benefícios sociais mensurados, no segmento de maior
+        prêmio do mercado voluntário.</div>
+      </div>
+      <div class="bloco ambar">
+        <div class="cap" style="margin-top:0">para o produtor</div>
+        <div class="desc">Deixa de ser fornecedor de commodity e passa a ser dono de uma empresa com
+        quatro fontes de receita.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;left:20mm;bottom:13mm;right:20mm;display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <div style="font-family:'Space Grotesk';font-size:15pt;font-weight:700">Zoom<span style="color:var(--verde)">Dev</span> OS</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:7.5pt;letter-spacing:.18em;color:var(--tenue);margin-top:2mm">
+        BIOGENESIS COT BIOTECHNOLOGY · CIDADES REGENERATIVAS
+      </div>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:6.8pt;letter-spacing:.1em;color:var(--tenue);text-align:right;max-width:165mm;line-height:1.7">
+      NÚMEROS GERADOS PELO MOTOR DE IMPACTO DA PLATAFORMA, CENÁRIO CONSERVADOR.<br>
+      ESTIMATIVAS DE CARBONO NÃO CONSTITUEM CRÉDITO ATÉ VERIFICAÇÃO POR TERCEIRA PARTE.
+    </div>
+  </div>
+</section>
