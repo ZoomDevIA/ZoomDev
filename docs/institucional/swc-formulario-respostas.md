@@ -20,11 +20,28 @@ Então: **os rótulos exatos dos campos eu não vi.** O que está abaixo cobre o
 cadastro que toda inscrição do Startup World Cup pede. Os primeiros são
 verificados; os segundos estão marcados como previstos.
 
+**O formulário abre normalmente no celular do fundador.** A limitação é só
+desta sessão, não do site. A Parte 2 cresce a cada captura de tela enviada, e
+cada campo que chega ali sai da lista de previstos.
+
 **Também não vou submeter por você.** Inscrição é ato externo e irreversível,
 feito na sua conta. O que entrego é o texto pronto para colar.
 
-E vale o aviso da própria organização: *"Applications need to be completed in
-one session"*. Deixe este arquivo aberto ao lado antes de começar.
+### Uma ordem de trabalho que evita perder tudo
+
+A organização avisa: *"Applications need to be completed in one session"*. Isso
+transforma um formulário longo numa armadilha, porque descobrir uma pergunta no
+meio do caminho e parar para escrever a resposta é como se perde a sessão.
+
+O jeito seguro é em duas passadas:
+
+1. **Passada de reconhecimento.** Percorra o formulário inteiro sem preencher
+   nada, fotografando cada tela. Não clique em enviar.
+2. **Passada de preenchimento.** Com todos os campos mapeados e as respostas
+   prontas neste arquivo, faça uma passada só, colando.
+
+Se algum campo já estiver preenchido na primeira passada, tudo bem: o risco é
+perder o preenchimento, não a inscrição.
 
 ---
 
@@ -366,7 +383,32 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 
 ---
 
-## Parte 2 · Campos de cadastro previstos
+## Parte 2 · Campos confirmados
+
+Campos que o fundador fotografou na tela, com as opções exatas.
+
+### How did you hear about us?
+
+Múltipla escolha, aceita mais de uma marcação. Opções lidas na tela:
+
+```
+[ ] Email / Mailing List
+[ ] Social Media
+[ ] Incubator / Accelerator Program
+[ ] Startup World Cup Website
+[ ] Pegasus Tech Ventures Website
+[ ] Another Website
+[ ] Peers / Friends Referral / Word-of-Mouth
+[ ] Physical Poster / Banner / …   (cortada na captura)
+```
+
+Só o fundador sabe a resposta. Não há texto pronto aqui de propósito: marcar
+uma origem que não aconteceu é dado falso num formulário que a organização usa
+para medir canal.
+
+---
+
+## Parte 3 · Campos de cadastro previstos
 
 Estes eu **não vi no formulário**, mas toda inscrição do Startup World Cup
 pede. Deixe respondido antes de abrir a página, porque a inscrição tem que ser
@@ -391,7 +433,6 @@ feita numa sessão só.
 | Current revenue | Pre-revenue |
 | Pitch deck upload | `swc-pitch-2026.pdf` |
 | Demo video | https://youtu.be/CRcbrivAIpY |
-| How did you hear about SWC | [COMO SOUBE] |
 
 ### O one-liner, em três tamanhos
 
@@ -403,7 +444,7 @@ Vai ser pedido em algum campo, e o template da Pegasus insiste nisso.
 
 ---
 
-## Parte 3 · Depois de submeter
+## Parte 4 · Depois de submeter
 
 A própria organização sugere o post. O modelo deles, preenchido:
 
