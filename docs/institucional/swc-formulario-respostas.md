@@ -436,19 +436,27 @@ Lista de escolha única. Opções lidas na tela:
                          ( ) No Funding Raised
 ```
 
-**Resposta: `No Funding Raised`**, se nenhum recurso de terceiro entrou.
+**Resposta: `Other`.**
 
-A pergunta é sobre o último estágio **captado**, não sobre o estágio em que a
-empresa está. Marcar Pre-Seed sem ter fechado rodada pre-seed é declarar
-captação que não houve, e o júri confere.
+O fundador captou pelo **Programa Centelha 3**, subvenção econômica não
+reembolsável do MCTI com FINEP, CNPq e as fundações estaduais de amparo à
+pesquisa. Não é rodada de equity: não houve emissão de quota nem diluição.
 
-| Se | Marque |
+Por que `Other` e não as outras:
+
+| Opção | Por que não |
 |---|---|
-| Só recurso próprio | `No Funding Raised` |
-| Entrou dinheiro de amigo, família ou anjo, mesmo sem contrato formal | `Pre-Seed` |
+| `No Funding Raised` | falso, entrou recurso de terceiro |
+| `Pre-Seed` / `Seed` | descrevem rodada de participação societária, que não houve |
 
-Produto em produção com zero captação é posição forte, não fraca: a rodada
-compra verificação e não protótipo, que é o que a lâmina 13 do deck diz.
+Se houver campo de texto ao lado:
+
+> Non-dilutive public grant: Programa Centelha 3 (MCTI / FINEP / CNPq,
+> Brazilian Federal Government). Competitive public call. No equity issued.
+
+Capital não diluidor obtido em edital competitivo do governo federal é
+validação de terceiro, e não só dinheiro. Pesa mais na lâmina de tração do que
+na de captação, e está nas duas.
 
 ### Industry / Vertical
 
