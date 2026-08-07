@@ -345,16 +345,22 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 
 **Modelo**
 
-> [FOUNDER FULL NAME], Founder and CEO. [ROLE AND YEARS IN THE FIELD].
-> Previously at [COMPANIES AND INSTITUTIONS]. [DEGREE] from [UNIVERSITY].
+> Bruno Nascimento, Founder and CEO. Sets the thesis, owns the evidence
+> doctrine and the go-to-market in the Amazon.
 >
-> [CO-FOUNDER OR KEY HIRE FULL NAME], [ROLE]. [TRACK RECORD THAT DE-RISKS
-> EXECUTION]. [DEGREE] from [UNIVERSITY].
+> Aldo Siqueira, CTO. Owns the agent architecture, the impact engine and the
+> platform in production.
 >
-> Science and advisory: [COT BIOTECHNOLOGY TECHNICAL LEAD], [AGRONOMY OR MRV
-> ADVISOR], [BOARD OR INSTITUTIONAL BACKING].
+> Poliana Gomes, UX and UI Design. Makes carbon governance usable by a family
+> farmer, not only by an analyst.
 >
-> Awards, patents and notable prizes: [LIST].
+> Leandro Andrade, Developer. Product surface, integrations and the test suite
+> that keeps the rules honest.
+>
+> Science partner: COT BioTechnology, developer of Coin Max. The agronomic
+> evidence we present comes from their signed technical reports.
+>
+> Degrees, previous companies, awards and patents: [TO ADD].
 >
 > What this team has already shipped: a full-stack platform in production with
 > 27 governed agents, an auditable impact engine, payment rails and an
@@ -527,17 +533,17 @@ feita numa sessão só.
 | Company / Startup name | ZoomDev |
 | One-line description | Regeneration you can prove: degraded land becomes audit-ready biostartups |
 | Country / Region | Brazil · [CIDADE E ESTADO] |
-| Website | [URL DE PRODUÇÃO] |
+| Website | https://zoomdev.com.br |
 | Industry / Vertical | ClimateTech · AgTech · Artificial Intelligence · Carbon Markets |
 | Year founded | [ANO] |
-| Number of employees | [N] |
-| Founder full name | [NOME COMPLETO] |
-| Founder email | [E-MAIL] |
+| Number of employees | 4 |
+| Founder full name | Bruno Nascimento |
+| Founder email | contato@zoomdev.com.br |
 | Founder LinkedIn | [PERFIL] |
 | Company LinkedIn | [PERFIL] |
-| Stage | [PRE-SEED / SEED / SERIES A] |
+| Stage | Non-dilutive grant only, no equity round |
 | Total raised to date | [VALOR] |
-| Amount raising | [VALOR] |
+| Amount raising | USD 1,000,000 |
 | Current revenue | Pre-revenue |
 | Pitch deck upload | `swc-pitch-2026.pdf` |
 | Demo video | https://youtu.be/CRcbrivAIpY |
