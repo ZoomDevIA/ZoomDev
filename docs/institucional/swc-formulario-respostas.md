@@ -486,7 +486,20 @@ Máximo 50 palavras. **46 palavras:**
 > Seal grades every number. Customers pay because we deliver in days what
 > consultants deliver in quarters, and because the proof survives due diligence.
 
-> **Sobre a folga.** As três param entre 46 e 48 de propósito. Alguns contadores
+### What is your competitive advantage?
+
+Máximo 50 palavras. **47 palavras:**
+
+> Nobody joins biotechnology, AI origination and evidence governance in one
+> stack. Coin Max performs best on the worst soil, exactly the land competitors
+> cannot monetize. The Evidence Seal is enforced in code, not in policy. Our
+> moat is field data, and it only accumulates in the soil.
+
+Quatro coisas em quatro frases: a categoria que ninguém ocupa, a curva
+invertida do Coin Max, a governança que é código e não documento, e o fosso,
+que é dado de campo e só se acumula estando lá primeiro.
+
+> **Sobre a folga.** As quatro param entre 46 e 48 de propósito. Alguns contadores
 > quebram palavra hifenizada em duas, e `first-cycle` e `audit-ready` viram
 > duas. Mesmo assim nenhuma passa de 50.
 
