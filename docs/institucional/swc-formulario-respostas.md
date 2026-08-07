@@ -458,6 +458,38 @@ Capital não diluidor obtido em edital competitivo do governo federal é
 validação de terceiro, e não só dinheiro. Pesa mais na lâmina de tração do que
 na de captação, e está nas duas.
 
+### What is your current revenue to date? If none, how do you plan to generate revenue?
+
+Máximo 50 palavras. **48 palavras:**
+
+> None to date. Three lines are already built and live: subscriptions at BRL 149
+> and 199 monthly, credit packs from BRL 39, and CarbonPay, which takes 12
+> percent of each verified carbon transaction and 8 percent on origination.
+> Payment rails are wired. The first paying cohort is next.
+
+### Summarize the problem you are trying to solve, and who is your target customer?
+
+Máximo 50 palavras. **48 palavras:**
+
+> Carbon markets are bottlenecked by proof, not by land. Certification is
+> retrospective and burns 20 to 40 percent of first-cycle value, so degraded
+> soil never reaches the market. Our customers: municipalities with climate
+> targets, cooperatives sitting on degraded soil, and corporates that must
+> retire credits they cannot audit.
+
+### Summarize the solution you are building and why your target customer is willing to pay for it?
+
+Máximo 50 palavras. **46 palavras:**
+
+> ZoomDev OS regenerates, originates and proves. Coin Max restores degraded
+> soil. 27 AI agents turn each area into an audit-ready biostartup. The Evidence
+> Seal grades every number. Customers pay because we deliver in days what
+> consultants deliver in quarters, and because the proof survives due diligence.
+
+> **Sobre a folga.** As três param entre 46 e 48 de propósito. Alguns contadores
+> quebram palavra hifenizada em duas, e `first-cycle` e `audit-ready` viram
+> duas. Mesmo assim nenhuma passa de 50.
+
 ### Industry / Vertical
 
 Múltipla escolha. Visto de relance atrás da lista anterior, com `Transportation`
