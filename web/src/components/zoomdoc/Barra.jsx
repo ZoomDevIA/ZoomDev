@@ -27,7 +27,7 @@ function Bt({ ativo, titulo, onClick, desabilitado, children }) {
     <button type="button" title={titulo} aria-label={titulo} aria-pressed={ativo}
       disabled={desabilitado} onMouseDown={(e) => e.preventDefault()} onClick={onClick}
       className={`p-1.5 transition-colors shrink-0 ${
-        ativo ? 'text-[#04140a] bg-[#00e5ff]' : 'text-white/50 hover:text-[#00e5ff] hover:bg-white/5'} ${
+        ativo ? 'text-[#04140a] bg-[#00e5ff]' : 'text-white/50 hover:text-[color:var(--zd-acento)] hover:bg-white/5'} ${
         desabilitado ? 'opacity-25 cursor-not-allowed' : ''}`}
       style={ativo ? { clipPath: 'polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px)' } : undefined}>
       {children}
@@ -165,7 +165,7 @@ export default function Barra({ editor, fontes = [], sumarioAberto, onSumario, t
 
         <span className="w-px h-5 bg-white/10 mx-1 shrink-0" />
         <button type="button" onClick={() => setMais(v => !v)} title="Mais ferramentas"
-          className={`p-1.5 shrink-0 transition-colors ${mais ? 'text-[#00e5ff]' : 'text-white/40 hover:text-white/80'}`}>
+          className={`p-1.5 shrink-0 transition-colors ${mais ? 'text-[color:var(--zd-acento)]' : 'text-white/40 hover:text-white/80'}`}>
           <Icon nome="chevron" tam={15} className={mais ? 'rotate-180' : ''} />
         </button>
 

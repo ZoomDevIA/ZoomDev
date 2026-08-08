@@ -50,7 +50,7 @@ export default function Console({
       <div ref={trilha} onScroll={aoRolar} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0">
         {mensagens.length === 0 && !trabalhando && (
           <div className="text-center py-8">
-            <Icon nome="raio" tam={26} className="text-[#00e5ff] mx-auto mb-2.5 opacity-60" />
+            <Icon nome="raio" tam={26} className="text-[color:var(--zd-acento)] mx-auto mb-2.5 opacity-60" />
             <p className="text-[13px] text-white/45 leading-relaxed max-w-xs mx-auto">
               Descreva o que quer ajustar, anexe um documento ou dite por voz.
               O que você mandar aqui muda o que aparece ao lado.
@@ -146,7 +146,7 @@ function Fontes({ fontes }) {
   return (
     <div className="mt-2">
       <button onClick={() => setAberto(v => !v)}
-        className="hud-caps text-[9px] text-white/35 hover:text-[#00e5ff] transition-colors flex items-center gap-1.5">
+        className="hud-caps text-[9px] text-white/35 hover:text-[color:var(--zd-acento)] transition-colors flex items-center gap-1.5">
         <Icon nome="busca" tam={10} />
         {fontes.length} fonte{fontes.length > 1 ? 's' : ''} consultada{fontes.length > 1 ? 's' : ''}
         <Icon nome="chevron" tam={10} className={aberto ? 'rotate-180' : ''} />
@@ -155,10 +155,10 @@ function Fontes({ fontes }) {
         <ul className="mt-1.5 space-y-1">
           {fontes.map((f, i) => (
             <li key={i} className="text-[10px] text-white/40 flex gap-1.5 leading-snug">
-              <span className="text-[#00e5ff] shrink-0">▸</span>
+              <span className="text-[color:var(--zd-acento)] shrink-0">▸</span>
               {f.url
                 ? <a href={f.url} target="_blank" rel="noreferrer noopener"
-                    className="hover:text-[#00e5ff] transition-colors break-all">{f.titulo || f.url}</a>
+                    className="hover:text-[color:var(--zd-acento)] transition-colors break-all">{f.titulo || f.url}</a>
                 : <span>{f.titulo}</span>}
             </li>
           ))}

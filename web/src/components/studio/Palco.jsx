@@ -82,7 +82,7 @@ export function PalcoVazio({ icone, titulo, texto, acao }) {
   return (
     <div className="h-full flex items-center justify-center p-8">
       <div className="text-center max-w-sm">
-        <Icon nome={icone} tam={34} className="text-[#00e5ff] mx-auto mb-3.5 opacity-70" />
+        <Icon nome={icone} tam={34} className="text-[color:var(--zd-acento)] mx-auto mb-3.5 opacity-70" />
         <h3 className="font-heading font-bold text-[15px]">{titulo}</h3>
         <p className="text-[13px] text-white/45 mt-2 leading-relaxed">{texto}</p>
         {acao && <div className="mt-5">{acao}</div>}

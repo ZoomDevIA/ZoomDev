@@ -23,30 +23,46 @@ export const CHAVE = 'zd_tema';
 // ── Superfícies ───────────────────────────────────────────────────────────
 // Cada fundo traz a escada inteira, do papel ao campo de texto. Derivar por
 // cálculo daria tons lavados: a escada é escolhida à mão, tom a tom.
+//
+// `tinta` é a cor do texto, em tripla RGB e não em hexadecimal, porque ela
+// entra em `rgb(var(--zd-tinta) / .45)`: é o que permite a folha de estilo
+// reaproveitar as mesmas transparências do tema escuro no tema claro, sem
+// reescrever quinhentas classes.
 export const FUNDOS = {
   profundo: {
-    nome: 'Profundo',
+    nome: 'Profundo', claridade: 'escuro',
     descricao: 'O verde-noite original da ZoomDev.',
     pagina: '#030d07', painel: '#06140d', solido: '#04140a',
     elevado: '#0a1a12', hover: '#0e2419', campo: '#07170f',
+    tinta: '255 255 255',
   },
   carbono: {
-    nome: 'Carbono',
+    nome: 'Carbono', claridade: 'escuro',
     descricao: 'Cinza neutro. A cor não disputa com o conteúdo.',
     pagina: '#08090b', painel: '#101216', solido: '#0c0e11',
     elevado: '#171a20', hover: '#1f232b', campo: '#121419',
+    tinta: '255 255 255',
   },
   floresta: {
-    nome: 'Floresta',
+    nome: 'Floresta', claridade: 'escuro',
     descricao: 'Verde mais presente, para trilha de bioeconomia.',
     pagina: '#04120c', painel: '#082017', solido: '#061a13',
     elevado: '#0c2c20', hover: '#113828', campo: '#09221a',
+    tinta: '255 255 255',
   },
   vazio: {
-    nome: 'Vazio',
+    nome: 'Vazio', claridade: 'escuro',
     descricao: 'Preto absoluto. Contraste máximo em tela OLED.',
     pagina: '#000000', painel: '#0a0a0b', solido: '#060607',
     elevado: '#121214', hover: '#1b1b1e', campo: '#0d0d0f',
+    tinta: '255 255 255',
+  },
+  claro: {
+    nome: 'Claro', claridade: 'claro',
+    descricao: 'Papel. Para sala clara, projeção e quem enxerga melhor assim.',
+    pagina: '#f3f6f4', painel: '#ffffff', solido: '#ffffff',
+    elevado: '#e9eeeb', hover: '#dde5e0', campo: '#ffffff',
+    tinta: '10 23 16',
   },
 };
 
@@ -145,6 +161,83 @@ export function acentoLegivel(hex, fundoId) {
   return contraste(hex, f.pagina) >= 3;
 }
 
+/**
+ * Distância perceptual entre duas cores, aproximação "redmean".
+ *
+ * POR QUE NÃO USAR O CONTRASTE DA WCAG AQUI. Contraste é razão de luminância,
+ * e luminância não enxerga matiz. Ciano #00e5ff e verde #00ff64 têm contraste
+ * 1,1, ou seja, "iguais" pela conta da WCAG, e qualquer pessoa vê que são duas
+ * cores completamente diferentes. Para comparar acento com marca a pergunta é
+ * outra: dá para distinguir uma da outra? Isso é distância, não contraste.
+ *
+ * A fórmula é a aproximação clássica de Thiadmer Riemersma: pesa os canais
+ * conforme a média de vermelho, que é a correção barata mais próxima da
+ * percepção humana sem entrar em espaço de cor de verdade.
+ */
+export function distancia(a, b) {
+  const [r1, g1, b1] = canais(a);
+  const [r2, g2, b2] = canais(b);
+  const rm = (r1 + r2) / 2;
+  const dr = r1 - r2, dg = g1 - g2, db = b1 - b2;
+  return Math.sqrt((2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db);
+}
+
+/**
+ * Abaixo disto, acento e marca deixam de ser lidos como duas cores.
+ *
+ * O 90 saiu de medição, não de chute. Rodando a distância entre todos os pares
+ * dos oito acentos oficiais, o par mais parecido é magenta com coral, em 136.
+ * Duas cores quase idênticas (#00e5ff e #00dcf5) dão 25. Noventa passa
+ * folgado por baixo de qualquer par da paleta curada e ainda pega o caso que
+ * importa: quem escolhe a mão dois tons do mesmo azul.
+ */
+export const DISTANCIA_MINIMA = 90;
+
+/**
+ * A guarda de contraste, em um lugar só.
+ *
+ * Devolve a lista de problemas do tema, cada um com o que está errado e o que
+ * fazer. Existe porque as três falhas abaixo não quebram nada: a tela abre,
+ * nada dá erro, e a pessoa conclui que a plataforma está estragada.
+ */
+export function guardaDeContraste(bruto) {
+  const t = normalizar(bruto);
+  const f = FUNDOS[t.fundo];
+  const avisos = [];
+
+  const razaoAcento = contraste(t.acento, f.pagina);
+  if (razaoAcento < 3) {
+    avisos.push({
+      campo: 'acento',
+      razao: Math.round(razaoAcento * 100) / 100,
+      texto: `O acento some no fundo ${f.nome}: contraste de ${razaoAcento.toFixed(2)}:1, e o piso é 3:1.`,
+      saida: 'Escolha um acento mais escuro neste fundo, ou volte para um fundo escuro.',
+    });
+  }
+
+  const razaoMarca = contraste(t.marca, f.pagina);
+  if (razaoMarca < 3) {
+    avisos.push({
+      campo: 'marca',
+      razao: Math.round(razaoMarca * 100) / 100,
+      texto: `A marca some no fundo ${f.nome}: contraste de ${razaoMarca.toFixed(2)}:1, e o piso é 3:1.`,
+      saida: 'Escolha uma marca mais escura neste fundo.',
+    });
+  }
+
+  const dist = distancia(t.acento, t.marca);
+  if (dist < DISTANCIA_MINIMA) {
+    avisos.push({
+      campo: 'marca',
+      razao: Math.round(dist),
+      texto: 'Acento e marca estão perto demais para serem distinguidos.',
+      saida: 'O acento desenha estrutura e a marca desenha identidade. Iguais, some a diferença entre borda e destaque.',
+    });
+  }
+
+  return avisos;
+}
+
 // ── Normalização ──────────────────────────────────────────────────────────
 // Tema vindo do servidor, do localStorage ou de uma versão antiga do app pode
 // trazer qualquer coisa. Nada é aplicado sem passar por aqui.
@@ -183,6 +276,7 @@ export function aplicar(bruto) {
   r.style.setProperty('--zd-elevado', f.elevado);
   r.style.setProperty('--zd-hover', f.hover);
   r.style.setProperty('--zd-campo', f.campo);
+  r.style.setProperty('--zd-tinta', f.tinta);
 
   r.style.setProperty('--chanfro', a.c);
   r.style.setProperty('--chanfro-p', a.p);
@@ -194,6 +288,9 @@ export function aplicar(bruto) {
   r.dataset.textura = t.textura ? 'on' : 'off';
   r.dataset.movimento = t.movimento;
   r.dataset.densidade = t.densidade;
+  // A folha de estilo inteira pendura o tema claro neste atributo. É um só, e
+  // não uma classe por componente, porque a inversão é do documento.
+  r.dataset.claridade = f.claridade;
 
   // A barra do navegador no celular acompanha o fundo escolhido.
   const meta = document.querySelector('meta[name="theme-color"]');

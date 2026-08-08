@@ -221,7 +221,7 @@
   font-weight: 700;
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: var(--hud-ciano);
+  color: var(--cor, var(--hud-ciano));
   /* Em tela estreita o rótulo precisa quebrar: com nowrap ele era cortado
      pela borda do cartão e a última palavra sumia. */
   flex-wrap: wrap;
@@ -1028,3 +1028,107 @@
 }
 
 :root[data-movimento='desligado'] .zd-submenu { transition: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEMA CLARO
+
+   A plataforma nasceu escura, e por isso o branco está em 814 lugares nas
+   telas: text-white/45, border-white/10, bg-white/5. Migrar tudo para um
+   token seria mexer em 53 arquivos para acrescentar uma opção de aparência,
+   com risco de regressão em cada um deles.
+
+   A regra que resolve em um lugar só: NO TEMA CLARO, BRANCO QUER DIZER
+   TINTA. A folha carrega depois do Tailwind, então basta redeclarar as
+   mesmas classes.
+
+   OS MULTIPLICADORES NÃO SÃO 1, E O MOTIVO É PERCEPTIVO. Branco a 5% sobre
+   preto quase não aparece; tinta a 5% sobre papel aparece bem. Por isso
+   superfície e borda encolhem no claro em vez de crescer. Texto fica 1:1,
+   porque ali a transparência já foi escolhida pensando em leitura.
+
+   Cada multiplicador é monotônico de propósito: dois passos diferentes nunca
+   podem cair no mesmo valor, senão a hierarquia visual que a tela desenhou
+   com /5 e /10 vira uma cor só.
+
+   As opacidades foram extraídas do código com grep, não escolhidas. Passo novo
+   que apareça nas telas fica sem tratamento aqui, e é isso que o teste pega.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root[data-claridade='claro'] body { color: rgb(var(--zd-tinta)); }
+
+:root[data-claridade='claro'] {
+  --hud-texto-fraco: rgb(var(--zd-tinta) / .58);
+  --hud-linha: color-mix(in srgb, var(--zd-acento) 38%, transparent);
+  --hud-linha-forte: color-mix(in srgb, var(--zd-acento) 70%, transparent);
+}
+
+:root[data-claridade='claro'] .text-white { color: rgb(var(--zd-tinta)); }
+:root[data-claridade='claro'] .text-white\/12 { color: rgb(var(--zd-tinta) / 0.12); }
+:root[data-claridade='claro'] .text-white\/20 { color: rgb(var(--zd-tinta) / 0.20); }
+:root[data-claridade='claro'] .text-white\/22 { color: rgb(var(--zd-tinta) / 0.22); }
+:root[data-claridade='claro'] .text-white\/25 { color: rgb(var(--zd-tinta) / 0.25); }
+:root[data-claridade='claro'] .text-white\/28 { color: rgb(var(--zd-tinta) / 0.28); }
+:root[data-claridade='claro'] .text-white\/30 { color: rgb(var(--zd-tinta) / 0.30); }
+:root[data-claridade='claro'] .text-white\/32 { color: rgb(var(--zd-tinta) / 0.32); }
+:root[data-claridade='claro'] .text-white\/35 { color: rgb(var(--zd-tinta) / 0.35); }
+:root[data-claridade='claro'] .text-white\/38 { color: rgb(var(--zd-tinta) / 0.38); }
+:root[data-claridade='claro'] .text-white\/40 { color: rgb(var(--zd-tinta) / 0.40); }
+:root[data-claridade='claro'] .text-white\/45 { color: rgb(var(--zd-tinta) / 0.45); }
+:root[data-claridade='claro'] .text-white\/50 { color: rgb(var(--zd-tinta) / 0.50); }
+:root[data-claridade='claro'] .text-white\/55 { color: rgb(var(--zd-tinta) / 0.55); }
+:root[data-claridade='claro'] .text-white\/60 { color: rgb(var(--zd-tinta) / 0.60); }
+:root[data-claridade='claro'] .text-white\/62 { color: rgb(var(--zd-tinta) / 0.62); }
+:root[data-claridade='claro'] .text-white\/65 { color: rgb(var(--zd-tinta) / 0.65); }
+:root[data-claridade='claro'] .text-white\/70 { color: rgb(var(--zd-tinta) / 0.70); }
+:root[data-claridade='claro'] .text-white\/72 { color: rgb(var(--zd-tinta) / 0.72); }
+:root[data-claridade='claro'] .text-white\/75 { color: rgb(var(--zd-tinta) / 0.75); }
+:root[data-claridade='claro'] .text-white\/80 { color: rgb(var(--zd-tinta) / 0.80); }
+:root[data-claridade='claro'] .text-white\/82 { color: rgb(var(--zd-tinta) / 0.82); }
+:root[data-claridade='claro'] .text-white\/85 { color: rgb(var(--zd-tinta) / 0.85); }
+:root[data-claridade='claro'] .text-white\/90 { color: rgb(var(--zd-tinta) / 0.90); }
+:root[data-claridade='claro'] .text-white\/92 { color: rgb(var(--zd-tinta) / 0.92); }
+:root[data-claridade='claro'] .text-white\/95 { color: rgb(var(--zd-tinta) / 0.95); }
+
+:root[data-claridade='claro'] .bg-white { background-color: rgb(var(--zd-tinta) / 0.05); }
+:root[data-claridade='claro'] .bg-white\/4 { background-color: rgb(var(--zd-tinta) / 0.03); }
+:root[data-claridade='claro'] .bg-white\/5 { background-color: rgb(var(--zd-tinta) / 0.04); }
+:root[data-claridade='claro'] .bg-white\/8 { background-color: rgb(var(--zd-tinta) / 0.06); }
+:root[data-claridade='claro'] .bg-white\/10 { background-color: rgb(var(--zd-tinta) / 0.07); }
+:root[data-claridade='claro'] .bg-white\/15 { background-color: rgb(var(--zd-tinta) / 0.10); }
+:root[data-claridade='claro'] .bg-white\/20 { background-color: rgb(var(--zd-tinta) / 0.14); }
+
+:root[data-claridade='claro'] .border-white { border-color: rgb(var(--zd-tinta) / 0.20); }
+:root[data-claridade='claro'] .border-white\/5 { border-color: rgb(var(--zd-tinta) / 0.04); }
+:root[data-claridade='claro'] .border-white\/6 { border-color: rgb(var(--zd-tinta) / 0.05); }
+:root[data-claridade='claro'] .border-white\/8 { border-color: rgb(var(--zd-tinta) / 0.07); }
+:root[data-claridade='claro'] .border-white\/10 { border-color: rgb(var(--zd-tinta) / 0.09); }
+:root[data-claridade='claro'] .border-white\/12 { border-color: rgb(var(--zd-tinta) / 0.10); }
+:root[data-claridade='claro'] .border-white\/15 { border-color: rgb(var(--zd-tinta) / 0.13); }
+:root[data-claridade='claro'] .border-white\/25 { border-color: rgb(var(--zd-tinta) / 0.21); }
+:root[data-claridade='claro'] .border-white\/30 { border-color: rgb(var(--zd-tinta) / 0.26); }
+:root[data-claridade='claro'] .border-white\/35 { border-color: rgb(var(--zd-tinta) / 0.30); }
+
+/* O único branco cravado nesta folha que a inversão não alcança sozinha. */
+:root[data-claridade='claro'] .hud-campo::placeholder { color: rgb(var(--zd-tinta) / .42); }
+
+/* ── Cor semântica usada como TEXTO no tema claro ─────────────────────────
+   A doutrina do tema diz que cor semântica não muda: magenta é erro, âmbar é
+   prazo, e mudar isso quebraria a leitura. A doutrina continua valendo para
+   BORDA e PREENCHIMENTO, que é onde essas cores desenham.
+
+   Como TEXTO é outra história. Verde #00ff64 sobre papel dá contraste 1,0:
+   não é uma cor difícil de ler, é uma cor que não existe na tela. Aqui a cor
+   é puxada para a tinta o suficiente para virar texto, mantendo o matiz que
+   carrega o significado. */
+:root[data-claridade='claro'] .hud-etiqueta {
+  color: color-mix(in srgb, var(--cor, var(--zd-acento)) 55%, #04140a);
+}
+:root[data-claridade='claro'] .hud-aba.ativa,
+:root[data-claridade='claro'] .zd-gradient-btn { color: #04140a; }
+:root[data-claridade='claro'] .hud-numero {
+  color: color-mix(in srgb, var(--cor) 55%, #04140a);
+}
+
+/* O numeral colorido do Impacto 360°. A cor vem por variável para a folha
+   poder escurecê-la no tema claro; com `color` inline, nada aqui alcançaria. */
+.hud-numero { color: var(--cor, var(--zd-marca)); }

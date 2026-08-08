@@ -206,7 +206,7 @@ export default function Publicacao({ projeto, onFechar, onAviso }) {
                   <div className="flex items-baseline gap-2 flex-wrap">
                     <span className="text-[13px] font-bold">{l.nome || 'Sem nome'}</span>
                     {l.email && (
-                      <a href={`mailto:${l.email}`} className="text-[11.5px] text-[#00e5ff] hover:underline">
+                      <a href={`mailto:${l.email}`} className="text-[11.5px] text-[color:var(--zd-acento)] hover:underline">
                         {l.email}
                       </a>
                     )}

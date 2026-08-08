@@ -26,7 +26,8 @@ function Metrica({ emoji, valor, unidade, label, cor = '#00ff64' }) {
   return (
     <div className="zd-stat-card rounded-xl p-4">
       <div className="text-lg">{emoji}</div>
-      <div className="font-heading text-2xl font-bold mt-1" style={{ color: cor }}>
+      <div className="hud-numero font-heading text-2xl font-bold mt-1"
+        style={{ '--cor': cor }}>
         {valor}<span className="text-xs text-white/40 font-normal ml-1">{unidade}</span>
       </div>
       <div className="text-[11px] text-white/55 mt-1 leading-snug">{label}</div>

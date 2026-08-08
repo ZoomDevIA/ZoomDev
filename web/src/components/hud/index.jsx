@@ -106,8 +106,11 @@ export function Divisor({ children, className = '' }) {
 export function Etiqueta({ children, cor, className = '', ...resto }) {
   return (
     <span className={`hud-etiqueta ${className}`}
+      // A cor entra como VARIÁVEL, não como `color` inline. Estilo inline vence
+      // qualquer folha, e era isso que impedia o tema claro de escurecer a
+      // etiqueta: no papel, âmbar puro como texto tem contraste 1,0.
       style={cor
-        ? { color: cor, background: tom(cor, 0x14), boxShadow: `inset 0 0 0 1px ${tom(cor, 0x3d)}` }
+        ? { '--cor': cor, background: tom(cor, 0x14), boxShadow: `inset 0 0 0 1px ${tom(cor, 0x3d)}` }
         : undefined}
       {...resto}>
       {children}

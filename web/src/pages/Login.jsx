@@ -243,7 +243,7 @@ function RecuperarSenha({ email, onEmail, resultado, erro, enviando, onEnviar, o
   return (
     <form onSubmit={onEnviar} className="space-y-4">
       <div className="text-center mb-1">
-        <Icon nome="chave" tam={28} className="text-[#00e5ff] mx-auto mb-2" />
+        <Icon nome="chave" tam={28} className="text-[color:var(--zd-acento)] mx-auto mb-2" />
         <h2 className="font-heading text-lg font-bold">Recuperar acesso</h2>
         <p className="text-white/50 text-[13px] mt-1.5">
           Informe o e-mail da conta. Enviamos um link para você definir uma senha nova.

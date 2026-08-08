@@ -105,7 +105,7 @@ export default function CaixaContexto({ projeto, onEnviar, ocupado = false }) {
         <div className="px-4 pt-3">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="hud-caps text-[8.5px] text-white/30 flex items-center gap-1">
-              <Icon nome="radar" tam={10} className="text-[#00e5ff]" /> já entendi
+              <Icon nome="radar" tam={10} className="text-[color:var(--zd-acento)]" /> já entendi
             </span>
             {preLeitura.resultado.sinais?.map((s, i) => (
               <Etiqueta key={i} cor={s.cor || '#00e5ff'}>{s.label}</Etiqueta>
@@ -126,7 +126,7 @@ export default function CaixaContexto({ projeto, onEnviar, ocupado = false }) {
                 boxShadow: `inset 0 0 0 1px ${a.estado === 'erro' ? '#ff4d8d44' : '#00e5ff33'}`,
               }}>
               <Icon nome={iconeDeArquivo(a.tipo)} tam={12}
-                className={a.estado === 'erro' ? 'text-[#ff4d8d]' : 'text-[#00e5ff]'} />
+                className={a.estado === 'erro' ? 'text-[#ff4d8d]' : 'text-[color:var(--zd-acento)]'} />
               <span className="text-[10px] text-white/70 truncate flex-1">{a.nome}</span>
               {a.estado === 'pendente' && <Icon nome="atualizar" tam={11} className="text-[#ffc531] animate-spin" />}
               {a.estado === 'pronto' && (
@@ -171,7 +171,7 @@ export default function CaixaContexto({ projeto, onEnviar, ocupado = false }) {
 
           <div className="flex items-center gap-1.5 pt-1.5 border-t border-white/8">
             <button type="button" onClick={() => entrada.current?.click()} title="Anexar arquivo"
-              className="p-1.5 text-white/40 hover:text-[#00e5ff] transition-colors">
+              className="p-1.5 text-white/40 hover:text-[color:var(--zd-acento)] transition-colors">
               <Icon nome="upload" tam={16} />
             </button>
             <input ref={entrada} type="file" multiple accept={ACEITOS} className="hidden"
@@ -181,7 +181,7 @@ export default function CaixaContexto({ projeto, onEnviar, ocupado = false }) {
               <button type="button" onClick={ditado.alternar}
                 title={ditado.ouvindo ? 'Parar de ditar' : 'Ditar por voz'}
                 className={`p-1.5 transition-colors ${
-                  ditado.ouvindo ? 'text-[#ff4d8d]' : 'text-white/40 hover:text-[#00e5ff]'}`}>
+                  ditado.ouvindo ? 'text-[#ff4d8d]' : 'text-white/40 hover:text-[color:var(--zd-acento)]'}`}>
                 <Icon nome="transmissao" tam={16} />
               </button>
             )}

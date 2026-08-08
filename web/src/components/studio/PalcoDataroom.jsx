@@ -152,7 +152,7 @@ function Documento({ icone, titulo, formato, disponivel, ocupado, rotuloAcao = '
   return (
     <div className={`hud-corte p-3 flex items-center gap-3 ${disponivel ? '' : 'opacity-45'}`}
       style={{ '--c': '6px', background: '#00e5ff0a', boxShadow: 'inset 0 0 0 1px #00e5ff26' }}>
-      <Icon nome={icone} tam={16} className="text-[#00e5ff] shrink-0" />
+      <Icon nome={icone} tam={16} className="text-[color:var(--zd-acento)] shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="text-[12px] font-bold truncate">
           {titulo} <span className="hud-tec text-[9px] text-white/35">{formato}</span>

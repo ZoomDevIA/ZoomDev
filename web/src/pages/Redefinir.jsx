@@ -65,7 +65,7 @@ export default function Redefinir() {
           ) : (
             <>
               <div className="text-center mb-6">
-                <Icon nome="cadeadoAberto" tam={32} className="text-[#00e5ff] mx-auto mb-2" />
+                <Icon nome="cadeadoAberto" tam={32} className="text-[color:var(--zd-acento)] mx-auto mb-2" />
                 <h1 className="font-heading text-lg font-bold">Definir nova senha</h1>
                 <p className="text-white/50 text-[13px] mt-1.5">
                   Escolha uma senha nova. Ao confirmar, todas as sessões abertas nesta conta se encerram.

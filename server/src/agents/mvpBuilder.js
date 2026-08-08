@@ -10,6 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { config } from '../config.js';
 import { structured } from './claude.js';
+import { ANDAIMES, gerarAndaime, costurar, textoEntrega } from './mvpAndaime.js';
 
 /**
  * A direção de design vem antes do código.
@@ -60,6 +61,11 @@ function contexto(projeto) {
     mvpEscopo: eng.escopoMvp || eng.mvp || [],
     impacto: imp.descricao || imp.teseImpacto || '',
     ods: imp.ods || [],
+    // As duas cores da marca do MVP. Vivem aqui, e não no gerador demo, porque
+    // o andaime também precisa delas: ícone, manifesto e `theme-color` têm que
+    // sair na mesma cor que o styles.css, nos dois modos de construção.
+    corTema: projeto.classificacao === 'biostartup' ? '#00ff64' : '#00c8ff',
+    corApoio: projeto.classificacao === 'biostartup' ? '#00c8ff' : '#a855f7',
   };
 }
 
@@ -68,8 +74,8 @@ const lista = (arr, fallback) => (Array.isArray(arr) && arr.length ? arr : fallb
 
 // ── Gerador determinístico (modo demo: produz MVP real) ──────────────────
 function gerarDemo(ctx) {
-  const cor = ctx.bio ? '#00ff64' : '#00c8ff';
-  const cor2 = ctx.bio ? '#00c8ff' : '#a855f7';
+  const cor = ctx.corTema;
+  const cor2 = ctx.corApoio;
   const feats = lista(ctx.funcionalidades, ['Cadastro simples', 'Painel de acompanhamento', 'Relatórios exportáveis']).slice(0, 6);
   const dores = lista(ctx.dores, ['Processo manual e demorado', 'Falta de visibilidade dos dados', 'Custo alto de operação']).slice(0, 3);
   const escopo = lista(ctx.mvpEscopo, feats).slice(0, 5);
@@ -712,6 +718,33 @@ ${jaGerado.identidade ? `\nO styles.css já foi escrito e define estas classes, 
  * Constrói o MVP. `onProgress(pecaId, status, arquivo)` reporta o andamento.
  * Retorna { arquivos: [{arquivo, conteudo}], modo }.
  */
+/**
+ * Junta as peças escritas pelo agente com o andaime determinístico.
+ *
+ * A ordem importa: o andaime é montado DEPOIS das peças, e a costura roda por
+ * último, sobre o conjunto inteiro. Assim o SEO, o service worker e a
+ * navegação entram tanto no HTML que o agente escreveu quanto no que o andaime
+ * gerou, sem o agente precisar saber que eles existem.
+ */
+function montar(arquivosDasPecas, ctx, onProgress) {
+  const andaime = [];
+  for (const a of ANDAIMES) {
+    onProgress(a.id, 'executando', a.arquivo);
+    andaime.push(a);
+  }
+  const gerados = gerarAndaime(ctx);
+  for (const a of ANDAIMES) onProgress(a.id, 'concluido', a.arquivo);
+
+  // O README ganha a seção do andaime: quem baixar o ZIP precisa saber que
+  // existe backend e como subir, e isso não pode depender de o agente ter
+  // adivinhado.
+  const comEntrega = arquivosDasPecas.map(a => (
+    a.arquivo === 'README.md' ? { ...a, conteudo: a.conteudo + textoEntrega(ctx) } : a
+  ));
+
+  return costurar([...comEntrega, ...gerados], ctx);
+}
+
 export async function construirMvp(projeto, onProgress = () => {}) {
   const ctx = contexto(projeto);
   const demo = gerarDemo(ctx);
@@ -721,7 +754,11 @@ export async function construirMvp(projeto, onProgress = () => {}) {
     for (const p of PECAS) {
       onProgress(p.id, 'concluido', demo[p.id].arquivo);
     }
-    return { arquivos: PECAS.map(p => demo[p.id]), modo: 'demo', design: designPadrao(ctx) };
+    return {
+      arquivos: montar(PECAS.map(p => demo[p.id]), ctx, onProgress),
+      modo: 'demo',
+      design: designPadrao(ctx),
+    };
   }
 
   // A direção vem primeiro e alimenta todos os arquivos. Se ela falhar, a
@@ -749,5 +786,5 @@ export async function construirMvp(projeto, onProgress = () => {}) {
       onProgress(p.id, 'fallback', p.arquivo);
     }
   }
-  return { arquivos: PECAS.map(p => gerado[p.id]), modo: 'ia', design };
+  return { arquivos: montar(PECAS.map(p => gerado[p.id]), ctx, onProgress), modo: 'ia', design };
 }

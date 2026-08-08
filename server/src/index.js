@@ -222,6 +222,14 @@ app.use('/api/pagamentos', pagamentosRouter);
 app.use('/api', elencoRouter);
 app.use('/api', platformRouter);
 
+// Rota de API que não existe responde JSON, e não a página "Cannot GET" do
+// Express. O cliente sempre faz JSON.parse na resposta: sem isto, um endereço
+// digitado errado vira erro de sintaxe no navegador em vez de "não encontrada",
+// e quem estiver depurando perde tempo procurando defeito onde não tem.
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: `Rota não encontrada: ${req.method} ${req.baseUrl}${req.path}` });
+});
+
 app.use((err, _req, res, _next) => {
   const status = err.status || 500;
   if (status >= 500) console.error(err);
@@ -259,7 +267,10 @@ agendarBackup();
 
 process.on('SIGINT', () => { save(); process.exit(0); });
 
-app.listen(config.port, async () => {
+// Exportado para o teste de rota poder subir a aplicação de verdade, ler a
+// porta que o sistema deu e fechar no fim. Com PORT=0 o sistema escolhe uma
+// porta livre, então o teste roda mesmo com a plataforma já no ar na 4000.
+export const servidor = app.listen(config.port, async () => {
   console.log(`ZoomDev OS API na porta ${config.port}: modo ${config.hasApiKey ? 'IA (' + config.model + ')' : 'DEMO'}`);
   // Destravamento de emergência: só faz alguma coisa se ZOOMDEV_RECUPERAR
   // estiver definida. Imprime um link de uso único no log e nada mais.

@@ -231,7 +231,7 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
           arvoreAberta ? 'w-[168px]' : 'w-[38px]'}`}>
           <button onClick={() => setArvoreAberta(v => !v)}
             title={arvoreAberta ? 'Recolher arquivos' : 'Expandir arquivos'}
-            className="px-2.5 py-2 flex items-center gap-1.5 text-white/35 hover:text-[#00e5ff] transition-colors border-b border-[#00e5ff14]">
+            className="px-2.5 py-2 flex items-center gap-1.5 text-white/35 hover:text-[color:var(--zd-acento)] transition-colors border-b border-[#00e5ff14]">
             <Icon nome="pasta" tam={13} />
             {arvoreAberta && <span className="hud-caps text-[9px]">arquivos</span>}
             {arvoreAberta && <Icon nome="chevron" tam={11} className="ml-auto rotate-90" />}
@@ -280,11 +280,11 @@ export default function PalcoEstudio({ projeto, fase, onAviso, onMarco }) {
                 <span className="hud-tec text-[8.5px] text-[#ffc531]">com alterações não salvas</span>
               )}
               <button onClick={() => setChavePrevia(k => k + 1)} title="Recarregar a prévia"
-                className="ml-auto text-white/30 hover:text-[#00e5ff]">
+                className="ml-auto text-white/30 hover:text-[color:var(--zd-acento)]">
                 <Icon nome="atualizar" tam={12} />
               </button>
               <button onClick={abrirEmAba} title="Abrir em nova aba"
-                className="text-white/30 hover:text-[#00e5ff]">
+                className="text-white/30 hover:text-[color:var(--zd-acento)]">
                 <Icon nome="externo" tam={12} />
               </button>
             </div>

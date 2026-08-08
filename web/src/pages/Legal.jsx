@@ -114,13 +114,13 @@ export default function Legal() {
           {secoes.map(([titulo, itens], i) => (
             <Painel key={titulo} className="p-5">
               <div className="flex items-baseline gap-3">
-                <span className="hud-tec text-[#00e5ff] text-xs shrink-0">{String(i + 1).padStart(2, '0')}</span>
+                <span className="hud-tec text-[color:var(--zd-acento)] text-xs shrink-0">{String(i + 1).padStart(2, '0')}</span>
                 <h2 className="font-heading font-bold text-[15px]">{titulo}</h2>
               </div>
               <ul className="mt-3 space-y-2.5">
                 {itens.map((texto, j) => (
                   <li key={j} className="text-[13px] text-white/65 leading-relaxed flex gap-2.5">
-                    <span className="text-[#00e5ff] shrink-0 mt-1">▸</span>{texto}
+                    <span className="text-[color:var(--zd-acento)] shrink-0 mt-1">▸</span>{texto}
                   </li>
                 ))}
               </ul>

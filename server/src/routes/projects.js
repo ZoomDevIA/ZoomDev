@@ -9,6 +9,7 @@ import { planoParaDocx } from '../services/exportDocx.js';
 import { planoParaPdf } from '../services/exportPdf.js';
 import { paginaHtml } from '../services/exportHtml.js';
 import { construirMvp, PECAS, ETAPA_DESIGN } from '../agents/mvpBuilder.js';
+import { ANDAIMES } from '../agents/mvpAndaime.js';
 import { publicar, projetarProjeto } from '../services/vitrine.js';
 import { emitirPrevia } from '../services/previa.js';
 import { hidratar, gravarConteudo, arquivosMvp, apagarConteudo } from '../services/conteudo.js';
@@ -311,7 +312,7 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
   save();
   // A direção de UX/UI aparece como primeira etapa: o fundador precisa ver
   // que existe uma decisão de design antes do código, e não só arquivos saindo.
-  send('inicio', { custo, pecas: [ETAPA_DESIGN, ...PECAS] });
+  send('inicio', { custo, pecas: [ETAPA_DESIGN, ...PECAS, ...ANDAIMES] });
 
   try {
     const { arquivos, modo, design } = await construirMvp(proj, (pecaId, status, arquivo) => {

@@ -35,7 +35,7 @@ export default function PalcoDocumento({
         <div className="h-full overflow-y-auto flex items-center justify-center p-6">
           <div className="max-w-md w-full space-y-4">
             <div className="text-center">
-              <Icon nome="documento" tam={34} className="text-[#00e5ff] mx-auto mb-3.5 opacity-70" />
+              <Icon nome="documento" tam={34} className="text-[color:var(--zd-acento)] mx-auto mb-3.5 opacity-70" />
               <h3 className="font-heading font-bold text-[15px]">Seu plano de negócios ainda não existe</h3>
               <p className="text-[13px] text-white/45 mt-2 leading-relaxed">
                 Os agentes pesquisam o mercado na internet, consideram o seu território e escrevem
@@ -103,14 +103,14 @@ function EmGeracao({ progresso, projeto }) {
   return (
     <div className="hud-painel hud-p flex flex-col h-full overflow-hidden palco-varredura">
       <div className="px-4 py-3 border-b border-[#00e5ff1f] flex items-center gap-3 shrink-0">
-        <Icon nome="documento" tam={16} className="text-[#00e5ff]" />
+        <Icon nome="documento" tam={16} className="text-[color:var(--zd-acento)]" />
         <div className="min-w-0 flex-1">
           <div className="text-[13px] font-bold truncate">Escrevendo o plano de {projeto?.nome}</div>
           <div className="hud-tec text-[9px] text-white/35">
             {progresso?.fonte ? `CONSULTANDO ${progresso.fonte}` : 'AGENTES EM CAMPO'}
           </div>
         </div>
-        <span className="hud-tec text-[13px] text-[#00e5ff] shrink-0">{pct}%</span>
+        <span className="hud-tec text-[13px] text-[color:var(--zd-acento)] shrink-0">{pct}%</span>
       </div>
 
       <div className="h-[3px] bg-[#00e5ff14] shrink-0">

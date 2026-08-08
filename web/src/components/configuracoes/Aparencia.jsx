@@ -4,7 +4,7 @@ import Icon from '../Icon.jsx';
 import { Painel, Rotulo, Etiqueta, Botao, Barra, Secao, Pulso } from '../hud/index.jsx';
 import {
   ACENTOS, ARESTAS, DENSIDADES, FONTES, FUNDOS, MOVIMENTOS,
-  HEX_VALIDO, acentoLegivel, aplicar, contraste, gravarLocal, lerLocal, padrao,
+  HEX_VALIDO, aplicar, gravarLocal, guardaDeContraste, lerLocal, padrao,
 } from '../../lib/tema.js';
 import { api } from '../../lib/api.js';
 
@@ -51,8 +51,11 @@ export default function Aparencia({ user, refreshUser }) {
 
   const restaurar = () => setTema(padrao());
 
-  const razao = contraste(tema.acento, FUNDOS[tema.fundo].pagina);
-  const legivel = acentoLegivel(tema.acento, tema.fundo);
+  // A guarda de contraste mora em tema.js, e não aqui, porque a mesma regra
+  // precisa valer para o tema que chega do servidor. A tela só desenha o que
+  // ela devolve.
+  const avisosDeCor = guardaDeContraste(tema);
+  const avisoDe = (campo) => avisosDeCor.filter(a => a.campo === campo);
 
   return (
     <Secao rotulo="APARÊNCIA" titulo="O painel do seu jeito"
@@ -91,15 +94,7 @@ export default function Aparencia({ user, refreshUser }) {
           </p>
           <Amostras valor={tema.acento} onEscolher={v => mexer('acento', v)} />
 
-          {!legivel && (
-            <div className="flex gap-2.5 items-start text-[11px] text-[#ffc531] leading-relaxed">
-              <Icon nome="alerta" tam={14} className="shrink-0 mt-0.5" />
-              <span>
-                Contraste de {razao.toFixed(1)} para 1 contra este fundo, abaixo do mínimo de 3.
-                As bordas vão quase sumir. Dá para usar, mas você foi avisado.
-              </span>
-            </div>
-          )}
+          <Avisos itens={avisoDe('acento')} />
 
           <div className="pt-1">
             <Rotulo>COR DA MARCA</Rotulo>
@@ -107,6 +102,7 @@ export default function Aparencia({ user, refreshUser }) {
               Confirmação, item ativo do menu e o botão principal.
             </p>
             <Amostras valor={tema.marca} onEscolher={v => mexer('marca', v)} />
+            <div className="mt-2.5"><Avisos itens={avisoDe('marca')} /></div>
           </div>
         </Painel>
 
@@ -243,6 +239,30 @@ function Previa({ tema, user }) {
 }
 
 // ── Peças do formulário ───────────────────────────────────────────────────
+/**
+ * Os avisos da guarda de contraste.
+ *
+ * Cada um traz o que está errado e o que fazer. Aviso sem saída é só uma tela
+ * dizendo "você errou", e quem está escolhendo cor não sabe o que fazer com
+ * isso. Nada aqui bloqueia: a escolha continua sendo de quem usa.
+ */
+function Avisos({ itens }) {
+  if (!itens.length) return null;
+  return (
+    <div className="space-y-2">
+      {itens.map((a, i) => (
+        <div key={i} className="flex gap-2.5 items-start text-[11px] text-[#ffc531] leading-relaxed">
+          <Icon nome="alerta" tam={14} className="shrink-0 mt-0.5" />
+          <span>
+            {a.texto}{' '}
+            <span className="text-white/45">{a.saida}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Amostras({ valor, onEscolher }) {
   const [livre, setLivre] = useState(valor);
   useEffect(() => { setLivre(valor); }, [valor]);

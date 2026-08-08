@@ -108,7 +108,7 @@ export default function Copiloto() {
           <span className="maia-fio" style={{ width: 14 }} />
           <div className="min-w-0 flex-1 pl-2.5">
             <div className="hud-caps text-[11px] leading-none">Maiá</div>
-            <div className="hud-tec text-[8.5px] text-[#00e5ff] mt-1 flex items-center gap-1.5 uppercase">
+            <div className="hud-tec text-[8.5px] text-[color:var(--zd-acento)] mt-1 flex items-center gap-1.5 uppercase">
               <span className="hud-pulso" style={{ color: '#00ff64', width: 5, height: 5 }} />
               Inteligência Regenerativa
             </div>
@@ -140,7 +140,7 @@ export default function Copiloto() {
           {pensando && (
             <div className="maia-bolha hud-painel max-w-[86%] px-3 py-2"
               style={{ '--cor': '#00ff6433', '--fundo': '#07170f' }}>
-              <div className="hud-tec text-[10px] text-[#00e5ff] uppercase cursor-agente">Pensando</div>
+              <div className="hud-tec text-[10px] text-[color:var(--zd-acento)] uppercase cursor-agente">Pensando</div>
             </div>
           )}
           <div ref={fim} />
@@ -179,7 +179,7 @@ export default function Copiloto() {
           style={{ '--cor': '#00e5ff7a', '--fundo': '#04140a' }}
         >
           <div className="hud-caps text-[10px] leading-none text-white/92">Maiá</div>
-          <div className="hud-tec text-[8px] text-[#00e5ff] mt-1 uppercase">Inteligência Regenerativa</div>
+          <div className="hud-tec text-[8px] text-[color:var(--zd-acento)] mt-1 uppercase">Inteligência Regenerativa</div>
         </button>
       </div>
 

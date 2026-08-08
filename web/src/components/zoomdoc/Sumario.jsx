@@ -34,7 +34,7 @@ export default function Sumario({ estrutura = [], onIr, ativo = null }) {
     <aside className="w-[212px] shrink-0 border-r border-[#00e5ff1f] flex flex-col bg-[#07120e] hidden md:flex">
       <div className="px-3 py-2.5 border-b border-[#00e5ff14] shrink-0">
         <div className="hud-caps text-[9px] text-white/35 flex items-center gap-1.5 mb-2">
-          <Icon nome="lista" tam={11} className="text-[#00e5ff]" />
+          <Icon nome="lista" tam={11} className="text-[color:var(--zd-acento)]" />
           Sumário
           <span className="ml-auto hud-tec text-white/22">{estrutura.length}</span>
         </div>
@@ -67,7 +67,7 @@ export default function Sumario({ estrutura = [], onIr, ativo = null }) {
             className={`w-full text-left px-3 py-1.5 leading-snug transition-colors border-l-2 ${
               RECUO[i.nivel] || 'pl-9'} ${PESO[i.nivel] || PESO[4]} ${
               ativo === i.pos
-                ? 'border-[#00e5ff] text-[#00e5ff] bg-[#00e5ff0f]'
+                ? 'border-[#00e5ff] text-[color:var(--zd-acento)] bg-[#00e5ff0f]'
                 : 'border-transparent text-white/50 hover:text-white hover:bg-white/4 hover:border-[#00e5ff55]'}`}
           >
             <span className="block truncate">{i.texto}</span>

@@ -60,11 +60,12 @@ h1, h2, h3, .font-heading { font-family: var(--zd-fonte-titulo); }
 .zd-green-dim { color: color-mix(in srgb, var(--zd-marca) 80%, #000); }
 .zd-blue { color: var(--brand-blue); }
 .zd-gradient-text { background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-blue) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.zd-gradient-btn { background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-blue) 100%); color: var(--brand-bg); font-weight: 700; transition: all .2s ease; }
+.zd-gradient-btn { background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-blue) 100%); color: #04140a; font-weight: 700; transition: all .2s ease; }
 .zd-gradient-btn:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
 .zd-gradient-btn:disabled { opacity: .45; cursor: not-allowed; }
-.zd-menu-item { color: #ffffff80; transition: all .2s ease; }
-.zd-menu-item:hover { color: #ffffffe6; background: color-mix(in srgb, var(--zd-marca) 6%, transparent); }
+/* Tinta, e não branco cravado: no tema claro isto era texto branco sobre papel. */
+.zd-menu-item { color: rgb(var(--zd-tinta) / .5); transition: all .2s ease; }
+.zd-menu-item:hover { color: rgb(var(--zd-tinta) / .9); background: color-mix(in srgb, var(--zd-marca) 6%, transparent); }
 .zd-menu-item.active {
   color: var(--zd-marca);
   background: linear-gradient(90deg, color-mix(in srgb, var(--zd-marca) 13%, transparent), color-mix(in srgb, var(--zd-marca) 3%, transparent));

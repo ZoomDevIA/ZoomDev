@@ -156,7 +156,7 @@ export default function Estilo() {
             {ICONES.map(n => (
               <button key={n} onClick={() => copiar(n)}
                 className="hud-painel hud-p hud-vivo p-3 flex flex-col items-center gap-2 text-center">
-                <Icon nome={n} tam={24} className="text-[#00e5ff]" />
+                <Icon nome={n} tam={24} className="text-[color:var(--zd-acento)]" />
                 <span className="hud-tec text-[8.5px] text-white/40 break-all leading-tight">
                   {copiado === n ? 'copiado' : n}
                 </span>

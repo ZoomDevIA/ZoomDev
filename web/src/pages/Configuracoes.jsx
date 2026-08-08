@@ -190,7 +190,7 @@ function Gamificacao({ user }) {
       <Painel className="p-5 space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="text-sm">
-            <b className="hud-tec text-[#00e5ff]">NV {nivel.nivel}</b>
+            <b className="hud-tec text-[color:var(--zd-acento)]">NV {nivel.nivel}</b>
             <span className="text-white/55"> · {nivel.nome}</span>
           </div>
           <div className="hud-tec text-[11px] text-white/40">

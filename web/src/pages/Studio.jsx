@@ -183,7 +183,7 @@ export default function Studio() {
   if (carregando) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Icon nome="atualizar" tam={26} className="text-[#00e5ff] animate-spin" />
+        <Icon nome="atualizar" tam={26} className="text-[color:var(--zd-acento)] animate-spin" />
       </div>
     );
   }

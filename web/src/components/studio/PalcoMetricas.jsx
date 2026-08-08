@@ -105,7 +105,7 @@ export default function PalcoMetricas({ projeto, fase, onAtualizar, onAviso }) {
               <div key={i} className="flex gap-2.5">
                 <Icon nome={l.tipo === 'risco' ? 'alerta' : l.tipo === 'bom' ? 'check' : 'info'} tam={13}
                   className={`shrink-0 mt-0.5 ${
-                    l.tipo === 'risco' ? 'text-[#ff4d8d]' : l.tipo === 'bom' ? 'text-[#00ff64]' : 'text-[#00e5ff]'}`} />
+                    l.tipo === 'risco' ? 'text-[#ff4d8d]' : l.tipo === 'bom' ? 'text-[#00ff64]' : 'text-[color:var(--zd-acento)]'}`} />
                 <span className="text-[12px] text-white/65 leading-relaxed">{l.texto}</span>
               </div>
             ))}
