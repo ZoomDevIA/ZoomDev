@@ -64,6 +64,7 @@ export const api = {
   login: (body) => req('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   me: () => req('/me'),
   projetos: () => req('/projects'),
+  isometricBenchmark: () => req('/isometric/benchmark'),
   projeto: (id) => req(`/projects/${id}`),
   ideacao: (body) => req('/projects/ideacao', { method: 'POST', body: JSON.stringify(body) }),
   concluirMissao: (projId, missaoId) => req(`/projects/${projId}/missoes/${missaoId}/concluir`, { method: 'POST' }),
