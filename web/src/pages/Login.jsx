@@ -52,10 +52,6 @@ export default function Login() {
             } catch (err) { setErro(err.message); }
           },
         });
-        window.google.accounts.id.renderButton(googleBotao.current, {
-          theme: 'filled_black', size: 'large', text: 'continue_with',
-          shape: 'rectangular', width: 336, locale: 'pt-BR',
-        });
         setGoogleAtivo(true);
       };
       if (window.google?.accounts?.id) return desenhar();
@@ -67,6 +63,18 @@ export default function Login() {
     }).catch(() => {});
     return () => { vivo = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // O mesmo botão serve para entrar e para cadastrar (o servidor cria a conta
+  // quando o e-mail é novo). O que muda com a aba é só o rótulo, no texto
+  // oficial do Google: "Cadastre-se com o Google" na aba de criar conta.
+  useEffect(() => {
+    if (!googleAtivo || !window.google?.accounts?.id || !googleBotao.current) return;
+    window.google.accounts.id.renderButton(googleBotao.current, {
+      theme: 'filled_black', size: 'large',
+      text: tab === 'criar' ? 'signup_with' : 'continue_with',
+      shape: 'rectangular', width: 336, locale: 'pt-BR',
+    });
+  }, [tab, googleAtivo]);
 
   const pedirRecuperacao = async (e) => {
     e.preventDefault();
