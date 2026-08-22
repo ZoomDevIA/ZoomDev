@@ -77,6 +77,34 @@ test('rotas ponta a ponta', async (t) => {
     assert.equal(r.status, 400);
   });
 
+  await t.test('domínios: o apex do app canoniza e o .io vai para o site', async () => {
+    // fetch não deixa forjar o Host, então aqui é http puro de propósito.
+    const http = await import('node:http');
+    const pedirComHost = (host, caminho) => new Promise((ok, erro) => {
+      http.request(
+        { port: servidor.address().port, path: caminho, headers: { Host: host } },
+        r => { r.resume(); ok({ status: r.statusCode, location: r.headers.location }); },
+      ).on('error', erro).end();
+    });
+
+    const io = await pedirComHost('zoomdev.io', '/precos');
+    assert.equal(io.status, 301);
+    assert.equal(io.location, 'https://www.zoomdev.com.br/precos');
+
+    const ioWww = await pedirComHost('www.zoomdev.io', '/');
+    assert.equal(ioWww.location, 'https://www.zoomdev.com.br/');
+
+    const apex = await pedirComHost('zoomdev.app', '/login?modo=cadastro');
+    assert.equal(apex.status, 301);
+    assert.equal(apex.location, 'https://www.zoomdev.app/login?modo=cadastro');
+
+    // O host canônico e os hosts fora do mapa não são tocados
+    const canonico = await pedirComHost('www.zoomdev.app', '/api/health');
+    assert.equal(canonico.status, 200);
+    const railway = await pedirComHost('zoomdev-producao.up.railway.app', '/api/health');
+    assert.equal(railway.status, 200);
+  });
+
   await t.test('sem GOOGLE_CLIENT_ID o login com google se declara desligado', async () => {
     const cfg = await pedir('/auth/google/config');
     assert.equal(cfg.status, 200);

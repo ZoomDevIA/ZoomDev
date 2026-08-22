@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import { config } from './config.js';
-import { cabecalhos, cors, POLITICA_PREVIA, POLITICA_SITE } from './services/blindagem.js';
+import { cabecalhos, cors, dominios, POLITICA_PREVIA, POLITICA_SITE } from './services/blindagem.js';
 import { lerPrevia, montarPrevia } from './services/previa.js';
 import { migrarConteudo } from './services/conteudo.js';
 import { siteDoSlug, montarPagina, registrarLead, registrarVisita, paginaObrigado, PREFIXO } from './services/publicacao.js';
@@ -38,6 +38,10 @@ import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gam
 
 const app = express();
 app.disable('x-powered-by');
+
+// Antes de tudo: quem chegou pelo domínio errado é redirecionado antes de
+// qualquer resposta ganhar corpo (apex do app para o www; .io para o site).
+app.use(dominios);
 
 // Cabeçalhos de segurança em toda resposta, inclusive nos sites publicados.
 app.use(cabecalhos);

@@ -20,6 +20,31 @@ const ORIGENS_LOCAIS = [
 ];
 
 /** Origens que podem chamar a API. Vazio significa "só a própria". */
+// ── Mapa de domínios da plataforma ─────────────────────────────────────────
+// Três endereços, três papéis, decididos pelo fundador:
+//   www.zoomdev.com.br   site institucional (hospedado fora deste servidor)
+//   zoomdev.io           só redireciona para o institucional
+//   www.zoomdev.app      a plataforma (este servidor)
+//
+// Este middleware cuida do que chega AQUI com o host errado: o apex
+// zoomdev.app canoniza para o www (um endereço só nos cookies, no Google
+// OAuth e no SEO), e o .io, se estiver apontado para cá, segue para o site.
+// O caminho viaja junto no redirecionamento: quem guardou um link não o
+// perde. Hosts fora do mapa (o domínio da Railway, localhost, testes)
+// passam intocados.
+const REDIRECIONAMENTOS_DE_HOST = {
+  'zoomdev.io': 'https://www.zoomdev.com.br',
+  'www.zoomdev.io': 'https://www.zoomdev.com.br',
+  'zoomdev.app': 'https://www.zoomdev.app',
+};
+
+export function dominios(req, res, next) {
+  const host = String(req.headers.host || '').toLowerCase().split(':')[0];
+  const destino = REDIRECIONAMENTOS_DE_HOST[host];
+  if (destino) return res.redirect(301, destino + req.originalUrl);
+  next();
+}
+
 export function origensPermitidas() {
   const doAmbiente = (process.env.ZOOMDEV_URL || '')
     .split(',').map(s => s.trim().replace(/\/$/, '')).filter(Boolean);
