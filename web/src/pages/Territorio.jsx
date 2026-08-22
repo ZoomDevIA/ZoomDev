@@ -60,11 +60,27 @@ export default function Territorio() {
   const [trilha, setTrilha] = useState(null);
   const [verificacao, setVerificacao] = useState(null);
   const [eventos, setEventos] = useState([]);
+  const [coop, setCoop] = useState(null);
+  const [adesaoTotal, setAdesaoTotal] = useState(null);
+  const [editais, setEditais] = useState([]);
+  const [ndvi, setNdvi] = useState(null);
+  const [ndviAviso, setNdviAviso] = useState(null);
 
   useEffect(() => {
     api.territorio().then(setDados).catch(e => setErro(e.message));
     api.barramento(10).then(r => setEventos(r.eventos)).catch(() => {});
+    api.cooperativas().then(setCoop).catch(() => {});
+    api.editais().then(l => setEditais((l || []).slice(0, 3))).catch(() => {});
   }, []);
+
+  // "Se o município inteiro aderir": o motor 360° de verdade, no cenário
+  // conservador, sobre manejo atual + potencial mapeado. Sempre ESTIMATIVA.
+  useEffect(() => {
+    if (!dados) return;
+    const hectares = dados.totais.hectares + dados.totais.potencialHa;
+    api.simularImpacto({ culturaId: 'mandioca', hectares, cenarioId: 'conservador' })
+      .then(setAdesaoTotal).catch(() => {});
+  }, [dados]);
 
   // O mapa nasce quando os dados chegam, já com os lotes por cima
   useEffect(() => {
@@ -132,9 +148,23 @@ export default function Territorio() {
     setLoteAtivo(props);
     setTrilha(null);
     setVerificacao(null);
+    setNdvi(null);
+    setNdviAviso(null);
     mapa.current?.setFilter('lote-escolhido', ['==', ['get', 'id'], props.id]);
     if (props.status !== 'potencial') {
       api.trilhaEvidencias(props.id).then(setTrilha).catch(() => {});
+      api.ndvi(props.id).then(setNdvi).catch(() => {});
+    }
+  };
+
+  const ndviParaEvidencia = async () => {
+    setNdviAviso(null);
+    try {
+      await api.registrarNdvi(loteAtivo.id);
+      setNdviAviso({ ok: true, texto: 'Leitura NDVI lacrada na cadeia como evidência CAMPO.' });
+      api.trilhaEvidencias(loteAtivo.id).then(setTrilha).catch(() => {});
+    } catch (e) {
+      setNdviAviso({ ok: false, texto: e.message });
     }
   };
 
@@ -230,6 +260,40 @@ export default function Territorio() {
                 </p>
               )}
 
+              {ndvi && (
+                <div className="mt-4 rounded-xl border border-white/8 bg-white/[.02] p-3.5">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[9px] tracking-[.18em] font-mono uppercase text-white/40">
+                      NDVI · Sentinel-2 · {ndvi.serie.length} quinzenas
+                    </span>
+                    <span className={`text-[8.5px] font-mono px-1.5 py-0.5 rounded border ${ndvi.modo === 'real'
+                      ? 'text-[#00ff64] border-[#00ff6455]' : 'text-[#a855f7] border-[#a855f755]'}`}
+                      title={ndvi.fonte}>
+                      {ndvi.modo === 'real' ? 'AO VIVO' : 'DEMONSTRAÇÃO'}
+                    </span>
+                  </div>
+                  <svg viewBox="0 0 300 60" className="w-full" style={{ height: 60 }}>
+                    <polyline fill="none" stroke="#00ff64" strokeWidth="1.6"
+                      points={ndvi.serie.map((p, i) =>
+                        `${(i / (ndvi.serie.length - 1)) * 296 + 2},${56 - (p.ndvi - 0.2) / 0.7 * 50}`).join(' ')} />
+                  </svg>
+                  <div className="flex items-center justify-between gap-2 mt-1.5">
+                    <span className="text-[10px] font-mono text-white/45">
+                      média {ndvi.media} · tendência {ndvi.tendencia >= 0 ? '+' : ''}{ndvi.tendencia}
+                    </span>
+                    <button onClick={ndviParaEvidencia}
+                      className="text-[10px] rounded border border-white/15 hover:border-[#00ff6466] px-2 py-1 text-white/60 transition-colors">
+                      ⛓ virar evidência
+                    </button>
+                  </div>
+                  {ndviAviso && (
+                    <div className={`text-[10.5px] mt-2 leading-snug ${ndviAviso.ok ? 'text-[#00ff64]' : 'text-[#ffc531]'}`}>
+                      {ndviAviso.texto}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {trilha && (
                 <div className="mt-4 space-y-2">
                   <div className="text-[9px] tracking-[.2em] font-mono uppercase text-white/40">
@@ -282,6 +346,7 @@ export default function Territorio() {
             <div className="text-[9px] tracking-[.2em] font-mono uppercase text-white/40 mb-2">
               Barramento · agora
             </div>
+            {/* feed continua abaixo */}
             {eventos.length === 0 && <div className="text-xs text-white/35">Sem eventos ainda.</div>}
             {eventos.map(e => (
               <div key={e.id} className="flex items-center justify-between gap-2 py-1 border-b border-white/5 last:border-0">
@@ -292,6 +357,77 @@ export default function Territorio() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ── O cockpit: o que uma prefeitura ou cooperativa contrata ───────── */}
+      <div className="grid md:grid-cols-3 gap-4 items-start">
+        <div className="zd-card rounded-2xl p-5">
+          <div className="text-[9px] tracking-[.2em] font-mono uppercase text-white/40 mb-3">
+            Ranking regenerativo · cooperativas
+          </div>
+          {!coop && <div className="text-xs text-white/35">Carregando…</div>}
+          {coop?.ranking.map((c, i) => (
+            <div key={c.nome} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
+              <span className="text-[11px] font-mono text-white/35 w-4">{i + 1}</span>
+              <div className="flex-1">
+                <div className="text-[12.5px] text-white/85 font-semibold">{c.nome}</div>
+                <div className="text-[10px] text-white/40">{c.ha.toLocaleString('pt-BR')} ha · {c.lotes.join(', ')}</div>
+              </div>
+              <span className="text-[10px] font-mono shrink-0" style={{ color: COR_SELO[c.selo] }}>
+                {c.selo} {c.confianca}
+              </span>
+            </div>
+          ))}
+          <p className="text-[10px] text-white/35 mt-2.5">
+            O selo da cooperativa é o elo mais fraco dos lotes que ela agrega: subir junto é o jogo.
+          </p>
+        </div>
+
+        <div className="zd-card rounded-2xl p-5" style={{ borderColor: '#a855f733' }}>
+          <div className="text-[9px] tracking-[.2em] font-mono uppercase text-[#a855f7] mb-3">
+            Se o município inteiro aderir · motor 360°
+          </div>
+          {!adesaoTotal && <div className="text-xs text-white/35">Simulando…</div>}
+          {adesaoTotal && (
+            <>
+              <div className="space-y-2">
+                {[
+                  ['Área total', `${(dados.totais.hectares + dados.totais.potencialHa).toLocaleString('pt-BR')} ha`],
+                  ['Pessoas alimentadas/ano', adesaoTotal.resumo.pessoasAlimentadasAno.toLocaleString('pt-BR')],
+                  ['Mitigação estimada', `${adesaoTotal.resumo.co2eSequestradoTonAno.toLocaleString('pt-BR')} tCO₂e/ano`],
+                  ['Valor econômico', `R$ ${Math.round(adesaoTotal.resumo.impactoEconomicoReais).toLocaleString('pt-BR')}/ano`],
+                  ['ODS tocados', adesaoTotal.resumo.odsAtendidos],
+                ].map(([l, v]) => (
+                  <div key={l} className="flex items-center justify-between gap-2 text-[12px]">
+                    <span className="text-white/50">{l}</span>
+                    <b className="text-white/90 font-mono text-[11.5px]">{v}</b>
+                  </div>
+                ))}
+              </div>
+              <div className="text-[9.5px] font-mono text-[#a855f7] mt-3">
+                ◌ ESTIMATIVA · cenário conservador, mandioca · {adesaoTotal.conformidade ? 'não é medida, é projeção do motor' : ''}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="zd-card rounded-2xl p-5" style={{ borderColor: '#ffc53133' }}>
+          <div className="text-[9px] tracking-[.2em] font-mono uppercase text-[#ffc531] mb-3">
+            Editais compatíveis · radar
+          </div>
+          {editais.length === 0 && <div className="text-xs text-white/35">Sem editais abertos no radar.</div>}
+          {editais.map(e => (
+            <div key={e.id || e.nome} className="py-2 border-b border-white/5 last:border-0">
+              <div className="text-[12.5px] text-white/85 font-semibold leading-snug">{e.nome || e.titulo}</div>
+              <div className="text-[10px] text-white/40 mt-0.5">
+                {e.orgao || e.fonte || ''}{e.prazo ? ` · até ${String(e.prazo).slice(0, 10)}` : ''}
+              </div>
+            </div>
+          ))}
+          <p className="text-[10px] text-white/35 mt-2.5">
+            A aderência fina por projeto vive em <b className="text-white/60">Crescer → Editais</b>; aqui é o retrato do território.
+          </p>
         </div>
       </div>
     </div>

@@ -201,6 +201,16 @@ diagnosticoRouter.get('/status', async (req, res) => {
         ? `Só ${isoSecret ? 'ISOMETRIC_CLIENT_SECRET' : 'ISOMETRIC_TOKEN'} está definida: faltando a outra, o benchmark segue em modo demonstração. As duas são geradas em registry.isometric.com, aba API Keys.`
         : 'ISOMETRIC_CLIENT_SECRET e ISOMETRIC_TOKEN não definidas: o benchmark CDR roda em modo demonstração (rotulado como tal)');
 
+  // ── Satélite (NDVI) ──
+  const copId = Boolean(process.env.COPERNICUS_CLIENT_ID);
+  const copSecret = Boolean(process.env.COPERNICUS_CLIENT_SECRET);
+  add('sentinel', 'NDVI Sentinel-2 (Copernicus)', true,
+    copId && copSecret
+      ? 'Ativo: a série NDVI dos lotes vem do satélite de verdade e pode virar evidência CAMPO'
+      : copId || copSecret
+        ? `Só ${copId ? 'COPERNICUS_CLIENT_ID' : 'COPERNICUS_CLIENT_SECRET'} está definida: faltando a outra, a série segue demonstrativa (conta gratuita em dataspace.copernicus.eu)`
+        : 'COPERNICUS_CLIENT_ID e COPERNICUS_CLIENT_SECRET não definidas: a série NDVI é demonstrativa e nunca vira evidência');
+
   add('url', 'URL pública', Boolean(process.env.ZOOMDEV_URL),
     process.env.ZOOMDEV_URL
       ? `Definida: ${process.env.ZOOMDEV_URL}`

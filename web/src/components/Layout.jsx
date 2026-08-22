@@ -69,6 +69,12 @@ const MENU = [
       { to: '/investidores', icone: 'trofeu', label: 'Investidores' },
     ],
   },
+  {
+    to: 'g-sistema', grupo: true, label: 'Sistema',
+    filhos: [
+      { to: '/malha', icone: 'transmissao', label: 'Malha do Ecossistema' },
+    ],
+  },
   { to: '/configuracoes', icone: 'engrenagem', label: 'Configurações' },
 ];
 
@@ -86,6 +92,7 @@ const ACOES_PALETA = [
   { rotulo: 'Simular impacto de nova área', para: '/impacto', dominio: 'Regenerar', apelidos: '360 simulacao carbono alimento' },
   { rotulo: 'Estruturar uma ideia nova', para: '/ideacao', dominio: 'Construir', apelidos: 'criar startup comecar' },
   { rotulo: 'Planos e assinatura', para: '/planos', apelidos: 'preco upgrade pro business seiva' },
+  { rotulo: 'Malha do Ecossistema', para: '/malha', dominio: 'Sistema', apelidos: 'barramento conectores eventos diagnostico' },
 ];
 
 // v2: a chave versionada zera o estado salvo da navegação antiga, senão quem

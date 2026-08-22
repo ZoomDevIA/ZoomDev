@@ -11,10 +11,12 @@
 // demonstrativo é o conteúdo, e a resposta carrega esse aviso.
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';
-import { MUNICIPIO, LOTES } from '../data/territorio.js';
+import { MUNICIPIO, LOTES, COOPERATIVAS } from '../data/territorio.js';
 import { registrarEvidencia, trilha, seloDoLote, verificarCadeia, decomposicao } from '../services/custodia.js';
 import { semearSePreciso } from '../services/territorioDemo.js';
 import { recentes } from '../services/barramento.js';
+import { ndviDoLote, registrarNdviComoEvidencia, modoSentinel } from '../services/sentinel.js';
+import { seloResultante } from '../science/selos.js';
 
 export const territorioRouter = Router();
 
@@ -47,6 +49,42 @@ territorioRouter.get('/territorio', (_req, res) => {
 territorioRouter.get('/barramento', (req, res) => {
   semearSePreciso();
   res.json({ eventos: recentes({ limite: Number(req.query.limite) || 20 }) });
+});
+
+// Ranking de cooperativas do cockpit: hectares do recorte e o selo composto
+// dos lotes que cada uma agrega (elo mais fraco entre eles, como sempre).
+territorioRouter.get('/territorio/cooperativas', (_req, res) => {
+  semearSePreciso();
+  const ranking = COOPERATIVAS.map(c => {
+    const selos = c.lotes.map(id => seloDoLote(id).selo);
+    const composto = seloResultante(selos);
+    return { nome: c.nome, ha: c.ha, lotes: c.lotes, selo: composto.id, confianca: composto.confianca };
+  }).sort((a, b) => b.confianca - a.confianca || b.ha - a.ha);
+  res.json({ demonstracao: true, ranking });
+});
+
+// ── NDVI por satélite ──────────────────────────────────────────────────────
+territorioRouter.get('/territorio/ndvi/:loteId', (req, res, next) => {
+  semearSePreciso();
+  ndviDoLote(req.params.loteId).then(d => res.json(d)).catch(next);
+});
+
+// Só o NDVI REAL entra na cadeia; o demonstrativo é recusado com instrução.
+territorioRouter.post('/territorio/ndvi/:loteId/registrar', (req, res, next) => {
+  semearSePreciso();
+  registrarNdviComoEvidencia(req.params.loteId, req.user?.id || null)
+    .then(ev => res.json({ evidencia: ev, selo: seloDoLote(req.params.loteId) }))
+    .catch(next);
+});
+
+territorioRouter.get('/territorio/sentinel/estado', (_req, res) => {
+  res.json({
+    modo: modoSentinel(),
+    configurado: modoSentinel() === 'real',
+    instrucoes: modoSentinel() === 'real' ? null
+      : 'Crie a conta gratuita em dataspace.copernicus.eu, gere um OAuth client e defina '
+        + 'COPERNICUS_CLIENT_ID e COPERNICUS_CLIENT_SECRET. Sem elas a série NDVI é demonstrativa.',
+  });
 });
 
 territorioRouter.post('/evidencias', (req, res, next) => {

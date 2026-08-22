@@ -154,6 +154,27 @@ test('cadeia de custódia e barramento', async (t) => {
     assert.deepEqual(confs, [...confs].sort((a, b) => b - a), 'ordenada da mais forte para a mais fraca');
   });
 
+  await t.test('ndvi demonstrativo serve série determinística e recusa virar evidência', async () => {
+    const a = await pedir('/territorio/ndvi/AP-0042', T);
+    assert.equal(a.status, 200);
+    assert.equal(a.dados.modo, 'demonstracao');
+    assert.equal(a.dados.serie.length, 12);
+    const b = await pedir('/territorio/ndvi/AP-0042', T);
+    assert.deepEqual(a.dados.serie, b.dados.serie, 'demonstração é determinística, não sorteio');
+    // Número inventado não entra na cadeia: recusa com instrução, não com silêncio
+    const reg = await pedir('/territorio/ndvi/AP-0042/registrar', { metodo: 'POST', token: conta.token });
+    assert.equal(reg.status, 409);
+    assert.match(reg.dados.error, /COPERNICUS_CLIENT_ID/);
+  });
+
+  await t.test('ranking de cooperativas usa o selo composto dos lotes', async () => {
+    const r = await pedir('/territorio/cooperativas', T);
+    assert.equal(r.status, 200);
+    assert.equal(r.dados.ranking.length, 3);
+    const confs = r.dados.ranking.map(c => c.confianca);
+    assert.deepEqual(confs, [...confs].sort((x, y) => y - x), 'ordenado do selo mais forte para o mais fraco');
+  });
+
   await t.test('as rotas de prova exigem sessão', async () => {
     for (const rota of ['/territorio', '/barramento', '/evidencias/AP-0042']) {
       const r = await pedir(rota);

@@ -54,6 +54,14 @@ export const LOTES = [
   },
 ];
 
+// Cooperativas do retrato demonstrativo, para o ranking do cockpit. Os selos
+// vêm dos lotes que cada uma agrega; hectares somados abaixo são o recorte.
+export const COOPERATIVAS = [
+  { nome: 'COOPAB', ha: 735, lotes: ['AP-0042'] },
+  { nome: 'AGROVALE', ha: 512, lotes: ['AP-0038'] },
+  { nome: 'RIO PEDREIRA', ha: 488, lotes: ['AP-0051'] },
+];
+
 // Trilha inicial de cada lote com evidência: passa pelo registrador real.
 export const SEMENTES_EVIDENCIA = {
   'AP-0042': [

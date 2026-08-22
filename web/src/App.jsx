@@ -25,6 +25,7 @@ import Admin from './pages/Admin.jsx';
 import Impacto from './pages/Impacto.jsx';
 import Territorio from './pages/Territorio.jsx';
 import SalaEvidencia from './pages/SalaEvidencia.jsx';
+import Malha from './pages/Malha.jsx';
 import Passaporte from './pages/Passaporte.jsx';
 import Compensacao from './pages/Compensacao.jsx';
 
@@ -188,6 +189,7 @@ export default function App() {
               <Route path="/bioeconomia" element={<Bioeconomia />} />
               <Route path="/territorio" element={<Territorio />} />
               <Route path="/evidencias" element={<SalaEvidencia />} />
+              <Route path="/malha" element={<Malha />} />
               <Route path="/p/:loteId" element={<Passaporte />} />
               <Route path="/impacto" element={<Impacto />} />
               <Route path="/editais" element={<Editais />} />
