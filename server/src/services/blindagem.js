@@ -96,7 +96,9 @@ const POLITICA = [
   "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",  // 'unsafe-inline': atributos style= do React
   "img-src 'self' data: blob: https:",       // https: porque o ZoomDoc aceita imagem por endereço
   "font-src 'self'",                         // as fontes agora são da própria origem
-  "connect-src 'self' https://accounts.google.com/gsi/",
+  // arcgisonline: os tiles de satélite do Mapa Vivo chegam por fetch do
+  // MapLibre, e connect-src fechado os bloquearia; é só este host de imagem.
+  "connect-src 'self' https://accounts.google.com/gsi/ https://server.arcgisonline.com",
   "media-src 'self' blob:",
   "frame-src 'self' https://accounts.google.com/gsi/",  // a prévia do MVP e o iframe do botão do Google
   "worker-src 'self' blob:",

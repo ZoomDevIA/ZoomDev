@@ -23,6 +23,7 @@ import Configuracoes from './pages/Configuracoes.jsx';
 import StrategyCore from './pages/StrategyCore.jsx';
 import Admin from './pages/Admin.jsx';
 import Impacto from './pages/Impacto.jsx';
+import Territorio from './pages/Territorio.jsx';
 import Compensacao from './pages/Compensacao.jsx';
 
 import Home from './pages/Home.jsx';
@@ -180,6 +181,7 @@ export default function App() {
               <Route path="/projetos/:id" element={<Projeto />} />
               <Route path="/studio/:id" element={<Studio />} />
               <Route path="/bioeconomia" element={<Bioeconomia />} />
+              <Route path="/territorio" element={<Territorio />} />
               <Route path="/impacto" element={<Impacto />} />
               <Route path="/editais" element={<Editais />} />
               <Route path="/investidores" element={<Investidores />} />
