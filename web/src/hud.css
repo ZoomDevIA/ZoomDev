@@ -1158,3 +1158,16 @@
 @media (prefers-reduced-motion: reduce) {
   .zd-nivel-trilha > i::after { animation: none; }
 }
+
+/* ── HUD do cockpit do Território ───────────────────────────────────────────
+   Cantoneiras de mira nos quatro cantos do mapa e o ponto REC pulsando na
+   régua de telemetria: a gramática visual de instrumento, sem tocar no dado. */
+.zd-hud-canto { position: absolute; width: 26px; height: 26px; opacity: .85; pointer-events: none; }
+.zd-hud-canto.no { top: 10px; left: 10px; border-top: 2px solid var(--zd-acento); border-left: 2px solid var(--zd-acento); }
+.zd-hud-canto.ne { top: 10px; right: 10px; border-top: 2px solid var(--zd-acento); border-right: 2px solid var(--zd-acento); }
+.zd-hud-canto.so { bottom: 10px; left: 10px; border-bottom: 2px solid var(--zd-acento); border-left: 2px solid var(--zd-acento); }
+.zd-hud-canto.se { bottom: 10px; right: 10px; border-bottom: 2px solid var(--zd-acento); border-right: 2px solid var(--zd-acento); }
+.zd-rec { display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--zd-marca); box-shadow: 0 0 8px var(--zd-marca); animation: zd-rec-pisca 1.3s ease-in-out infinite; }
+@keyframes zd-rec-pisca { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .zd-rec { animation: none; } }

@@ -1,13 +1,21 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Map as MapaGl, Marker, NavigationControl, ScaleControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { api } from '../lib/api.js';
-import { Painel } from '../components/hud/index.jsx';
+import { useFoco } from '../lib/foco.js';
+import Icon from '../components/Icon.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TERRITÓRIO — o Mapa Vivo: imagem de satélite real, lotes em GeoJSON e o
-// selo composto de cada um por cima. Clique num lote e a trilha de evidência
-// aparece ao lado, com a verificação da cadeia de custódia a um botão.
+// TERRITÓRIO · MODO COCKPIT
+//
+// Um protagonista e instrumentos ao redor. O menu lateral se retrai sozinho
+// ao entrar (mecanismo de foco, o mesmo da Sexta-Feira) e volta ao sair; o
+// mapa é um retângulo cinematográfico com moldura HUD (cantoneiras,
+// telemetria ao vivo, REC); a lateral direita responde ao lote clicado com
+// três visualizadores na altura exata do mapa; a régua de baixo dá o
+// contexto do território, e o detalhe completo (cooperativas, adesão total,
+// editais) vive uma dobra abaixo, atrás do botão Cockpit completo.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const COR_STATUS = {
@@ -25,7 +33,6 @@ const COR_SELO = {
   ESTRATEGIA: '#ffd700', HIPOTESE: '#ff9f43', VISAO: '#ffffff55',
 };
 
-// O estilo do mapa: só a camada de satélite, por raster tiles com atribuição.
 const ESTILO_SATELITE = {
   version: 8,
   sources: {
@@ -51,7 +58,17 @@ function centroide(coordenadas) {
   return [x / n, y / n];
 }
 
+const grau = (v, eixo) => {
+  const abs = Math.abs(v);
+  const g = Math.floor(abs);
+  const m = Math.round((abs - g) * 60);
+  const hemi = eixo === 'lat' ? (v >= 0 ? 'N' : 'S') : (v >= 0 ? 'L' : 'W');
+  return `${g}°${String(m).padStart(2, '0')}'${hemi}`;
+};
+
 export default function Territorio() {
+  useFoco();   // o cockpit pede a tela: menu retrai ao entrar, volta ao sair
+
   const caixaMapa = useRef(null);
   const mapa = useRef(null);
   const [dados, setDados] = useState(null);
@@ -65,16 +82,16 @@ export default function Territorio() {
   const [editais, setEditais] = useState([]);
   const [ndvi, setNdvi] = useState(null);
   const [ndviAviso, setNdviAviso] = useState(null);
+  const [telemetria, setTelemetria] = useState(null);
+  const [detalheAberto, setDetalheAberto] = useState(false);
 
   useEffect(() => {
     api.territorio().then(setDados).catch(e => setErro(e.message));
-    api.barramento(10).then(r => setEventos(r.eventos)).catch(() => {});
+    api.barramento(8).then(r => setEventos(r.eventos)).catch(() => {});
     api.cooperativas().then(setCoop).catch(() => {});
     api.editais().then(l => setEditais((l || []).slice(0, 3))).catch(() => {});
   }, []);
 
-  // "Se o município inteiro aderir": o motor 360° de verdade, no cenário
-  // conservador, sobre manejo atual + potencial mapeado. Sempre ESTIMATIVA.
   useEffect(() => {
     if (!dados) return;
     const hectares = dados.totais.hectares + dados.totais.potencialHa;
@@ -82,7 +99,6 @@ export default function Territorio() {
       .then(setAdesaoTotal).catch(() => {});
   }, [dados]);
 
-  // O mapa nasce quando os dados chegam, já com os lotes por cima
   useEffect(() => {
     if (!dados || !caixaMapa.current || mapa.current) return;
     const m = new MapaGl({
@@ -96,6 +112,14 @@ export default function Territorio() {
     window.__mapaVivo = m;   // alça de inspeção: console do navegador e suporte
     m.addControl(new NavigationControl({ showCompass: false }), 'top-right');
     m.addControl(new ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left');
+
+    // Telemetria da régua HUD: centro e zoom, atualizados a cada movimento
+    const medir = () => {
+      const c = m.getCenter();
+      setTelemetria({ lat: c.lat, lon: c.lng, zoom: m.getZoom() });
+    };
+    medir();
+    m.on('move', medir);
 
     m.on('load', () => {
       m.addSource('lotes', { type: 'geojson', data: dados.lotes });
@@ -122,8 +146,6 @@ export default function Territorio() {
         paint: { 'line-color': '#eafff5', 'line-width': 3 },
       });
 
-      // Rótulos como marcadores HTML: herdam a tipografia da casa sem
-      // depender de servidor de glyphs
       for (const f of dados.lotes.features) {
         const chip = document.createElement('div');
         chip.style.cssText = 'background:#02120add;color:#eafff5;font-family:JetBrains Mono,monospace;'
@@ -139,6 +161,11 @@ export default function Territorio() {
       m.on('click', 'lotes-area', (e) => escolher(e.features[0].properties));
       m.on('mouseenter', 'lotes-area', () => { m.getCanvas().style.cursor = 'pointer'; });
       m.on('mouseleave', 'lotes-area', () => { m.getCanvas().style.cursor = ''; });
+
+      // O cockpit nunca abre vazio: o primeiro lote com evidência já entra
+      // selecionado e a lateral inteira acende com ele.
+      const primeiro = dados.lotes.features.find(f => f.properties.status === 'evidencia');
+      if (primeiro) escolher(primeiro.properties);
     });
 
     return () => { m.remove(); mapa.current = null; };
@@ -157,6 +184,11 @@ export default function Territorio() {
     }
   };
 
+  const verificar = async () => {
+    if (!loteAtivo) return;
+    try { setVerificacao(await api.verificarCadeia(loteAtivo.id)); } catch { /* silencioso */ }
+  };
+
   const ndviParaEvidencia = async () => {
     setNdviAviso(null);
     try {
@@ -168,58 +200,67 @@ export default function Territorio() {
     }
   };
 
-  const verificar = async () => {
-    if (!loteAtivo) return;
-    try { setVerificacao(await api.verificarCadeia(loteAtivo.id)); } catch { /* silencioso */ }
-  };
-
-  const totais = useMemo(() => dados?.totais, [dados]);
+  const fraco = trilha?.decomposicao?.length
+    ? trilha.decomposicao[trilha.decomposicao.length - 1] : null;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5">
-      <div className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="font-heading text-2xl font-bold">
+    <div className="max-w-[1600px] mx-auto space-y-4">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <h1 className="font-heading text-xl font-bold">
             Território · <span className="zd-gradient-text">{dados?.municipio?.nome || '…'} vivo</span>
           </h1>
-          <p className="text-white/55 text-sm mt-1.5">
-            Cada lote com o próprio selo, sobre imagem de satélite real. Clique num lote para abrir a trilha de evidência.
-          </p>
+          <span className="text-[8.5px] tracking-[.22em] font-mono uppercase text-white/30 hidden md:inline">
+            modo cockpit · menu recolhido
+          </span>
         </div>
-        {totais && (
-          <div className="flex gap-3">
-            {[[totais.hectares.toLocaleString('pt-BR'), 'ha sob manejo'],
-              [totais.lotes, 'lotes ativos'],
-              [totais.potencialHa.toLocaleString('pt-BR'), 'ha potenciais']].map(([v, l]) => (
-              <div key={l} className="zd-stat-card rounded-xl px-4 py-2.5 text-center">
-                <div className="font-heading text-lg font-bold">{v}</div>
-                <div className="text-[10px] text-white/50">{l}</div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="flex gap-2 flex-wrap">
+          {dados?.lotes.features.filter(f => f.properties.status !== 'potencial').map(f => (
+            <button key={f.properties.id} onClick={() => escolher(f.properties)}
+              className={`rounded-lg px-2.5 py-1 text-[11px] border transition-colors font-mono ${
+                f.properties.id === loteAtivo?.id
+                  ? 'border-[#00ff6466] bg-[#00ff640d] text-white' : 'border-white/12 text-white/55 hover:border-white/30'}`}>
+              {f.properties.id} · {f.properties.confianca}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {dados?.demonstracao && (
-        <div className="text-[11px] text-white/40">
-          ◌ {dados.aviso}
-        </div>
-      )}
       {erro && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{erro}</div>}
 
-      <div className="grid lg:grid-cols-[1.7fr_1fr] gap-4 items-start">
+      {/* ── o retângulo e os instrumentos ─────────────────────────────────── */}
+      <div className="grid lg:grid-cols-[1fr_360px] gap-3.5 items-stretch">
         <div className="zd-card-glow rounded-2xl overflow-hidden relative">
-          <div ref={caixaMapa} style={{ height: 520 }} />
-          {/* posição inline de propósito: o hud.css força position:relative em
-              todo filho direto de .zd-card-glow (o conteúdo acima do brilho),
-              e só o estilo inline vence essa regra */}
+          <div ref={caixaMapa} style={{ height: '100%', minHeight: 600 }} />
+
+          <div className="zd-hud-canto no" style={{ position: 'absolute' }} />
+          <div className="zd-hud-canto ne" style={{ position: 'absolute' }} />
+          <div className="zd-hud-canto so" style={{ position: 'absolute' }} />
+          <div className="zd-hud-canto se" style={{ position: 'absolute' }} />
+
+          {/* régua de telemetria ao vivo */}
+          <div className="font-mono text-[9px] tracking-[.14em] text-white/55 flex gap-4 items-center"
+            style={{
+              position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)',
+              background: '#02120ae0', padding: '5px 15px', zIndex: 2,
+              clipPath: 'polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)',
+            }}>
+            <span>LAT <b className="text-white/90">{telemetria ? grau(telemetria.lat, 'lat') : '…'}</b></span>
+            <span>LON <b className="text-white/90">{telemetria ? grau(telemetria.lon, 'lon') : '…'}</b></span>
+            <span>ZOOM <b className="text-white/90">{telemetria ? telemetria.zoom.toFixed(1) : '…'}</b></span>
+            <span>CAMADA <b style={{ color: 'var(--zd-acento, #00e5ff)' }}>SATÉLITE</b></span>
+            <span className="flex items-center gap-1.5" style={{ color: 'var(--zd-marca, #00ff64)' }}>
+              <i className="zd-rec" /> MRV
+            </span>
+          </div>
+
           <div className="rounded-lg px-3 py-2"
-            style={{ position: 'absolute', top: 12, left: 12, zIndex: 2, background: '#02120ae6' }}>
-            <div className="text-[9px] tracking-[.2em] text-[color:var(--zd-acento,#00e5ff)] font-mono uppercase mb-1.5">Legenda</div>
+            style={{ position: 'absolute', top: 58, left: 14, zIndex: 2, background: '#02120ae6' }}>
+            <div className="text-[8px] tracking-[.2em] text-[color:var(--zd-acento,#00e5ff)] font-mono uppercase mb-1.5">Legenda</div>
             {Object.entries(ROTULO_STATUS).map(([k, rotulo]) => (
-              <div key={k} className="flex items-center gap-2 py-0.5 text-[11px] text-white/70">
+              <div key={k} className="flex items-center gap-2 py-0.5 text-[10.5px] text-white/70">
                 <span style={{
-                  width: 16, height: 10, border: `1.5px ${k === 'potencial' ? 'dashed' : 'solid'} ${COR_STATUS[k]}`,
+                  width: 15, height: 9, border: `1.5px ${k === 'potencial' ? 'dashed' : 'solid'} ${COR_STATUS[k]}`,
                   background: k === 'potencial' ? 'transparent' : `${COR_STATUS[k]}2e`,
                 }} />
                 {rotulo}
@@ -228,208 +269,225 @@ export default function Territorio() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          {!loteAtivo && (
-            <div className="zd-card rounded-xl p-5 text-sm text-white/50">
-              🛰️ Selecione um lote no mapa para ver o selo composto, a trilha de evidência e a verificação da cadeia de custódia.
-            </div>
-          )}
-
-          {loteAtivo && (
-            <div className="zd-card-glow rounded-2xl p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-heading font-bold">{loteAtivo.nome}</div>
-                  <div className="text-[11px] text-white/45 mt-0.5">
-                    {loteAtivo.id} · {loteAtivo.ha} ha{loteAtivo.cultura ? ` · ${loteAtivo.cultura}` : ''} · {ROTULO_STATUS[loteAtivo.status]}
-                  </div>
-                </div>
-                {loteAtivo.status !== 'potencial' && (
-                  <div className="text-right shrink-0">
-                    <div className="font-heading text-2xl font-bold" style={{ color: COR_SELO[loteAtivo.selo] }}>
-                      {loteAtivo.confianca}
+        {/* ── os três visualizadores, na altura do mapa ─────────────────── */}
+        <aside className="flex flex-col gap-3.5">
+          <div className="zd-card-glow rounded-2xl p-4" style={{ flex: 1.2 }}>
+            {!loteAtivo && <div className="text-xs text-white/45">🛰️ Clique num lote do mapa.</div>}
+            {loteAtivo && (
+              <>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[8.5px] tracking-[.2em] font-mono uppercase text-[color:var(--zd-acento,#00e5ff)] mb-1">
+                      Lote · {ROTULO_STATUS[loteAtivo.status]}
                     </div>
-                    <div className="text-[9px] tracking-wider text-white/40 font-mono uppercase">{loteAtivo.selo}</div>
+                    <div className="font-heading font-bold text-[15px] leading-tight">{loteAtivo.nome}</div>
+                    <div className="text-[10px] text-white/40 font-mono mt-0.5">
+                      {loteAtivo.id} · {loteAtivo.ha} ha{loteAtivo.cultura ? ` · ${loteAtivo.cultura}` : ''}
+                    </div>
+                  </div>
+                  {loteAtivo.status !== 'potencial' && (
+                    <div className="text-right shrink-0">
+                      <div className="font-heading text-3xl font-bold" style={{ color: COR_SELO[loteAtivo.selo] }}>
+                        {loteAtivo.confianca}
+                      </div>
+                      <div className="text-[8px] tracking-wider text-white/40 font-mono uppercase">selo {loteAtivo.selo}</div>
+                    </div>
+                  )}
+                </div>
+
+                {trilha?.decomposicao && (
+                  <div className="mt-3 space-y-1">
+                    {trilha.decomposicao.slice(0, 4).map(f => (
+                      <div key={f.tipo} className="flex items-center justify-between gap-2 text-[11px]">
+                        <span className="text-white/60 capitalize truncate">{f.tipo.replace(/-/g, ' ')}</span>
+                        <b className="font-mono text-[9.5px] shrink-0" style={{ color: COR_SELO[f.selo] }}>
+                          {f.selo} {f.confianca}{fraco?.tipo === f.tipo ? ' ← fraco' : ''}
+                        </b>
+                      </div>
+                    ))}
                   </div>
                 )}
-              </div>
 
-              {loteAtivo.status === 'potencial' && (
-                <p className="text-xs text-white/50 mt-3">
-                  Área apontada pelo motor 360° como apta à regeneração. Ainda sem adesão: nenhuma evidência, selo VISÃO por definição.
-                </p>
-              )}
-
-              {ndvi && (
-                <div className="mt-4 rounded-xl border border-white/8 bg-white/[.02] p-3.5">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[9px] tracking-[.18em] font-mono uppercase text-white/40">
-                      NDVI · Sentinel-2 · {ndvi.serie.length} quinzenas
-                    </span>
-                    <span className={`text-[8.5px] font-mono px-1.5 py-0.5 rounded border ${ndvi.modo === 'real'
-                      ? 'text-[#00ff64] border-[#00ff6455]' : 'text-[#a855f7] border-[#a855f755]'}`}
-                      title={ndvi.fonte}>
-                      {ndvi.modo === 'real' ? 'AO VIVO' : 'DEMONSTRAÇÃO'}
-                    </span>
+                {verificacao && (
+                  <div className={`text-[10.5px] mt-2.5 leading-snug ${verificacao.integra ? 'text-[#00ff64]' : 'text-[#ff4d8d]'}`}>
+                    {verificacao.integra
+                      ? `⛓ Cadeia íntegra · ${verificacao.registros} elos lacrados`
+                      : `⚠ Cadeia quebrada: ${verificacao.quebras.map(q => `posição ${q.posicao}`).join(', ')}`}
                   </div>
-                  <svg viewBox="0 0 300 60" className="w-full" style={{ height: 60 }}>
-                    <polyline fill="none" stroke="#00ff64" strokeWidth="1.6"
-                      points={ndvi.serie.map((p, i) =>
-                        `${(i / (ndvi.serie.length - 1)) * 296 + 2},${56 - (p.ndvi - 0.2) / 0.7 * 50}`).join(' ')} />
-                  </svg>
-                  <div className="flex items-center justify-between gap-2 mt-1.5">
-                    <span className="text-[10px] font-mono text-white/45">
-                      média {ndvi.media} · tendência {ndvi.tendencia >= 0 ? '+' : ''}{ndvi.tendencia}
-                    </span>
-                    <button onClick={ndviParaEvidencia}
-                      className="text-[10px] rounded border border-white/15 hover:border-[#00ff6466] px-2 py-1 text-white/60 transition-colors">
-                      ⛓ virar evidência
-                    </button>
-                  </div>
-                  {ndviAviso && (
-                    <div className={`text-[10.5px] mt-2 leading-snug ${ndviAviso.ok ? 'text-[#00ff64]' : 'text-[#ffc531]'}`}>
-                      {ndviAviso.texto}
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
 
-              {trilha && (
-                <div className="mt-4 space-y-2">
-                  <div className="text-[9px] tracking-[.2em] font-mono uppercase text-white/40">
-                    Trilha de evidência · {trilha.trilha.length} registros · elo mais fraco governa
-                  </div>
-                  {trilha.trilha.slice(0, 5).map(ev => (
-                    <div key={ev.id} className="rounded-lg border border-white/10 bg-white/[.03] px-3 py-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-mono" style={{ color: COR_SELO[ev.selo] }}>
-                          {ev.selo} {trilha.trilha[0].id === ev.id ? '· mais recente' : ''}
-                        </span>
-                        <span className="text-[9px] text-white/30 font-mono">{ev.em.slice(0, 10)}</span>
-                      </div>
-                      <div className="text-[11.5px] text-white/65 mt-1 leading-snug">{ev.descricao}</div>
-                    </div>
-                  ))}
-
+                <div className="flex gap-2 mt-3">
                   <button onClick={verificar}
-                    className="w-full rounded-lg border border-white/15 hover:border-[#00ff6466] hover:bg-[#00ff640d] transition-colors py-2 text-xs text-white/70">
-                    ⛓ Verificar cadeia de custódia
+                    className="flex-1 rounded-lg border border-white/15 hover:border-[#00ff6466] px-2 py-1.5 text-[10.5px] text-white/70 transition-colors">
+                    ⛓ Verificar cadeia
                   </button>
-                  {verificacao && (
-                    <Painel cor={verificacao.integra ? '#00ff64' : '#ff4d8d'} className="p-3 text-[11.5px]">
-                      {verificacao.integra ? (
-                        <>
-                          <b className="text-[#00ff64]">Cadeia íntegra.</b>{' '}
-                          <span className="text-white/60">
-                            {verificacao.registros} registros encadeados, nenhuma alteração após o lacre.
-                          </span>
-                          <div className="font-mono text-[9px] text-white/35 mt-1.5 break-all">
-                            âncora sha256 · {verificacao.ancora}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <b className="text-[#ff4d8d]">Cadeia quebrada.</b>{' '}
-                          <span className="text-white/60">
-                            {verificacao.quebras.map(q => `posição ${q.posicao}: ${q.motivo}`).join(' · ')}
-                          </span>
-                        </>
-                      )}
-                    </Painel>
-                  )}
+                  <Link to={`/p/${loteAtivo.id}`} target="_blank"
+                    className="flex-1 rounded-lg border border-white/15 hover:border-[#00e5ff66] px-2 py-1.5 text-[10.5px] text-white/70 transition-colors text-center">
+                    Passaporte ↗
+                  </Link>
                 </div>
+              </>
+            )}
+          </div>
+
+          <div className="zd-card rounded-2xl p-4" style={{ flex: 1 }}>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[8.5px] tracking-[.2em] font-mono uppercase text-white/40">
+                NDVI · Sentinel-2 {ndvi ? `· ${ndvi.serie.length} quinzenas` : ''}
+              </span>
+              {ndvi && (
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded border ${ndvi.modo === 'real'
+                  ? 'text-[#00ff64] border-[#00ff6455]' : 'text-[#a855f7] border-[#a855f755]'}`} title={ndvi.fonte}>
+                  {ndvi.modo === 'real' ? 'AO VIVO' : 'DEMO'}
+                </span>
               )}
             </div>
-          )}
+            {!ndvi && <div className="text-[10.5px] text-white/35">Aguardando lote…</div>}
+            {ndvi && (
+              <>
+                <svg viewBox="0 0 300 58" className="w-full" style={{ height: 58 }}>
+                  <polyline fill="none" stroke="#00e5ff44" strokeWidth="1" strokeDasharray="3 3" points="2,54 298,54" />
+                  <polyline fill="none" stroke="#00ff64" strokeWidth="1.7"
+                    points={ndvi.serie.map((p, i) =>
+                      `${(i / (ndvi.serie.length - 1)) * 296 + 2},${54 - (p.ndvi - 0.2) / 0.7 * 48}`).join(' ')} />
+                </svg>
+                <div className="flex items-center justify-between gap-2 mt-1">
+                  <span className="text-[9.5px] font-mono text-white/45">
+                    média {ndvi.media} · tend. {ndvi.tendencia >= 0 ? '+' : ''}{ndvi.tendencia}
+                  </span>
+                  <button onClick={ndviParaEvidencia}
+                    className="text-[9.5px] font-mono rounded border border-white/15 hover:border-[#00ff6466] px-2 py-0.5 text-white/60 transition-colors">
+                    ⛓ virar evidência
+                  </button>
+                </div>
+                {ndviAviso && (
+                  <div className={`text-[9.5px] mt-1.5 leading-snug ${ndviAviso.ok ? 'text-[#00ff64]' : 'text-[#ffc531]'}`}>
+                    {ndviAviso.texto}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
-          <div className="zd-card rounded-xl p-4">
-            <div className="text-[9px] tracking-[.2em] font-mono uppercase text-white/40 mb-2">
+          <div className="zd-card rounded-2xl p-4 overflow-hidden" style={{ flex: 1.1 }}>
+            <div className="text-[8.5px] tracking-[.2em] font-mono uppercase text-white/40 mb-1.5">
               Barramento · agora
             </div>
-            {/* feed continua abaixo */}
-            {eventos.length === 0 && <div className="text-xs text-white/35">Sem eventos ainda.</div>}
-            {eventos.map(e => (
-              <div key={e.id} className="flex items-center justify-between gap-2 py-1 border-b border-white/5 last:border-0">
-                <span className="text-[11px] text-white/60 font-mono truncate">{e.tipo}</span>
-                <span className="text-[9.5px] font-mono shrink-0" style={{ color: COR_SELO[e.selo] || '#ffffff77' }}>
+            {eventos.slice(0, 6).map(e => (
+              <div key={e.id} className="flex items-center justify-between gap-2 py-[3px] border-b border-white/5 last:border-0">
+                <span className="text-[10px] text-white/60 font-mono truncate">{e.tipo}</span>
+                <span className="text-[9px] font-mono shrink-0" style={{ color: COR_SELO[e.selo] || '#ffffff77' }}>
                   {e.selo} {e.confianca}
                 </span>
               </div>
             ))}
           </div>
-        </div>
+        </aside>
       </div>
 
-      {/* ── O cockpit: o que uma prefeitura ou cooperativa contrata ───────── */}
-      <div className="grid md:grid-cols-3 gap-4 items-start">
-        <div className="zd-card rounded-2xl p-5">
-          <div className="text-[9px] tracking-[.2em] font-mono uppercase text-white/40 mb-3">
-            Ranking regenerativo · cooperativas
-          </div>
-          {!coop && <div className="text-xs text-white/35">Carregando…</div>}
-          {coop?.ranking.map((c, i) => (
-            <div key={c.nome} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
-              <span className="text-[11px] font-mono text-white/35 w-4">{i + 1}</span>
-              <div className="flex-1">
-                <div className="text-[12.5px] text-white/85 font-semibold">{c.nome}</div>
-                <div className="text-[10px] text-white/40">{c.ha.toLocaleString('pt-BR')} ha · {c.lotes.join(', ')}</div>
-              </div>
-              <span className="text-[10px] font-mono shrink-0" style={{ color: COR_SELO[c.selo] }}>
-                {c.selo} {c.confianca}
-              </span>
+      {/* ── régua inferior, na largura do retângulo ───────────────────────── */}
+      {dados && (
+        <div className="grid md:grid-cols-[repeat(4,1fr)_1.7fr] gap-3.5">
+          {[
+            [dados.totais.hectares.toLocaleString('pt-BR'), 'ha sob manejo', '#00ff64'],
+            [dados.totais.lotes, 'lotes ativos', '#00e5ff'],
+            [dados.totais.potencialHa.toLocaleString('pt-BR'), 'ha potenciais', '#ffc531'],
+            [adesaoTotal ? Math.round(adesaoTotal.resumo.co2eSequestradoTonAno).toLocaleString('pt-BR') : '…',
+              'tCO₂e/ano · potencial · EST', '#a855f7'],
+          ].map(([v, l, cor]) => (
+            <div key={l} className="zd-stat-card rounded-xl px-4 py-3">
+              <div className="font-heading text-xl font-bold" style={{ color: cor }}>{v}</div>
+              <div className="text-[9px] tracking-[.14em] font-mono uppercase text-white/40 mt-0.5">{l}</div>
             </div>
           ))}
-          <p className="text-[10px] text-white/35 mt-2.5">
-            O selo da cooperativa é o elo mais fraco dos lotes que ela agrega: subir junto é o jogo.
-          </p>
-        </div>
-
-        <div className="zd-card rounded-2xl p-5" style={{ borderColor: '#a855f733' }}>
-          <div className="text-[9px] tracking-[.2em] font-mono uppercase text-[#a855f7] mb-3">
-            Se o município inteiro aderir · motor 360°
-          </div>
-          {!adesaoTotal && <div className="text-xs text-white/35">Simulando…</div>}
-          {adesaoTotal && (
-            <>
-              <div className="space-y-2">
-                {[
-                  ['Área total', `${(dados.totais.hectares + dados.totais.potencialHa).toLocaleString('pt-BR')} ha`],
-                  ['Pessoas alimentadas/ano', adesaoTotal.resumo.pessoasAlimentadasAno.toLocaleString('pt-BR')],
-                  ['Mitigação estimada', `${adesaoTotal.resumo.co2eSequestradoTonAno.toLocaleString('pt-BR')} tCO₂e/ano`],
-                  ['Valor econômico', `R$ ${Math.round(adesaoTotal.resumo.impactoEconomicoReais).toLocaleString('pt-BR')}/ano`],
-                  ['ODS tocados', adesaoTotal.resumo.odsAtendidos],
-                ].map(([l, v]) => (
-                  <div key={l} className="flex items-center justify-between gap-2 text-[12px]">
-                    <span className="text-white/50">{l}</span>
-                    <b className="text-white/90 font-mono text-[11.5px]">{v}</b>
-                  </div>
-                ))}
-              </div>
-              <div className="text-[9.5px] font-mono text-[#a855f7] mt-3">
-                ◌ ESTIMATIVA · cenário conservador, mandioca · {adesaoTotal.conformidade ? 'não é medida, é projeção do motor' : ''}
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="zd-card rounded-2xl p-5" style={{ borderColor: '#ffc53133' }}>
-          <div className="text-[9px] tracking-[.2em] font-mono uppercase text-[#ffc531] mb-3">
-            Editais compatíveis · radar
-          </div>
-          {editais.length === 0 && <div className="text-xs text-white/35">Sem editais abertos no radar.</div>}
-          {editais.map(e => (
-            <div key={e.id || e.nome} className="py-2 border-b border-white/5 last:border-0">
-              <div className="text-[12.5px] text-white/85 font-semibold leading-snug">{e.nome || e.titulo}</div>
-              <div className="text-[10px] text-white/40 mt-0.5">
-                {e.orgao || e.fonte || ''}{e.prazo ? ` · até ${String(e.prazo).slice(0, 10)}` : ''}
+          <div className="zd-card rounded-xl px-4 py-3 flex items-center gap-3" style={{ borderColor: '#ffc53133' }}>
+            <div className="flex-1 min-w-0">
+              <div className="text-[8.5px] tracking-[.18em] font-mono uppercase text-[#ffc531] mb-1">Editais · radar</div>
+              <div className="text-[11px] text-white/70 truncate">
+                {editais.length ? editais.map(e => e.nome || e.titulo).slice(0, 2).join(' · ') : 'sem editais no radar'}
               </div>
             </div>
-          ))}
-          <p className="text-[10px] text-white/35 mt-2.5">
-            A aderência fina por projeto vive em <b className="text-white/60">Crescer → Editais</b>; aqui é o retrato do território.
-          </p>
+            <button onClick={() => setDetalheAberto(v => !v)}
+              className="rounded-lg border border-white/15 hover:border-[#00e5ff66] px-3 py-1.5 text-[10.5px] text-white/70 transition-colors shrink-0">
+              {detalheAberto ? 'Fechar detalhe' : 'Cockpit completo →'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {dados?.demonstracao && (
+        <div className="text-[10.5px] text-white/35">◌ {dados.aviso}</div>
+      )}
+
+      {/* ── o detalhe completo, uma dobra abaixo ──────────────────────────── */}
+      {detalheAberto && (
+        <div className="grid md:grid-cols-3 gap-3.5 items-start">
+          <div className="zd-card rounded-2xl p-5">
+            <div className="text-[9px] tracking-[.2em] font-mono uppercase text-white/40 mb-3">
+              Ranking regenerativo · cooperativas
+            </div>
+            {coop?.ranking.map((c, i) => (
+              <div key={c.nome} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
+                <span className="text-[11px] font-mono text-white/35 w-4">{i + 1}</span>
+                <div className="flex-1">
+                  <div className="text-[12.5px] text-white/85 font-semibold">{c.nome}</div>
+                  <div className="text-[10px] text-white/40">{c.ha.toLocaleString('pt-BR')} ha · {c.lotes.join(', ')}</div>
+                </div>
+                <span className="text-[10px] font-mono shrink-0" style={{ color: COR_SELO[c.selo] }}>
+                  {c.selo} {c.confianca}
+                </span>
+              </div>
+            ))}
+            <p className="text-[10px] text-white/35 mt-2.5">
+              O selo da cooperativa é o elo mais fraco dos lotes que ela agrega: subir junto é o jogo.
+            </p>
+          </div>
+
+          <div className="zd-card rounded-2xl p-5" style={{ borderColor: '#a855f733' }}>
+            <div className="text-[9px] tracking-[.2em] font-mono uppercase text-[#a855f7] mb-3">
+              Se o município inteiro aderir · motor 360°
+            </div>
+            {adesaoTotal && (
+              <>
+                <div className="space-y-2">
+                  {[
+                    ['Área total', `${(dados.totais.hectares + dados.totais.potencialHa).toLocaleString('pt-BR')} ha`],
+                    ['Pessoas alimentadas/ano', adesaoTotal.resumo.pessoasAlimentadasAno.toLocaleString('pt-BR')],
+                    ['Mitigação estimada', `${adesaoTotal.resumo.co2eSequestradoTonAno.toLocaleString('pt-BR')} tCO₂e/ano`],
+                    ['Valor econômico', `R$ ${Math.round(adesaoTotal.resumo.impactoEconomicoReais).toLocaleString('pt-BR')}/ano`],
+                    ['ODS tocados', adesaoTotal.resumo.odsAtendidos],
+                  ].map(([l, v]) => (
+                    <div key={l} className="flex items-center justify-between gap-2 text-[12px]">
+                      <span className="text-white/50">{l}</span>
+                      <b className="text-white/90 font-mono text-[11.5px]">{v}</b>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-[9.5px] font-mono text-[#a855f7] mt-3">
+                  ◌ ESTIMATIVA · cenário conservador, mandioca · projeção do motor, não medida
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="zd-card rounded-2xl p-5" style={{ borderColor: '#ffc53133' }}>
+            <div className="text-[9px] tracking-[.2em] font-mono uppercase text-[#ffc531] mb-3">
+              Editais compatíveis · radar
+            </div>
+            {editais.map(e => (
+              <div key={e.id || e.nome} className="py-2 border-b border-white/5 last:border-0">
+                <div className="text-[12.5px] text-white/85 font-semibold leading-snug">{e.nome || e.titulo}</div>
+                <div className="text-[10px] text-white/40 mt-0.5">
+                  {e.orgao || e.fonte || ''}{e.prazo ? ` · até ${String(e.prazo).slice(0, 10)}` : ''}
+                </div>
+              </div>
+            ))}
+            <p className="text-[10px] text-white/35 mt-2.5">
+              A aderência fina por projeto vive em <b className="text-white/60">Crescer → Editais</b>.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
