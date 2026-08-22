@@ -12,6 +12,7 @@ const empty = () => ({
   elenco: null, conselhos: {}, transacoes: {},
   sessoesPainel: {}, auditoria: [], vitrine: null, recuperacoes: {},
   sites: {},
+  eventos: [], evidencias: {},
 });
 
 let db = empty();
@@ -82,6 +83,9 @@ export const store = {
   // Índice separado porque a busca é pelo endereço, não pelo projeto: varrer
   // todos os projetos a cada visita de um site publicado seria absurdo.
   get sites() { return db.sites; },
+  get eventos() { return db.eventos; },
+  set eventos(v) { db.eventos = v; },
+  get evidencias() { return db.evidencias; },
 };
 
 export function id(prefix) {
