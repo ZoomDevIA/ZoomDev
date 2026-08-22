@@ -24,6 +24,8 @@ import StrategyCore from './pages/StrategyCore.jsx';
 import Admin from './pages/Admin.jsx';
 import Impacto from './pages/Impacto.jsx';
 import Territorio from './pages/Territorio.jsx';
+import SalaEvidencia from './pages/SalaEvidencia.jsx';
+import Passaporte from './pages/Passaporte.jsx';
 import Compensacao from './pages/Compensacao.jsx';
 
 import Home from './pages/Home.jsx';
@@ -164,6 +166,9 @@ export default function App() {
             <Route path="/redefinir" element={<Redefinir />} />
             <Route path="/termos" element={<Legal />} />
             <Route path="/privacidade" element={<Legal />} />
+            {/* O passaporte do hectare é público por natureza: é o QR que o
+                comprador escaneia, e comprador não tem conta. */}
+            <Route path="/p/:loteId" element={<Passaporte />} />
             <Route path="*" element={<Navigate to="/entrar" replace />} />
           </Routes>
         ) : (
@@ -182,6 +187,8 @@ export default function App() {
               <Route path="/studio/:id" element={<Studio />} />
               <Route path="/bioeconomia" element={<Bioeconomia />} />
               <Route path="/territorio" element={<Territorio />} />
+              <Route path="/evidencias" element={<SalaEvidencia />} />
+              <Route path="/p/:loteId" element={<Passaporte />} />
               <Route path="/impacto" element={<Impacto />} />
               <Route path="/editais" element={<Editais />} />
               <Route path="/investidores" element={<Investidores />} />

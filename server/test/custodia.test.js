@@ -128,6 +128,32 @@ test('cadeia de custódia e barramento', async (t) => {
     store.evidencias['AP-0038'].splice(1, 0, removido);
   });
 
+  await t.test('o passaporte público abre sem login e não expõe pessoas', async () => {
+    const r = await pedir('/publico/passaporte/AP-0042');   // SEM token, de propósito
+    assert.equal(r.status, 200);
+    assert.equal(r.dados.lote.id, 'AP-0042');
+    assert.equal(r.dados.selo.selo, 'CAMPO');
+    assert.equal(r.dados.verificacao.integra, true);
+    // A honestidade estrutural: as duas colunas existem e o carbono é estimativa
+    assert.equal(r.dados.jaEProva.length > 0, true);
+    assert.equal(r.dados.carbono.situacao, 'ESTIMATIVA');
+    assert.match(r.dados.carbono.texto, /Nenhum crédito foi emitido/);
+    // Nenhum dado de pessoa sai na resposta pública
+    assert.equal(/userId/.test(JSON.stringify(r.dados)), false);
+  });
+
+  await t.test('passaporte de lote inexistente ou só potencial responde 404', async () => {
+    assert.equal((await pedir('/publico/passaporte/XX-9999')).status, 404);
+    assert.equal((await pedir('/publico/passaporte/POT-001')).status, 404);
+  });
+
+  await t.test('a decomposição vem por frente, com o elo fraco no fim', async () => {
+    const r = await pedir('/evidencias/AP-0042', T);
+    assert.equal(Array.isArray(r.dados.decomposicao), true);
+    const confs = r.dados.decomposicao.map(f => f.confianca);
+    assert.deepEqual(confs, [...confs].sort((a, b) => b - a), 'ordenada da mais forte para a mais fraca');
+  });
+
   await t.test('as rotas de prova exigem sessão', async () => {
     for (const rota of ['/territorio', '/barramento', '/evidencias/AP-0042']) {
       const r = await pedir(rota);

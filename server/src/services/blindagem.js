@@ -69,8 +69,15 @@ export function cors(req, res, next) {
   const origem = req.headers.origin;
   if (!origem) return next();
 
+  // A própria origem passa sempre: o navegador manda Origin até em POST do
+  // mesmo site, e a política de origem existe para OUTROS sites, não para o
+  // nosso. A comparação é pelo host (o navegador não rebaixa https para http
+  // numa mesma página), o que também cobre a porta dinâmica dos testes.
+  const hostDaOrigem = (() => { try { return new URL(origem).host; } catch { return null; } })();
+  const propria = hostDaOrigem && hostDaOrigem === req.headers.host;
+
   const permitidas = origensPermitidas();
-  const liberada = permitidas.length === 0 || permitidas.includes(origem.replace(/\/$/, ''));
+  const liberada = propria || permitidas.length === 0 || permitidas.includes(origem.replace(/\/$/, ''));
 
   if (liberada) {
     res.setHeader('Access-Control-Allow-Origin', origem);

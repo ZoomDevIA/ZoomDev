@@ -11,22 +11,12 @@
 // demonstrativo é o conteúdo, e a resposta carrega esse aviso.
 // ═══════════════════════════════════════════════════════════════════════════
 import { Router } from 'express';
-import { MUNICIPIO, LOTES, SEMENTES_EVIDENCIA } from '../data/territorio.js';
-import { registrarEvidencia, trilha, seloDoLote, verificarCadeia } from '../services/custodia.js';
+import { MUNICIPIO, LOTES } from '../data/territorio.js';
+import { registrarEvidencia, trilha, seloDoLote, verificarCadeia, decomposicao } from '../services/custodia.js';
+import { semearSePreciso } from '../services/territorioDemo.js';
 import { recentes } from '../services/barramento.js';
-import { store } from '../store.js';
 
 export const territorioRouter = Router();
-
-let semeado = false;
-function semearSePreciso() {
-  if (semeado) return;
-  semeado = true;
-  for (const [loteId, sementes] of Object.entries(SEMENTES_EVIDENCIA)) {
-    if ((store.evidencias[loteId] || []).length) continue;
-    for (const s of sementes) registrarEvidencia({ loteId, ...s });
-  }
-}
 
 territorioRouter.get('/territorio', (_req, res) => {
   semearSePreciso();
@@ -70,7 +60,12 @@ territorioRouter.post('/evidencias', (req, res, next) => {
 territorioRouter.get('/evidencias/:loteId', (req, res) => {
   semearSePreciso();
   const loteId = req.params.loteId;
-  res.json({ loteId, selo: seloDoLote(loteId), trilha: trilha(loteId) });
+  res.json({
+    loteId,
+    selo: seloDoLote(loteId),
+    decomposicao: decomposicao(loteId),
+    trilha: trilha(loteId),
+  });
 });
 
 territorioRouter.get('/evidencias/:loteId/verificar', (req, res) => {

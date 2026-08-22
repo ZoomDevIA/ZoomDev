@@ -18,6 +18,7 @@ import { impactoRouter } from './routes/impacto.js';
 import { editaisRouter } from './routes/editais.js';
 import { isometricRouter } from './routes/isometric.js';
 import { territorioRouter } from './routes/territorio.js';
+import { passaporteRouter } from './routes/passaporte.js';
 import { diagnosticoRouter } from './routes/diagnostico.js';
 import { homeRouter } from './routes/home.js';
 import { painelRouter } from './routes/painel.js';
@@ -158,6 +159,9 @@ app.use('/api', diagnosticoRouter);
 // Home pública: a caixa de ideação, os módulos e a vitrine da comunidade
 // carregam antes de qualquer login: é a porta de entrada do site.
 app.use('/api', homeRouter);
+// Passaporte público do hectare: quem escaneia o QR não tem conta, e o
+// propósito é exatamente esse. Só leitura, sem nenhum dado de pessoa.
+app.use('/api', passaporteRouter);
 
 app.get('/api/planos', (_req, res) => res.json(config.plans));
 

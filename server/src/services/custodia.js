@@ -103,6 +103,23 @@ export function seloDoLote(loteId) {
 }
 
 /**
+ * Decomposição do selo por frente de prova: para cada tipo de evidência do
+ * lote, o registro mais recente e o selo dele. É o que a Sala de Evidência
+ * mostra como "onde estamos fortes, onde está o elo fraco", e o que o
+ * passaporte público separa em "já é prova" e "ainda não é".
+ */
+export function decomposicao(loteId) {
+  const porTipo = new Map();
+  for (const ev of trilhaDe(loteId)) porTipo.set(ev.tipo, ev);   // a mais recente vence
+  return [...porTipo.values()]
+    .map(ev => ({
+      tipo: ev.tipo, selo: ev.selo, confianca: SELOS[ev.selo].confianca,
+      descricao: ev.descricao, em: ev.em,
+    }))
+    .sort((a, b) => b.confianca - a.confianca);
+}
+
+/**
  * Confere a cadeia inteira do lote, hash a hash.
  * Devolve as quebras com posição e motivo: "está íntegra" sem dizer onde
  * quebrou não serve para ninguém que precise consertar ou denunciar.

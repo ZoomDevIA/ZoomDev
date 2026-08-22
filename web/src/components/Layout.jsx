@@ -42,6 +42,7 @@ const MENU = [
     label: 'Bioeconomia',
     filhos: [
       { to: '/territorio', icone: 'mapa', label: 'Território', selo: 'GEO' },
+      { to: '/evidencias', icone: 'escudo', label: 'Sala de Evidência' },
       { to: '/impacto', icone: 'globo', label: 'Impacto 360°', selo: 'ODS' },
       { to: '/compensacao', icone: 'mapa', label: 'Compensação' },
       { to: '/carbonpay', icone: 'moeda', label: 'CarbonPay', selo: 'FIN' },
