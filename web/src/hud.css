@@ -1132,3 +1132,29 @@
 /* O numeral colorido do Impacto 360°. A cor vem por variável para a folha
    poder escurecê-la no tema claro; com `color` inline, nada aqui alcançaria. */
 .hud-numero { color: var(--cor, var(--zd-marca)); }
+
+/* ── Barra de nível do fundador ─────────────────────────────────────────────
+   Vive dentro da etiqueta NV do topo: a largura anima a cada XP ganho e o
+   brilho varre a trilha, para o avanço ser VISTO sem abrir tela nenhuma.
+   No tema claro os mesmos tons funcionam porque a trilha usa a tinta. */
+.zd-nivel-trilha {
+  position: relative; display: inline-block; width: 44px; height: 4px;
+  background: rgb(var(--zd-tinta, 234 255 245) / .16); overflow: hidden; border-radius: 2px;
+}
+.zd-nivel-trilha > i {
+  display: block; height: 100%; position: relative;
+  background: linear-gradient(90deg, var(--zd-marca, #00ff64), var(--zd-acento, #00e5ff));
+  transition: width .9s cubic-bezier(.22, 1, .36, 1);
+}
+.zd-nivel-trilha > i::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 30%, #ffffff66 50%, transparent 70%);
+  animation: zd-nivel-varre 3.2s linear infinite;
+}
+@keyframes zd-nivel-varre {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zd-nivel-trilha > i::after { animation: none; }
+}

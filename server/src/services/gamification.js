@@ -53,7 +53,11 @@ export function nivelFundador(xp) {
   let atual = NIVEIS_FUNDADOR[0];
   for (const n of NIVEIS_FUNDADOR) if (xp >= n.xp) atual = n;
   const proximo = NIVEIS_FUNDADOR.find(n => n.xp > xp) || null;
-  return { ...atual, proximoXp: proximo ? proximo.xp : null, xp };
+  // `progresso` calculado AQUI de propósito: o limiar do nível atual
+  // (atual.xp) morre no spread abaixo, sobrescrito pelo xp do usuário, e a
+  // tela não tem a tabela de níveis para refazer a conta.
+  const progresso = proximo ? Math.min(1, (xp - atual.xp) / (proximo.xp - atual.xp)) : 1;
+  return { ...atual, base: atual.xp, proximoXp: proximo ? proximo.xp : null, xp, progresso };
 }
 
 const CONQUISTAS = {

@@ -7,6 +7,7 @@ import { aplicar as aplicarTema, gravarLocal as gravarTema, lerLocal as lerTema 
 import BrandLockup from './BrandLockup.jsx';
 import Logo from './Logo.jsx';
 import Copiloto from './Copiloto.jsx';
+import Paleta from './Paleta.jsx';
 import Icon from './Icon.jsx';
 import { ACENTO, MARCA, Painel, Etiqueta, Pulso } from './hud/index.jsx';
 
@@ -29,29 +30,67 @@ import { ACENTO, MARCA, Painel, Etiqueta, Pulso } from './hud/index.jsx';
 // Bioeconomia, e os três só existem por causa dela: medir impacto, compensar o
 // passivo e pagar a compensação são etapas de uma trilha só. Agrupá-los reduz
 // o menu de onze para oito linhas e conta a hierarquia real do produto.
+// A navegação conta a história da plataforma em quatro domínios: CONSTRUIR
+// (da ideia ao produto), REGENERAR (o território e o impacto), PROVAR (a
+// evidência e o dinheiro que ela destrava) e CRESCER (edital e investidor).
+// Domínio é rótulo, não destino: quem navega vai direto ao módulo.
 const MENU = [
   { to: '/', icone: 'home', label: 'Home' },
-  { to: '/strategy', icone: 'cpu', label: 'Strategy Core', selo: 'IA' },
-  { to: '/dashboard', icone: 'grid', label: 'Dashboard' },
-  { to: '/agentes', icone: 'bot', label: 'Agentes' },
-  { to: '/mundo', icone: 'cubo', label: 'Vale ZoomDev', selo: '3D' },
-  { to: '/projetos', icone: 'pasta', label: 'Projetos' },
   {
-    to: '/bioeconomia',
-    icone: 'folha',
-    label: 'Bioeconomia',
+    to: 'g-construir', grupo: true, label: 'Construir',
+    filhos: [
+      { to: '/dashboard', icone: 'grid', label: 'Dashboard' },
+      { to: '/ideacao', icone: 'raio', label: 'Ideação' },
+      { to: '/projetos', icone: 'pasta', label: 'Projetos' },
+      { to: '/strategy', icone: 'cpu', label: 'Strategy Core', selo: 'IA' },
+      { to: '/agentes', icone: 'bot', label: 'Agentes' },
+    ],
+  },
+  {
+    to: 'g-regenerar', grupo: true, label: 'Regenerar',
     filhos: [
       { to: '/territorio', icone: 'mapa', label: 'Território', selo: 'GEO' },
-      { to: '/evidencias', icone: 'escudo', label: 'Sala de Evidência' },
       { to: '/impacto', icone: 'globo', label: 'Impacto 360°', selo: 'ODS' },
-      { to: '/compensacao', icone: 'mapa', label: 'Compensação' },
+      { to: '/compensacao', icone: 'balanca', label: 'Compensação' },
+      { to: '/mundo', icone: 'cubo', label: 'Vale ZoomDev', selo: '3D' },
+    ],
+  },
+  {
+    to: 'g-provar', grupo: true, label: 'Provar',
+    filhos: [
+      { to: '/evidencias', icone: 'escudo', label: 'Sala de Evidência' },
       { to: '/carbonpay', icone: 'moeda', label: 'CarbonPay', selo: 'FIN' },
+    ],
+  },
+  {
+    to: 'g-crescer', grupo: true, label: 'Crescer',
+    filhos: [
+      { to: '/editais', icone: 'documento', label: 'Editais' },
+      { to: '/investidores', icone: 'trofeu', label: 'Investidores' },
     ],
   },
   { to: '/configuracoes', icone: 'engrenagem', label: 'Configurações' },
 ];
 
-const CHAVE_ABERTOS = 'zd_menu_abertos';
+const GRUPOS_PADRAO = MENU.filter(m => m.grupo).map(m => m.to);
+
+// O cardápio da paleta ⌘K: a navegação inteira mais as ações que valem um
+// atalho. `apelidos` são os outros nomes pelos quais alguém procuraria.
+const ACOES_PALETA = [
+  ...MENU.flatMap(m => (m.grupo
+    ? m.filhos.map(f => ({ rotulo: f.label, para: f.to, dominio: m.label }))
+    : [{ rotulo: m.label, para: m.to }])),
+  { rotulo: 'Registrar evidência', para: '/evidencias', dominio: 'Provar', apelidos: 'laudo foto prova lacrar cadeia custodia' },
+  { rotulo: 'Verificar cadeia de custódia', para: '/evidencias', dominio: 'Provar', apelidos: 'hash integridade' },
+  { rotulo: 'Passaporte público do hectare', para: '/p/AP-0042', dominio: 'Provar', apelidos: 'qr lote publico' },
+  { rotulo: 'Simular impacto de nova área', para: '/impacto', dominio: 'Regenerar', apelidos: '360 simulacao carbono alimento' },
+  { rotulo: 'Estruturar uma ideia nova', para: '/ideacao', dominio: 'Construir', apelidos: 'criar startup comecar' },
+  { rotulo: 'Planos e assinatura', para: '/planos', apelidos: 'preco upgrade pro business seiva' },
+];
+
+// v2: a chave versionada zera o estado salvo da navegação antiga, senão quem
+// já usava a plataforma veria os quatro domínios novos nascerem fechados.
+const CHAVE_ABERTOS = 'zd_menu_abertos_v2';
 
 const TABS = [
   { to: '/', label: 'Home' },
@@ -75,6 +114,19 @@ export default function Layout({ children }) {
   const [notifAbertas, setNotifAbertas] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
   const [menuMovel, setMenuMovel] = useState(false);
+  const [paletaAberta, setPaletaAberta] = useState(false);
+
+  // ⌘K (ou Ctrl+K) abre a paleta de qualquer tela; apertar de novo fecha.
+  useEffect(() => {
+    const atalho = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletaAberta(v => !v);
+      }
+    };
+    document.addEventListener('keydown', atalho);
+    return () => document.removeEventListener('keydown', atalho);
+  }, []);
   const [recolhido, setRecolhido] = useState(() => {
     const salvo = localStorage.getItem(CHAVE_RECOLHIDO);
     // Sem preferência salva, tablet começa recolhido e desktop começa aberto.
@@ -87,9 +139,12 @@ export default function Layout({ children }) {
   // O que está aberto fica guardado, e o grupo que contém a rota atual abre
   // sozinho: chegar em Compensação por link direto e encontrar o menu fechado
   // esconderia de onde aquela tela veio.
+  // Os quatro domínios nascem abertos: menu novo fechado é menu invisível.
   const [abertos, setAbertos] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(CHAVE_ABERTOS) || '[]'); }
-    catch { return []; }
+    try {
+      const salvo = localStorage.getItem(CHAVE_ABERTOS);
+      return salvo ? JSON.parse(salvo) : GRUPOS_PADRAO;
+    } catch { return GRUPOS_PADRAO; }
   });
   const alternarGrupo = (chave) => setAbertos(a => {
     const novo = a.includes(chave) ? a.filter(x => x !== chave) : [...a, chave];
@@ -233,29 +288,27 @@ export default function Layout({ children }) {
       {itens.map(m => {
         if (!m.filhos) return linha(m, { compacto });
         const aberto = compacto || abertos.includes(m.to);
+        // Domínio: rótulo técnico que agrupa, sem ser destino. Na régua
+        // compacta ele some e os módulos ficam, porque ícone não precisa de
+        // capítulo para ser encontrado.
         return (
           <div key={m.to} className="relative">
-            <div className="relative">
-              {linha(m, { compacto })}
-              {!compacto && (
-                <button
-                  onClick={(e) => { e.preventDefault(); alternarGrupo(m.to); }}
-                  aria-expanded={aberto}
-                  aria-label={`${aberto ? 'Recolher' : 'Expandir'} ${m.label}`}
-                  title={aberto ? 'Recolher' : 'Expandir'}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-white/35
-                             hover:text-[color:var(--zd-acento)] transition-colors">
-                  {/* O glifo aponta para baixo em repouso: fechado ele gira
-                      para a direita, aberto volta ao natural. */}
-                  <Icon nome="chevron" tam={13}
-                    className={`transition-transform duration-300 ${aberto ? '' : '-rotate-90'}`} />
-                </button>
-              )}
-            </div>
-
+            {!compacto && (
+              <button
+                onClick={() => alternarGrupo(m.to)}
+                aria-expanded={aberto}
+                className="w-full flex items-center gap-2 px-5 pt-4 pb-1 text-left group">
+                <span className="text-[8.5px] tracking-[.26em] font-mono uppercase text-white/35 group-hover:text-white/60 transition-colors">
+                  {m.label}
+                </span>
+                <span className="flex-1 h-px bg-white/8" />
+                <Icon nome="chevron" tam={11}
+                  className={`text-white/30 transition-transform duration-300 ${aberto ? '' : '-rotate-90'}`} />
+              </button>
+            )}
             <div className="zd-submenu" data-aberto={aberto ? 'sim' : 'nao'}>
-              <div className={compacto ? '' : 'zd-submenu-fio'}>
-                {m.filhos.map(f => linha(f, { compacto, filho: !compacto }))}
+              <div>
+                {m.filhos.map(f => linha(f, { compacto }))}
               </div>
             </div>
           </div>
@@ -375,11 +428,22 @@ export default function Layout({ children }) {
             </nav>
 
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <button onClick={() => setPaletaAberta(true)} title="Paleta de comando (⌘K)"
+                className="hidden lg:flex items-center gap-1.5 rounded-lg border border-white/12 hover:border-[color:var(--zd-acento)]/50 px-2.5 py-1 text-[10px] font-mono text-white/45 hover:text-white/80 transition-colors">
+                ⌘K <span className="tracking-wider">BUSCAR OU AGIR</span>
+              </button>
               <Etiqueta cor={MARCA} title="Seiva: seus créditos de IA">
                 <Icon nome="seiva" tam={11} /> {user.creditos}
               </Etiqueta>
-              <Etiqueta cor={ACENTO} title={`XP total: ${user.gamification.xp}`} className="hidden md:inline-flex">
+              <Etiqueta cor={ACENTO}
+                title={user.nivel.proximoXp
+                  ? `XP ${user.nivel.xp} · faltam ${user.nivel.proximoXp - user.nivel.xp} para o nível ${user.nivel.nivel + 1}`
+                  : `XP ${user.nivel.xp} · nível máximo`}
+                className="hidden md:inline-flex items-center">
                 NV {user.nivel.nivel} · {user.nivel.nome}
+                <span className="zd-nivel-trilha ml-1.5">
+                  <i style={{ width: `${Math.round((user.nivel.progresso ?? 0) * 100)}%` }} />
+                </span>
               </Etiqueta>
               {user.gamification.streak?.dias > 1 && (
                 <Etiqueta cor="#ffc531" title="Sequência de dias construindo" className="hidden xl:inline-flex">
@@ -448,6 +512,7 @@ export default function Layout({ children }) {
       )}
 
       <Copiloto />
+      <Paleta aberta={paletaAberta} fechar={() => setPaletaAberta(false)} acoes={ACOES_PALETA} />
     </div>
     </FocoContext.Provider>
   );

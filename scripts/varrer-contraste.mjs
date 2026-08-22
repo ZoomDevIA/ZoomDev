@@ -9,8 +9,10 @@
 // vai concluir que a plataforma está quebrada, não que a cor está errada.
 //
 // LEIA O NÚMERO SEMPRE CONTRA UM CONTROLE. Rodar só no tema claro não diz
-// nada: é preciso comparar com o escuro, que é o que já está no ar. Medição
-// de agosto: escuro 87, claro 59, nas mesmas seis rotas.
+// nada: é preciso comparar com o escuro, que é o que já está no ar.
+// Medições nas mesmas seis rotas (o total cresce junto com a interface):
+//   ago/2026 (1ª)  escuro  87 · claro 59
+//   ago/2026 (2ª)  escuro 118 · claro 77   ← claro segue ~35% melhor que a base
 //
 // Uso:  node scripts/varrer-contraste.mjs [claro|profundo|carbono|floresta|vazio]
 //       Exige a plataforma no ar em localhost:4000 e um token em token.txt.
