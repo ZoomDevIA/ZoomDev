@@ -77,6 +77,15 @@ test('rotas ponta a ponta', async (t) => {
     assert.equal(r.status, 400);
   });
 
+  await t.test('sem GOOGLE_CLIENT_ID o login com google se declara desligado', async () => {
+    const cfg = await pedir('/auth/google/config');
+    assert.equal(cfg.status, 200);
+    assert.equal(cfg.dados.ativo, false);
+    const r = await pedir('/auth/google', { metodo: 'POST', corpo: { credential: 'qualquer' } });
+    assert.equal(r.status, 503);
+    assert.match(r.dados.error, /GOOGLE_CLIENT_ID/);
+  });
+
   await t.test('login com senha errada não distingue de conta inexistente', async () => {
     const errada = await pedir('/auth/login', { metodo: 'POST', corpo: { email: 'dono-rotas@zd.dev', password: 'nao-e-essa' } });
     const inexistente = await pedir('/auth/login', { metodo: 'POST', corpo: { email: 'ninguem@zd.dev', password: 'nao-e-essa' } });

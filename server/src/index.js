@@ -7,7 +7,8 @@ import { cabecalhos, cors, POLITICA_PREVIA, POLITICA_SITE } from './services/bli
 import { lerPrevia, montarPrevia } from './services/previa.js';
 import { migrarConteudo } from './services/conteudo.js';
 import { siteDoSlug, montarPagina, registrarLead, registrarVisita, paginaObrigado, PREFIXO } from './services/publicacao.js';
-import { register, login, authMiddleware, adminMiddleware, publicUser, rotularAparelho } from './auth.js';
+import { register, login, loginComGoogle, authMiddleware, adminMiddleware, publicUser, rotularAparelho } from './auth.js';
+import { modoLoginGoogle, clientIdGoogle, verificarCredencialGoogle } from './services/loginGoogle.js';
 import { save, store } from './store.js';
 import { projectsRouter } from './routes/projects.js';
 import { carbonRouter } from './routes/carbon.js';
@@ -172,6 +173,27 @@ app.post('/api/auth/login',
   limitar({ max: 8, janelaSeg: 600, mensagem: 'Muitas tentativas de login. Aguarde alguns minutos.' }),
   (req, res, next) => {
     try { res.json(login(req.body || {}, rotularAparelho(req.headers['user-agent']))); } catch (e) { next(e); }
+  });
+
+// ── Login com Google ───────────────────────────────────────────────────────
+// A tela pergunta primeiro se o recurso existe: sem GOOGLE_CLIENT_ID o botão
+// nem aparece, em vez de aparecer e falhar. O client_id é público por
+// definição no fluxo de ID token, então expô-lo aqui não revela nada.
+app.get('/api/auth/google/config', (_req, res) => {
+  res.json({ ativo: modoLoginGoogle() === 'ativo', clientId: clientIdGoogle() });
+});
+
+app.post('/api/auth/google',
+  limitar({ max: 10, janelaSeg: 600, mensagem: 'Muitas tentativas de login. Aguarde alguns minutos.' }),
+  async (req, res, next) => {
+    try {
+      const identidade = await verificarCredencialGoogle(req.body?.credential);
+      const r = loginComGoogle(identidade, rotularAparelho(req.headers['user-agent']));
+      // Conta recém-criada pelo Google aceita os termos no mesmo ato, como no
+      // cadastro por senha: a versão vigente fica registrada com data.
+      if (!store.users[r.user.id].termosAceitos) registrarAceiteTermos(store.users[r.user.id]);
+      res.json({ ...r, user: { ...r.user, termosAceitos: store.users[r.user.id].termosAceitos } });
+    } catch (e) { next(e); }
   });
 
 // ── Recuperação de senha (pública: quem esqueceu não consegue autenticar) ──

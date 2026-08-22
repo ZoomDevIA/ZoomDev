@@ -181,6 +181,26 @@ diagnosticoRouter.get('/status', async (req, res) => {
       ? `Ativa: chave ${pista(chaveDeepgram, { inicio: 4 })} · anexar áudio custa ${config.credits.transcricao} 🌿 por arquivo`
       : 'DEEPGRAM_API_KEY não definida: anexar áudio fica indisponível. O ditado por voz na caixa de contexto continua funcionando, roda no navegador e não custa nada.');
 
+  // ── Login com Google ──
+  const googleId = (process.env.GOOGLE_CLIENT_ID || '').trim();
+  const googleFormato = googleId.endsWith('.apps.googleusercontent.com');
+  add('loginGoogle', 'Login com Google', !googleId || googleFormato,
+    !googleId
+      ? 'GOOGLE_CLIENT_ID não definida: o botão "Entrar com o Google" fica oculto e o login por e-mail e senha segue normal'
+      : googleFormato
+        ? `Ativo: client ${pista(googleId, { inicio: 8 })} · o botão aparece na tela de login`
+        : 'GOOGLE_CLIENT_ID definida, mas não termina com ".apps.googleusercontent.com": confira se colou o Client ID (e não o client secret) do console do Google Cloud');
+
+  // ── Registro Isometric (CDR) ──
+  const isoSecret = Boolean(process.env.ISOMETRIC_CLIENT_SECRET);
+  const isoToken = Boolean(process.env.ISOMETRIC_TOKEN);
+  add('isometric', 'Registro Isometric (CDR)', true,
+    isoSecret && isoToken
+      ? `Ativo em modo ${(process.env.ISOMETRIC_AMBIENTE || 'sandbox').toLowerCase() === 'producao' ? 'PRODUÇÃO' : 'sandbox'}: o benchmark CDR usa dados vivos do registro`
+      : isoSecret || isoToken
+        ? `Só ${isoSecret ? 'ISOMETRIC_CLIENT_SECRET' : 'ISOMETRIC_TOKEN'} está definida: faltando a outra, o benchmark segue em modo demonstração. As duas são geradas em registry.isometric.com, aba API Keys.`
+        : 'ISOMETRIC_CLIENT_SECRET e ISOMETRIC_TOKEN não definidas: o benchmark CDR roda em modo demonstração (rotulado como tal)');
+
   add('url', 'URL pública', Boolean(process.env.ZOOMDEV_URL),
     process.env.ZOOMDEV_URL
       ? `Definida: ${process.env.ZOOMDEV_URL}`

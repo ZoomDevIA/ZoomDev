@@ -61,15 +61,19 @@ export function cors(req, res, next) {
 }
 
 // ── Política de conteúdo da aplicação ─────────────────────────────────────
+// As entradas accounts.google.com são o mínimo que o botão "Entrar com o
+// Google" (Google Identity Services) precisa: o script oficial, o iframe do
+// botão e as chamadas que ele faz. São caminhos sob /gsi/, não o domínio
+// inteiro, e só existem porque o login com Google existe.
 const POLITICA = [
   "default-src 'self'",
-  "script-src 'self'",                       // o pacote compilado não tem script embutido
-  "style-src 'self' 'unsafe-inline'",        // atributos style= do React
+  "script-src 'self' https://accounts.google.com/gsi/client",
+  "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",  // 'unsafe-inline': atributos style= do React
   "img-src 'self' data: blob: https:",       // https: porque o ZoomDoc aceita imagem por endereço
   "font-src 'self'",                         // as fontes agora são da própria origem
-  "connect-src 'self'",                      // a aplicação só conversa com a própria API
+  "connect-src 'self' https://accounts.google.com/gsi/",
   "media-src 'self' blob:",
-  "frame-src 'self'",                        // a prévia do MVP vem daqui, sob sandbox
+  "frame-src 'self' https://accounts.google.com/gsi/",  // a prévia do MVP e o iframe do botão do Google
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'none'",
@@ -96,7 +100,12 @@ export function cabecalhos(req, res, next) {
 
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  // allow-popups em vez de same-origin: o login com Google abre uma janela do
+  // próprio Google, e com same-origin puro o navegador corta a comunicação
+  // entre a janela e a página, deixando o botão girando para sempre. A
+  // proteção que interessa continua: nenhuma página externa abre ESTA como
+  // popup e mantém acesso a ela.
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   res.removeHeader('X-Powered-By');

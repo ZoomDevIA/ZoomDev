@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, setToken } from '../lib/api.js';
 import { useUser } from '../App.jsx';
@@ -26,6 +26,47 @@ export default function Login() {
     setAviso(`Login com ${nome} estará disponível em breve.`);
     setTimeout(() => setAviso(null), 3500);
   };
+
+  // ── Login com Google ─────────────────────────────────────────────────────
+  // O servidor diz se o recurso está configurado (GOOGLE_CLIENT_ID). Só então
+  // o script oficial do Google entra na página e desenha o botão dele no
+  // lugar do nosso botão de vitrine. O Google devolve um ID token e o
+  // servidor o verifica por completo antes de abrir sessão.
+  const [googleAtivo, setGoogleAtivo] = useState(false);
+  const googleBotao = useRef(null);
+
+  useEffect(() => {
+    let vivo = true;
+    api.googleConfig().then(({ ativo, clientId }) => {
+      if (!vivo || !ativo || !clientId) return;
+      const desenhar = () => {
+        if (!vivo || !window.google?.accounts?.id || !googleBotao.current) return;
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async ({ credential }) => {
+            setErro(null);
+            try {
+              const r = await api.loginGoogle(credential);
+              setToken(r.token);
+              await refreshUser();
+            } catch (err) { setErro(err.message); }
+          },
+        });
+        window.google.accounts.id.renderButton(googleBotao.current, {
+          theme: 'filled_black', size: 'large', text: 'continue_with',
+          shape: 'rectangular', width: 336, locale: 'pt-BR',
+        });
+        setGoogleAtivo(true);
+      };
+      if (window.google?.accounts?.id) return desenhar();
+      const s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client';
+      s.async = true;
+      s.onload = desenhar;
+      document.head.appendChild(s);
+    }).catch(() => {});
+    return () => { vivo = false; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pedirRecuperacao = async (e) => {
     e.preventDefault();
@@ -162,8 +203,14 @@ export default function Login() {
             <div className="flex-1 h-px bg-white/10" />
           </div>
           {aviso && <div className="zd-notification rounded-lg px-3 py-2 text-xs mb-3">{aviso}</div>}
+          {/* O contêiner do botão do Google existe sempre; o script oficial
+              desenha o botão dentro dele quando o recurso está configurado. */}
+          <div ref={googleBotao} className={googleAtivo ? 'flex justify-center mb-2' : 'hidden'} />
           <div className="grid grid-cols-3 gap-2">
-            {[['Google', 'G'], ['GitHub', '⌥'], ['Microsoft', '⊞'], ['Apple', ''], ['Biometria', '👆']].map(([nome, ic]) => (
+            {[
+              ...(googleAtivo ? [] : [['Google', 'G']]),
+              ['GitHub', '⌥'], ['Microsoft', '⊞'], ['Apple', ''], ['Biometria', '👆'],
+            ].map(([nome, ic]) => (
               <button key={nome} type="button" onClick={() => emBreve(nome)}
                 className="rounded-lg border border-white/12 bg-white/[.04] hover:bg-white/[.08] transition-colors py-2 text-xs text-white/70 flex items-center justify-center gap-1.5">
                 <span>{ic}</span> {nome}

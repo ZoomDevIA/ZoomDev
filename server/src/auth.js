@@ -76,6 +76,47 @@ export function criarUsuario({ email, nome, senha, papel }) {
   return publicUser(store.users[userId]);
 }
 
+/**
+ * Entrada por identidade Google JÁ VERIFICADA (o service loginGoogle confere
+ * assinatura, emissor, audiência, validade e e-mail confirmado antes de
+ * chegar aqui; esta função confia no chamador e por isso não revalida nada).
+ *
+ * Conta existente com o mesmo e-mail: entra nela. É a mesma pessoa, provado
+ * pela posse do e-mail, e criar uma segunda conta separaria os projetos dela.
+ *
+ * Conta nova: nasce SEM passwordHash. O login por senha não tem como aceitar
+ * essa conta (verify() falha com hash vazio), então não existe porta lateral:
+ * quem entra pelo Google só entra pelo Google, até definir uma senha pela
+ * recuperação, que continua valendo porque o e-mail é o mesmo.
+ */
+export function loginComGoogle({ email, nome, sub }, aparelho) {
+  let user = Object.values(store.users).find(u => u.email === email);
+  if (user) {
+    if (user.ativo === false) {
+      throw Object.assign(new Error('Esta conta está desativada. Fale com o administrador.'), { status: 403 });
+    }
+    if (!user.googleSub) { user.googleSub = sub; save(); }
+    return createSession(user.id, aparelho);
+  }
+  const userId = id('usr');
+  store.users[userId] = {
+    id: userId,
+    email,
+    nome: nome || email.split('@')[0],
+    passwordHash: null,
+    loginExterno: 'google',
+    googleSub: sub,
+    papel: null,
+    ativo: true,
+    plano: 'free',
+    creditos: config.credits.initial,
+    criadoEm: new Date().toISOString(),
+    gamification: newUserGamification(),
+  };
+  save();
+  return createSession(userId, aparelho);
+}
+
 export function login({ email, password }, aparelho) {
   email = String(email || '').trim().toLowerCase();
   const user = Object.values(store.users).find(u => u.email === email);
