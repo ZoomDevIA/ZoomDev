@@ -103,6 +103,25 @@ test('rotas ponta a ponta', async (t) => {
     assert.equal(canonico.status, 200);
     const railway = await pedirComHost('zoomdev-producao.up.railway.app', '/api/health');
     assert.equal(railway.status, 200);
+
+    // A vitrine: o apex .com.br canoniza para o www…
+    const apexBr = await pedirComHost('zoomdev.com.br', '/');
+    assert.equal(apexBr.status, 301);
+    assert.equal(apexBr.location, 'https://www.zoomdev.com.br/');
+
+    // …o público dela é servido aqui mesmo (API, home, passaporte)…
+    const vitrineApi = await pedirComHost('www.zoomdev.com.br', '/api/health');
+    assert.equal(vitrineApi.status, 200);
+    const vitrinePassaporte = await pedirComHost('www.zoomdev.com.br', '/api/publico/passaporte/AP-0042');
+    assert.equal(vitrinePassaporte.status, 200);
+
+    // …e rota de aplicativo pedida por lá segue para o domínio do app.
+    const vitrineApp = await pedirComHost('www.zoomdev.com.br', '/territorio');
+    assert.equal(vitrineApp.status, 301);
+    assert.equal(vitrineApp.location, 'https://www.zoomdev.app/territorio');
+    const vitrineEntrar = await pedirComHost('www.zoomdev.com.br', '/entrar?modo=cadastro');
+    assert.equal(vitrineEntrar.status, 301);
+    assert.equal(vitrineEntrar.location, 'https://www.zoomdev.app/entrar?modo=cadastro');
   });
 
   await t.test('sem GOOGLE_CLIENT_ID o login com google se declara desligado', async () => {

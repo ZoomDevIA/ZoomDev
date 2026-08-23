@@ -22,26 +22,41 @@ const ORIGENS_LOCAIS = [
 /** Origens que podem chamar a API. Vazio significa "só a própria". */
 // ── Mapa de domínios da plataforma ─────────────────────────────────────────
 // Três endereços, três papéis, decididos pelo fundador:
-//   www.zoomdev.com.br   site institucional (hospedado fora deste servidor)
-//   zoomdev.io           só redireciona para o institucional
-//   www.zoomdev.app      a plataforma (este servidor)
+//   www.zoomdev.com.br   a vitrine pública, servida por ESTE servidor
+//   zoomdev.io           só redireciona para a vitrine
+//   www.zoomdev.app      o aplicativo (sessão, Google OAuth, SEO do produto)
 //
-// Este middleware cuida do que chega AQUI com o host errado: o apex
-// zoomdev.app canoniza para o www (um endereço só nos cookies, no Google
-// OAuth e no SEO), e o .io, se estiver apontado para cá, segue para o site.
-// O caminho viaja junto no redirecionamento: quem guardou um link não o
-// perde. Hosts fora do mapa (o domínio da Railway, localhost, testes)
-// passam intocados.
+// Este middleware cuida do que chega com o host errado: os dois apex
+// canonizam para o www (um endereço só nos cookies, no OAuth e no SEO) e o
+// .io, se estiver apontado para cá, segue para a vitrine. O caminho viaja
+// junto no redirecionamento: quem guardou um link não o perde. Hosts fora do
+// mapa (o domínio da Railway, localhost, testes) passam intocados.
 const REDIRECIONAMENTOS_DE_HOST = {
   'zoomdev.io': 'https://www.zoomdev.com.br',
   'www.zoomdev.io': 'https://www.zoomdev.com.br',
   'zoomdev.app': 'https://www.zoomdev.app',
+  'zoomdev.com.br': 'https://www.zoomdev.com.br',
 };
+
+// Na vitrine só vive a parte pública do produto: a home, as páginas legais e
+// o passaporte de lote, além da API e dos arquivos do próprio pacote, sem os
+// quais essas páginas não existem. Rota de aplicativo pedida por lá segue
+// para o domínio do app, porque sessão e origem registrada no Google moram
+// em um endereço só.
+const HOST_VITRINE = 'www.zoomdev.com.br';
+const APP_CANONICO = 'https://www.zoomdev.app';
+const PUBLICO_NA_VITRINE = [/^\/$/, /^\/p\//, /^\/termos$/, /^\/privacidade$/, /^\/api\//, /^\/assets\//];
 
 export function dominios(req, res, next) {
   const host = String(req.headers.host || '').toLowerCase().split(':')[0];
   const destino = REDIRECIONAMENTOS_DE_HOST[host];
   if (destino) return res.redirect(301, destino + req.originalUrl);
+  if (host === HOST_VITRINE) {
+    const caminho = req.path || '/';
+    // Caminho com ponto é arquivo do pacote (favicon.svg, sw.js, manifest…)
+    const publico = caminho.includes('.') || PUBLICO_NA_VITRINE.some(re => re.test(caminho));
+    if (!publico) return res.redirect(301, APP_CANONICO + req.originalUrl);
+  }
   next();
 }
 

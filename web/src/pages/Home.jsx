@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, getToken } from '../lib/api.js';
+import { APP_URL, CHAVE_RASCUNHO, emVitrine } from '../lib/dominio.js';
 import { useUser } from '../App.jsx';
 import ModuloSwitch from '../components/ModuloSwitch.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
@@ -27,7 +28,15 @@ import { Painel, Rotulo, Etiqueta, Botao, Estatistica } from '../components/hud/
 // o botão. Por isso: medição real mais `dvh`.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const RASCUNHO = 'zd_rascunho_ideia';
+const RASCUNHO = CHAVE_RASCUNHO;
+
+// Na vitrine (www.zoomdev.com.br) os pontos de entrada do app são URLs
+// absolutas para o domínio canônico, onde vivem a sessão e o Google OAuth;
+// servido pelo próprio app, o mesmo ponto é rota interna do SPA.
+function LinkEntrar({ para, className, children }) {
+  if (emVitrine()) return <a href={APP_URL + para} className={className}>{children}</a>;
+  return <Link to={para} className={className}>{children}</Link>;
+}
 
 const FILTROS = [
   { id: 'todos', label: 'Tudo', icone: null },
@@ -126,7 +135,17 @@ export default function Home() {
   const construir = async (e) => {
     e?.preventDefault();
     if (!pronto || enviando) return;
-    if (!logado) { nav('/entrar?proximo=construir'); return; }
+    if (!logado) {
+      if (emVitrine()) {
+        // sessionStorage não atravessa domínios: o rascunho vai na URL e o
+        // Login o replanta do lado do app antes de retomar a ideação.
+        const q = new URLSearchParams({ proximo: 'construir' });
+        if (descricao.trim()) q.set('rascunho', descricao);
+        q.set('modulos', JSON.stringify(modulos));
+        window.location.assign(`${APP_URL}/entrar?${q.toString()}`);
+      } else nav('/entrar?proximo=construir');
+      return;
+    }
 
     setErro(null); setEnviando(true);
     try {
@@ -154,10 +173,10 @@ export default function Home() {
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 px-5 py-3.5">
             <BrandLockup symbolSize={32} wordmarkHeight={24} />
             <div className="flex items-center gap-2">
-              <Link to="/entrar" className="text-sm text-white/60 hover:text-white px-3 py-2 transition-colors">Entrar</Link>
-              <Link to="/entrar?modo=cadastro" className="hud-botao px-4 py-2 text-sm inline-flex items-center gap-2">
+              <LinkEntrar para="/entrar" className="text-sm text-white/60 hover:text-white px-3 py-2 transition-colors">Entrar</LinkEntrar>
+              <LinkEntrar para="/entrar?modo=cadastro" className="hud-botao px-4 py-2 text-sm inline-flex items-center gap-2">
                 Criar conta grátis <Icon nome="setaDireita" tam={14} />
-              </Link>
+              </LinkEntrar>
             </div>
           </div>
         </header>
@@ -317,9 +336,9 @@ export default function Home() {
             <p className="text-white/40 text-sm">
               Crie sua conta gratuita e receba 500 de seiva para gerar seu primeiro plano completo.
             </p>
-            <Link to="/entrar?modo=cadastro" className="hud-botao px-6 py-3 text-sm inline-flex items-center gap-2 mt-4">
+            <LinkEntrar para="/entrar?modo=cadastro" className="hud-botao px-6 py-3 text-sm inline-flex items-center gap-2 mt-4">
               Começar agora <Icon nome="setaDireita" tam={14} />
-            </Link>
+            </LinkEntrar>
             <div className="text-[10px] text-white/20 mt-8">© 2026 ZoomDev OS · Da ideia ao exit</div>
           </footer>
         )}
