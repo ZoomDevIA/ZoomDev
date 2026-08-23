@@ -4,6 +4,7 @@ import { api, getToken } from '../lib/api.js';
 import { APP_URL, CHAVE_RASCUNHO, emVitrine } from '../lib/dominio.js';
 import { useUser } from '../App.jsx';
 import ModuloSwitch from '../components/ModuloSwitch.jsx';
+import CenaHome from '../components/CenaHome.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
 import Icon from '../components/Icon.jsx';
 import { Painel, Rotulo, Etiqueta, Botao, Estatistica } from '../components/hud/index.jsx';
@@ -167,9 +168,12 @@ export default function Home() {
   };
 
   return (
-    <div className={logado ? 'space-y-12' : 'min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan'}>
+    <div className={logado ? 'space-y-12' : 'min-h-screen zd-bg'}>
+      {/* A cena fica fixa atrás; cabeçalho e conteúdo sobem um degrau de
+          empilhamento, senão a camada posicionada da cena pintaria por cima. */}
+      {!logado && <CenaHome />}
       {!logado && (
-        <header ref={cabecalho} className="border-b border-white/5">
+        <header ref={cabecalho} className="border-b border-white/5 relative z-[1]">
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 px-5 py-3.5">
             <BrandLockup symbolSize={32} wordmarkHeight={24} />
             <div className="flex items-center gap-2">
@@ -182,7 +186,7 @@ export default function Home() {
         </header>
       )}
 
-      <div className={logado ? 'space-y-10' : 'max-w-6xl mx-auto px-4 sm:px-5 pb-14 space-y-12'}>
+      <div className={logado ? 'space-y-10' : 'max-w-6xl mx-auto px-4 sm:px-5 pb-14 space-y-12 relative z-[1]'}>
 
         {/* ── Chamada + caixa de ideação ───────────────────────────────── */}
         {/* A dobra inteira cabe na janela: o que sobra do cabeçalho vira a
