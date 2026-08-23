@@ -13,6 +13,7 @@ const empty = () => ({
   sessoesPainel: {}, auditoria: [], vitrine: null, recuperacoes: {},
   sites: {},
   eventos: [], evidencias: {},
+  modelosIA: {},
 });
 
 let db = empty();

@@ -193,13 +193,13 @@ export async function varrer({ forcar = false } = {}) {
         system: 'Você é o Radar de Editais da ZoomDev OS. Pesquise chamadas de fomento à inovação ABERTAS no Brasil (FINEP, FAPs estaduais, Sebrae, BNDES, CNPq, Embrapii, CONFAP, MCTI) com foco em startups, bioeconomia e sustentabilidade. Retorne apenas chamadas com prazo futuro e fonte oficial verificável.',
         messages: [{ role: 'user', content: `Liste as chamadas de fomento abertas agora, com prazo de submissão futuro. Não repita estas que já conheço: ${conhecidos}. Para cada uma informe nome, órgão, valor, prazo (AAAA-MM-DD), foco, descrição curta, tags e a fonte oficial.` }],
         effort: 'medium', maxTokens: 8000,
-        modelo: config.modelos.pesquisa,
+        papel: 'pesquisa',
       });
       const dados = await structured({
         system: 'Converta a pesquisa em dados estruturados. Descarte qualquer chamada sem prazo futuro claro ou sem fonte identificável.',
         user: texto,
         schema: EDITAL_SCHEMA, effort: 'low', maxTokens: 4000,
-        modelo: config.modelos.extracao,
+        papel: 'extracao',
       });
       for (const e of dados.editais || []) {
         const dias = diasParaPrazo(e);

@@ -421,6 +421,90 @@ function PicsAgentes() {
 }
 
 // ── Página ───────────────────────────────────────────────────────────────────
+// ── Modelos de IA por papel ───────────────────────────────────────────────
+// O administrador troca o modelo de cada módulo aqui e a troca vale na
+// chamada seguinte: nada de deploy, nada de variável de ambiente. O padrão
+// (env) continua sendo o chão: restaurar volta para ele.
+function PainelModelos({ notify }) {
+  const [dados, setDados] = useState(null);
+  const [salvando, setSalvando] = useState(null);
+
+  const carregar = () => api.adminModelos().then(setDados).catch(() => {});
+  useEffect(() => { carregar(); }, []);
+
+  const trocar = async (papelId, modelo) => {
+    setSalvando(papelId);
+    try {
+      await api.adminDefinirModelo(papelId, modelo);
+      await carregar();
+      notify?.(modelo ? 'Modelo trocado. Vale já na próxima chamada.' : 'Padrão restaurado.', 'sucesso');
+    } catch (e) {
+      notify?.(e.message, 'erro');
+    }
+    setSalvando(null);
+  };
+
+  if (!dados) return <div className="text-white/40 text-sm">Carregando o mapa de modelos…</div>;
+  const infoDe = (id) => dados.modelos.find(m => m.id === id);
+
+  return (
+    <div className="space-y-4">
+      <div className="nave-rot">modelos de ia por módulo · a troca vale na chamada seguinte</div>
+
+      <div className="space-y-2">
+        {dados.papeis.map(p => {
+          const info = infoDe(p.modelo);
+          return (
+            <div key={p.id} className="flex flex-wrap items-center gap-3 border border-white/10 bg-black/25 px-3 py-2.5">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm">{p.nome}</span>
+                  {p.personalizado
+                    ? <span className="text-[9px] font-mono uppercase tracking-widest text-amber-300/90 border border-amber-300/40 px-1.5 py-0.5">personalizado</span>
+                    : <span className="text-[9px] font-mono uppercase tracking-widest text-white/35 border border-white/15 px-1.5 py-0.5">padrão</span>}
+                </div>
+                <div className="text-xs text-white/45 mt-0.5">{p.usa}</div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={p.modelo}
+                  disabled={salvando === p.id}
+                  onChange={e => trocar(p.id, e.target.value)}
+                  className="bg-black/50 border border-white/15 text-sm text-white px-2 py-1.5 focus:border-cyan-300/60 outline-none"
+                >
+                  {dados.modelos.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.nome} · ${m.precoEntrada}/${m.precoSaida} por MTok
+                    </option>
+                  ))}
+                </select>
+                {p.personalizado && (
+                  <button
+                    onClick={() => trocar(p.id, null)}
+                    disabled={salvando === p.id}
+                    className="text-xs text-white/50 hover:text-white underline underline-offset-2"
+                    title={`Voltar ao padrão (${infoDe(p.padrao)?.nome || p.padrao})`}
+                  >
+                    restaurar
+                  </button>
+                )}
+              </div>
+
+              {info && <div className="w-full text-[11px] text-white/35">{info.tier}: {info.nota}</div>}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="text-[11px] text-white/35 border-t border-white/10 pt-3">
+        Preços por milhão de tokens (entrada/saída). A escolha fica gravada e sobrevive a
+        reinício do servidor; o selo da troca entra no barramento como decisão de estratégia.
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { notify } = useToast();
   const [overview, setOverview] = useState(null);
@@ -478,6 +562,7 @@ export default function Admin() {
           {tab === 'relatorios' && <div className="nave-bloco nave-canto p-4"><Relatorios notify={notify} /></div>}
           {tab === 'pic' && <div className="nave-bloco nave-canto p-4"><PainelPic notify={notify} /></div>}
           {tab === 'agentes' && <div className="nave-bloco nave-canto p-4"><PicsAgentes /></div>}
+          {tab === 'modelos' && <div className="nave-bloco nave-canto p-4"><PainelModelos notify={notify} /></div>}
         </div>
 
         {/* ── Coluna direita: estado da Sexta-Feira e a conversa ─────────── */}
@@ -497,6 +582,7 @@ const ABAS = [
   ['relatorios', 'Relatórios'],
   ['pic', 'PIC · Evolução'],
   ['agentes', 'PICs dos agentes'],
+  ['modelos', 'Modelos de IA'],
 ];
 
 // ── Cabeçalho da ponte ────────────────────────────────────────────────────

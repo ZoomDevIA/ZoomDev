@@ -169,7 +169,7 @@ export async function gerarPlano(projeto, onProgress = () => {}) {
         schema: agente.schema,
         effort: 'high',
         maxTokens: 12000,
-        modelo: config.modelos.plano,
+        papel: 'plano',
       });
       onProgress(agente.id, 'concluido');
     } catch (e) {
@@ -193,7 +193,7 @@ Crie 4 missões de VALIDAÇÃO acionáveis e específicas para este projeto (2 p
       schema: MISSOES_SCHEMA,
       effort: 'low',
       maxTokens: 3000,
-      modelo: config.modelos.extracao,
+      papel: 'extracao',
     });
     missoesValidacao = r.missoes.map((m, i) => ({ id: `val_${i}`, ...m, xp: 30 }));
     onProgress('missoes', 'concluido');

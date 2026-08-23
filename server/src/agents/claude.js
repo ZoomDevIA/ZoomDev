@@ -1,7 +1,10 @@
-// Cliente Claude com roteador de modelos: cada módulo pede o tier certo
-// (config.modelos) e este arquivo ajusta os parâmetros que mudam entre eles.
+// Cliente Claude com roteador de modelos: cada módulo declara seu papel e o
+// modelo em vigor é resolvido NA HORA da chamada (o administrador troca pelo
+// painel e a próxima chamada já sai no modelo novo). Este arquivo também
+// ajusta os parâmetros que mudam entre tiers.
 // Sem ANTHROPIC_API_KEY, cai em modo demo (o chamador fornece o mock).
 import { config } from '../config.js';
+import { modeloDoPapel } from '../services/modelosIA.js';
 
 let _client = null;
 async function client() {
@@ -37,11 +40,16 @@ function sistemaCacheado(system) {
   return [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
 }
 
+// `papel` (plano, pesquisa, codigo, chat, extracao, gerado) resolve o modelo
+// em vigor no momento da chamada; `modelo` explícito ganha do papel; sem os
+// dois, vale o modelo principal.
+const resolver = (modelo, papel) => modelo || (papel ? modeloDoPapel(papel) : config.model);
+
 /**
  * Chamada estruturada: retorna um objeto validado contra o JSON Schema.
- * `modelo` vem de config.modelos.<papel>; sem ele, o modelo principal.
  */
-export async function structured({ system, user, schema, effort = 'high', maxTokens = 16000, modelo = config.model }) {
+export async function structured({ system, user, schema, effort = 'high', maxTokens = 16000, modelo: modeloFixo, papel }) {
+  const modelo = resolver(modeloFixo, papel);
   if (!config.hasApiKey) {
     throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }
@@ -75,7 +83,8 @@ export async function structured({ system, user, schema, effort = 'high', maxTok
  * Conversa em texto livre (Zoom Intelligence / copiloto).
  * messages: [{role:'user'|'assistant', content}]
  */
-export async function conversar({ system, messages, effort = 'medium', maxTokens = 4000, modelo = config.model }) {
+export async function conversar({ system, messages, effort = 'medium', maxTokens = 4000, modelo: modeloFixo, papel }) {
+  const modelo = resolver(modeloFixo, papel);
   if (!config.hasApiKey) {
     throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }
@@ -101,7 +110,8 @@ export async function conversar({ system, messages, effort = 'medium', maxTokens
  * O web_search_20260209 pede Sonnet 4.6+/Opus 4.6+: não rotear para o Haiku.
  * Retorna { texto, buscas }: buscas = quantas pesquisas o modelo executou.
  */
-export async function conversarComInternet({ system, messages, effort = 'high', maxTokens = 8000, maxBuscas = 5, modelo = config.model }) {
+export async function conversarComInternet({ system, messages, effort = 'high', maxTokens = 8000, maxBuscas = 5, modelo: modeloFixo, papel }) {
+  const modelo = resolver(modeloFixo, papel);
   if (!config.hasApiKey) {
     throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }

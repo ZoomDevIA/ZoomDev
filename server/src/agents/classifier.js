@@ -86,7 +86,7 @@ Escolha também a vertical mais próxima e sugira um nome curto e memorável em 
       schema: SCHEMA,
       effort: 'low',
       maxTokens: 2000,
-      modelo: config.modelos.extracao,
+      papel: 'extracao',
     });
     return { ...r, origem: 'ia' };
   } catch (e) {

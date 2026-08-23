@@ -71,7 +71,7 @@ platformRouter.post('/analyze', async (req, res, next) => {
           schema: ANALISE_SCHEMA,
           effort: 'medium',
           maxTokens: 4000,
-          modelo: config.modelos.gerado,
+          papel: 'gerado',
         });
       } catch (e) {
         if (e.code === 'REFUSAL') throw e;
@@ -111,7 +111,7 @@ A plataforma tem: geração de plano de negócios pelos 5 agentes, jornada gamif
           ? 'Use a **Calculadora de Passivo Ambiental** (CarbonPay) para estimar sua pegada pelos escopos 1, 2 e 3 do GHG Protocol e compensar com créditos verificados. Calcular dá XP e a conquista Guardião da Floresta 🌳'
           : 'Estou em modo demo (sem API key), mas o caminho é esse: descreva sua ideia em **Nova Ideia**, gere o plano com os 5 agentes e siga as missões de validação que o próprio plano cria. Configure a ANTHROPIC_API_KEY para conversas completas comigo. 🚀';
     } else {
-      resposta = await conversar({ system, messages: historico, effort: 'medium', maxTokens: 3000, modelo: config.modelos.gerado });
+      resposta = await conversar({ system, messages: historico, effort: 'medium', maxTokens: 3000, papel: 'gerado' });
     }
 
     // Persistência leve do chat (ChatLog do protótipo)

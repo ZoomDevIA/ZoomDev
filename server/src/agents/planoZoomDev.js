@@ -265,7 +265,7 @@ Regras: prefira fonte primária (IBGE, ministérios, agências, associações se
     effort: 'high',
     maxTokens: 10000,
     maxBuscas: 6,
-    modelo: config.modelos.pesquisa,
+    papel: 'pesquisa',
   });
 
   aoVivo(buscas);
@@ -278,7 +278,7 @@ Regras: prefira fonte primária (IBGE, ministérios, agências, associações se
     schema: PESQUISA_SCHEMA,
     effort: 'low',
     maxTokens: 8000,
-    modelo: config.modelos.extracao,
+    papel: 'extracao',
   });
 
   return { ...dossie, buscas };
@@ -334,7 +334,7 @@ Dado que veio da pesquisa com fonte e ano é PESQUISA. Estimativa própria é ES
         schema: bloco.schema,
         effort: 'high',
         maxTokens: 16000,
-        modelo: config.modelos.plano,
+        papel: 'plano',
       });
       aoProgredir(bloco.id, { estado: 'ok' });
     } catch (e) {

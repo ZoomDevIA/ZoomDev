@@ -9,8 +9,22 @@ import {
   initPic, picAtual, proporEvolucao, aprovarProposta, rejeitarProposta, rollbackPic,
 } from '../agents/sextaFeira.js';
 import { PICS_AGENTES } from '../protocols/picAgentes.js';
+import { mapaAtual, definirModelo, MODELOS_DISPONIVEIS } from '../services/modelosIA.js';
 
 export const adminRouter = Router();
+
+// ── Modelos de IA por papel: leitura e troca em tempo real ─────────────────
+adminRouter.get('/modelos', (_req, res) => {
+  res.json({ papeis: mapaAtual(), modelos: MODELOS_DISPONIVEIS });
+});
+
+// modelo no corpo = escolher; modelo null/ausente = restaurar o padrão do env
+adminRouter.put('/modelos/:papel', (req, res, next) => {
+  try {
+    const papel = definirModelo(req.params.papel, req.body?.modelo ?? null, { userId: req.user.id });
+    res.json({ papel });
+  } catch (e) { next(e); }
+});
 
 // Visão geral do ecossistema (stats + radar + matriz editais × projetos)
 adminRouter.get('/overview', (_req, res) => {

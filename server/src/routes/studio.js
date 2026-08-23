@@ -143,7 +143,7 @@ Extraia: título curto para o projeto, setor, público-alvo, modelo de receita p
 Em "sinais", devolva de 2 a 4 etiquetas curtas (máximo 3 palavras cada) com o que você já entendeu, cada uma com uma cor em hexadecimal desta paleta: #00e5ff (setor), #00ff64 (bio ou impacto), #ffc531 (modelo de receita), #a855f7 (público), #ff4d8d (território).`,
         schema: PRE_LEITURA_SCHEMA,
         effort: 'low',
-        modelo: config.modelos.extracao,
+        papel: 'extracao',
         maxTokens: 1500,
       });
       res.json(r);
@@ -353,7 +353,7 @@ studioRouter.post('/:id/conversa',
         schema: CONVERSA_SCHEMA,
         effort: podeEditar ? 'high' : 'medium',
         maxTokens: 12000,
-        modelo: config.modelos.codigo,
+        papel: 'codigo',
       });
 
       let novoDocumento = null;
