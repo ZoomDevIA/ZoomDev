@@ -22,20 +22,20 @@ const ORIGENS_LOCAIS = [
 /** Origens que podem chamar a API. Vazio significa "só a própria". */
 // ── Mapa de domínios da plataforma ─────────────────────────────────────────
 // Três endereços, três papéis, decididos pelo fundador:
-//   www.zoomdev.com.br   a vitrine pública, servida por ESTE servidor
-//   zoomdev.io           só redireciona para a vitrine
+//   zoomdev.io           O PRINCIPAL: a vitrine pública, servida por ESTE servidor
+//   zoomdev.com.br       só redireciona para o principal (www e apex)
 //   www.zoomdev.app      o aplicativo (sessão, Google OAuth, SEO do produto)
 //
-// Este middleware cuida do que chega com o host errado: os dois apex
-// canonizam para o www (um endereço só nos cookies, no OAuth e no SEO) e o
-// .io, se estiver apontado para cá, segue para a vitrine. O caminho viaja
-// junto no redirecionamento: quem guardou um link não o perde. Hosts fora do
-// mapa (o domínio da Railway, localhost, testes) passam intocados.
+// Este middleware cuida do que chega com o host errado: o .io canoniza no
+// apex e o .app no www (um endereço só nos cookies, no OAuth e no SEO), e o
+// .com.br inteiro segue para o principal. O caminho viaja junto no
+// redirecionamento: quem guardou um link não o perde. Hosts fora do mapa
+// (o domínio da Railway, localhost, testes) passam intocados.
 const REDIRECIONAMENTOS_DE_HOST = {
-  'zoomdev.io': 'https://www.zoomdev.com.br',
-  'www.zoomdev.io': 'https://www.zoomdev.com.br',
+  'www.zoomdev.io': 'https://zoomdev.io',
   'zoomdev.app': 'https://www.zoomdev.app',
-  'zoomdev.com.br': 'https://www.zoomdev.com.br',
+  'zoomdev.com.br': 'https://zoomdev.io',
+  'www.zoomdev.com.br': 'https://zoomdev.io',
 };
 
 // Na vitrine só vive a parte pública do produto: a home, as páginas legais e
@@ -43,7 +43,7 @@ const REDIRECIONAMENTOS_DE_HOST = {
 // quais essas páginas não existem. Rota de aplicativo pedida por lá segue
 // para o domínio do app, porque sessão e origem registrada no Google moram
 // em um endereço só.
-const HOST_VITRINE = 'www.zoomdev.com.br';
+const HOST_VITRINE = 'zoomdev.io';
 const APP_CANONICO = 'https://www.zoomdev.app';
 const PUBLICO_NA_VITRINE = [/^\/$/, /^\/p\//, /^\/termos$/, /^\/privacidade$/, /^\/api\//, /^\/assets\//];
 

@@ -77,7 +77,7 @@ test('rotas ponta a ponta', async (t) => {
     assert.equal(r.status, 400);
   });
 
-  await t.test('domínios: o apex do app canoniza e o .io vai para o site', async () => {
+  await t.test('domínios: .io é o principal, .com.br redireciona, .app é o app', async () => {
     // fetch não deixa forjar o Host, então aqui é http puro de propósito.
     const http = await import('node:http');
     const pedirComHost = (host, caminho) => new Promise((ok, erro) => {
@@ -87,41 +87,43 @@ test('rotas ponta a ponta', async (t) => {
       ).on('error', erro).end();
     });
 
-    const io = await pedirComHost('zoomdev.io', '/precos');
-    assert.equal(io.status, 301);
-    assert.equal(io.location, 'https://www.zoomdev.com.br/precos');
+    // O principal: o público da vitrine é servido aqui mesmo…
+    const vitrineApi = await pedirComHost('zoomdev.io', '/api/health');
+    assert.equal(vitrineApi.status, 200);
+    const vitrinePassaporte = await pedirComHost('zoomdev.io', '/api/publico/passaporte/AP-0042');
+    assert.equal(vitrinePassaporte.status, 200);
 
-    const ioWww = await pedirComHost('www.zoomdev.io', '/');
-    assert.equal(ioWww.location, 'https://www.zoomdev.com.br/');
+    // …rota de aplicativo pedida por lá segue para o domínio do app…
+    const vitrineApp = await pedirComHost('zoomdev.io', '/territorio');
+    assert.equal(vitrineApp.status, 301);
+    assert.equal(vitrineApp.location, 'https://www.zoomdev.app/territorio');
+    const vitrineEntrar = await pedirComHost('zoomdev.io', '/entrar?modo=cadastro');
+    assert.equal(vitrineEntrar.status, 301);
+    assert.equal(vitrineEntrar.location, 'https://www.zoomdev.app/entrar?modo=cadastro');
 
+    // …e o www do .io canoniza no apex.
+    const ioWww = await pedirComHost('www.zoomdev.io', '/p/AP-0042');
+    assert.equal(ioWww.status, 301);
+    assert.equal(ioWww.location, 'https://zoomdev.io/p/AP-0042');
+
+    // O .com.br inteiro segue para o principal, preservando o caminho.
+    const brWww = await pedirComHost('www.zoomdev.com.br', '/precos?origem=cartao');
+    assert.equal(brWww.status, 301);
+    assert.equal(brWww.location, 'https://zoomdev.io/precos?origem=cartao');
+    const brApex = await pedirComHost('zoomdev.com.br', '/');
+    assert.equal(brApex.status, 301);
+    assert.equal(brApex.location, 'https://zoomdev.io/');
+
+    // O apex do app canoniza no www.
     const apex = await pedirComHost('zoomdev.app', '/login?modo=cadastro');
     assert.equal(apex.status, 301);
     assert.equal(apex.location, 'https://www.zoomdev.app/login?modo=cadastro');
 
-    // O host canônico e os hosts fora do mapa não são tocados
+    // O host canônico do app e os hosts fora do mapa não são tocados.
     const canonico = await pedirComHost('www.zoomdev.app', '/api/health');
     assert.equal(canonico.status, 200);
     const railway = await pedirComHost('zoomdev-producao.up.railway.app', '/api/health');
     assert.equal(railway.status, 200);
-
-    // A vitrine: o apex .com.br canoniza para o www…
-    const apexBr = await pedirComHost('zoomdev.com.br', '/');
-    assert.equal(apexBr.status, 301);
-    assert.equal(apexBr.location, 'https://www.zoomdev.com.br/');
-
-    // …o público dela é servido aqui mesmo (API, home, passaporte)…
-    const vitrineApi = await pedirComHost('www.zoomdev.com.br', '/api/health');
-    assert.equal(vitrineApi.status, 200);
-    const vitrinePassaporte = await pedirComHost('www.zoomdev.com.br', '/api/publico/passaporte/AP-0042');
-    assert.equal(vitrinePassaporte.status, 200);
-
-    // …e rota de aplicativo pedida por lá segue para o domínio do app.
-    const vitrineApp = await pedirComHost('www.zoomdev.com.br', '/territorio');
-    assert.equal(vitrineApp.status, 301);
-    assert.equal(vitrineApp.location, 'https://www.zoomdev.app/territorio');
-    const vitrineEntrar = await pedirComHost('www.zoomdev.com.br', '/entrar?modo=cadastro');
-    assert.equal(vitrineEntrar.status, 301);
-    assert.equal(vitrineEntrar.location, 'https://www.zoomdev.app/entrar?modo=cadastro');
   });
 
   await t.test('sem GOOGLE_CLIENT_ID o login com google se declara desligado', async () => {

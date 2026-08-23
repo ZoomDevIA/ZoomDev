@@ -30,7 +30,7 @@ import { Painel, Rotulo, Etiqueta, Botao, Estatistica } from '../components/hud/
 
 const RASCUNHO = CHAVE_RASCUNHO;
 
-// Na vitrine (www.zoomdev.com.br) os pontos de entrada do app são URLs
+// Na vitrine (zoomdev.io) os pontos de entrada do app são URLs
 // absolutas para o domínio canônico, onde vivem a sessão e o Google OAuth;
 // servido pelo próprio app, o mesmo ponto é rota interna do SPA.
 function LinkEntrar({ para, className, children }) {

@@ -14,7 +14,7 @@ export default function Login() {
   // ideia guardada: depois de entrar, a Home retoma o rascunho sozinha.
   const veioDaIdeacao = params.get('proximo') === 'construir';
 
-  // Quem partiu da vitrine (www.zoomdev.com.br) trouxe o rascunho na URL,
+  // Quem partiu da vitrine (zoomdev.io) trouxe o rascunho na URL,
   // porque sessionStorage não atravessa domínios. Replantado aqui, o resto do
   // caminho é idêntico ao de quem escreveu a ideia deste lado.
   useEffect(() => {

@@ -1,7 +1,8 @@
 // ── Papéis dos domínios, vistos do navegador ────────────────────────────────
 // O mesmo pacote é servido em dois endereços com papéis diferentes:
-//   www.zoomdev.com.br   vitrine pública (home, legais, passaporte de lote)
+//   zoomdev.io           o principal: vitrine pública (home, legais, passaporte)
 //   www.zoomdev.app      o aplicativo (sessão, Google OAuth, tudo logado)
+// (o zoomdev.com.br não chega aqui: o servidor o redireciona ao principal)
 // Quando o SPA percebe que foi servido pela vitrine, todo ponto de entrada do
 // app vira URL absoluta para o domínio canônico: sessão e origem registrada
 // no Google só existem lá. Em qualquer outro host (o app, a Railway,
@@ -15,8 +16,10 @@ export const APP_URL = 'https://www.zoomdev.app';
 export const CHAVE_RASCUNHO = 'zd_rascunho_ideia';
 
 export function emVitrine() {
+  // O .com.br fica na lista por segurança: se algum dia voltar a ser servido
+  // em vez de redirecionado, os pontos de entrada continuam apontando certo.
   return typeof window !== 'undefined'
-    && /(^|\.)zoomdev\.com\.br$/.test(window.location.hostname);
+    && /(^|\.)(zoomdev\.io|zoomdev\.com\.br)$/.test(window.location.hostname);
 }
 
 export function urlDoApp(caminho) {
