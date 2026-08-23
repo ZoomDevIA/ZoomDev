@@ -222,6 +222,7 @@ Dê seu parecer ESTRITAMENTE sob a sua especialidade: não invada a área dos ou
       schema: PARECER_SCHEMA,
       effort: 'medium',
       maxTokens: 2000,
+      modelo: config.modelos.chat,
     });
   } catch {
     return parecerDemo(agente, ctx);

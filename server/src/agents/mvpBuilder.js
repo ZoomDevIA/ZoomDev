@@ -609,6 +609,7 @@ decidido aqui precisa caber nessas regras.`,
     schema: DESIGN_SCHEMA,
     effort: 'high',
     maxTokens: 10000,
+    modelo: config.modelos.codigo,
   });
 }
 
@@ -710,6 +711,7 @@ ${jaGerado.identidade ? `\nO styles.css já foi escrito e define estas classes, 
     schema: ARQUIVO_SCHEMA,
     effort: 'medium',
     maxTokens: 16000,
+    modelo: config.modelos.codigo,
   });
   return { arquivo: peca.arquivo, conteudo: r.conteudo };
 }

@@ -266,12 +266,12 @@ export async function chatAdmin(mensagens) {
 
   const system = renderSystemPromptSextaFeira(picAtual().conteudo, snapshotTexto(s));
   try {
-    const { texto, buscas } = await conversarComInternet({ system, messages: historico, effort: 'high', maxTokens: 8000 });
+    const { texto, buscas } = await conversarComInternet({ system, messages: historico, effort: 'high', maxTokens: 8000, modelo: config.modelos.pesquisa });
     return { resposta: texto, buscas, modo: 'ia+internet' };
   } catch (e) {
     if (e.code === 'REFUSAL') throw e;
     try {
-      const texto = await conversar({ system, messages: historico, effort: 'high', maxTokens: 6000 });
+      const texto = await conversar({ system, messages: historico, effort: 'high', maxTokens: 6000, modelo: config.modelos.chat });
       return { resposta: texto, buscas: 0, modo: 'ia' };
     } catch {
       return { resposta: respostaDemo(historico[historico.length - 1].content, s), buscas: 0, modo: 'demo' };
@@ -313,6 +313,7 @@ export async function gerarRelatorio() {
           additionalProperties: false,
         },
         effort: 'medium', maxTokens: 4000,
+        modelo: config.modelos.chat,
       });
       resumo = r.resumoExecutivo;
       recomendacoes = r.recomendacoes;
@@ -499,6 +500,7 @@ export async function proporEvolucao() {
           additionalProperties: false,
         },
         effort: 'high', maxTokens: 6000,
+        modelo: config.modelos.chat,
       });
     } catch { /* cai no demo */ }
   }
