@@ -134,7 +134,12 @@ export default function Layout({ children }) {
     document.addEventListener('keydown', atalho);
     return () => document.removeEventListener('keydown', atalho);
   }, []);
-  const [recolhido, setRecolhido] = useState(() => {
+  // A PREFERÊNCIA da pessoa sobre o menu. Só muda quando ela clica no botão, e
+  // só ela é gravada. O modo foco recolhe a barra sem tocar aqui: durante meses
+  // o foco escrevia "recolhido" na preferência, e quem visitasse o Território
+  // uma vez encontrava o menu recolhido para sempre, em toda tela e em toda
+  // sessão, sem entender o motivo.
+  const [preferenciaMenu, setPreferenciaMenu] = useState(() => {
     const salvo = localStorage.getItem(CHAVE_RECOLHIDO);
     // Sem preferência salva, tablet começa recolhido e desktop começa aberto.
     if (salvo === null) return window.innerWidth < 1100;
@@ -176,7 +181,10 @@ export default function Layout({ children }) {
   const [pedido, setPedido] = useState(false);
   const [dispensado, setDispensado] = useState(false);
   const [topoAberto, setTopoAberto] = useState(false);
-  const menuAntes = useRef(null);
+  // Estado do menu ENQUANTO o foco está ligado: nasce recolhido a cada entrada
+  // e é descartado na saída. Quem quiser o menu aberto dentro do Território
+  // abre, e isso vale só ali.
+  const [recolhidoNoFoco, setRecolhidoNoFoco] = useState(true);
 
   // No celular o foco não vale: lá o cabeçalho carrega o botão que abre o
   // menu, e a barra lateral já é uma gaveta escondida. Recolher os dois
@@ -197,17 +205,17 @@ export default function Layout({ children }) {
     if (quer) setDispensado(false);
   }, []);
 
-  // Entrar no foco recolhe o menu guardando o que a pessoa tinha; sair devolve.
+  // O menu efetivo: no foco vale o estado temporário, fora dele vale a
+  // preferência. Duas variáveis em vez de uma são o que impede o foco de
+  // sequestrar a escolha da pessoa.
+  const recolhido = foco ? recolhidoNoFoco : preferenciaMenu;
+  const alternarMenu = () => (foco ? setRecolhidoNoFoco(v => !v) : setPreferenciaMenu(v => !v));
+
+  // Cada entrada no foco começa com o chassi recolhido.
   useEffect(() => {
-    if (foco) {
-      if (menuAntes.current === null) menuAntes.current = recolhido;
-      setRecolhido(true);
-    } else if (menuAntes.current !== null) {
-      setRecolhido(menuAntes.current);
-      menuAntes.current = null;
-    }
+    if (foco) setRecolhidoNoFoco(true);
     setTopoAberto(false);
-  }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [foco]);
 
   // O cabeçalho encolhe sem que a janela mude de tamanho, então quem mede a
   // própria altura precisa ser avisado, na entrada e no fim da transição.
@@ -239,7 +247,7 @@ export default function Layout({ children }) {
   ];
 
   useEffect(() => { api.notificacoes().then(setNotificacoes).catch(() => {}); }, []);
-  useEffect(() => { localStorage.setItem(CHAVE_RECOLHIDO, recolhido ? '1' : '0'); }, [recolhido]);
+  useEffect(() => { localStorage.setItem(CHAVE_RECOLHIDO, preferenciaMenu ? '1' : '0'); }, [preferenciaMenu]);
   useEffect(() => {
     const fechar = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) setNotifAbertas(false); };
     document.addEventListener('mousedown', fechar);
@@ -348,7 +356,7 @@ export default function Layout({ children }) {
       {/* Botão de recolher: só existe na barra fixa, não na gaveta do celular */}
       {compacto !== null && (
         <button
-          onClick={() => setRecolhido(v => !v)}
+          onClick={alternarMenu}
           title={recolhido ? 'Expandir menu' : 'Recolher menu'}
           aria-label={recolhido ? 'Expandir menu' : 'Recolher menu'}
           aria-expanded={!recolhido}
