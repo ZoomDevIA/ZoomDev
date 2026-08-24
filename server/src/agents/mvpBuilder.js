@@ -546,16 +546,29 @@ const objeto = (props) => ({
 const DESIGN_SCHEMA = objeto({
   conceito: str,
   personalidade: arrStr,
+  // O elemento que faz este produto ser reconhecível de longe. Sem ele, o MVP
+  // vira "mais um site escuro com cards": correto, competente e esquecível.
+  assinaturaVisual: objeto({ oQueE: str, ondeAparece: str, porQueImporta: str }),
   paleta: objeto({
     fundo: str, superficie: str, marca: str, acento: str,
     texto: str, textoFraco: str, sucesso: str, alerta: str, erro: str,
   }),
+  gradientes: objeto({ marca: str, ambiente: str }),
   contraste: str,
   tipografia: objeto({
     familiaTitulo: str, familiaCorpo: str,
-    escala: str, pesoTitulo: str, alturaLinha: str,
+    escala: str, pesoTitulo: str, alturaLinha: str, entreLetrasTitulo: str,
   }),
-  forma: objeto({ raio: str, densidade: str, sombra: str, borda: str }),
+  forma: objeto({ raio: str, densidade: str, sombra: str, borda: str, escalaEspacamento: str }),
+  vozDaMarca: objeto({ tom: str, exemploTitulo: str, exemploSubtitulo: str, exemploBotao: str }),
+  // Dados fictícios porém plausíveis DO DOMÍNIO, para o painel nascer com
+  // conteúdo de verdade em vez de "Item 1, Item 2, Lorem ipsum".
+  dadosDeExemplo: objeto({
+    entidade: str,
+    colunas: arrStr,
+    linhas: { type: 'array', items: arrStr },
+    metricas: { type: 'array', items: objeto({ rotulo: str, valor: str, variacao: str }) },
+  }),
   arquiteturaInformacao: { type: 'array', items: objeto({ tela: str, objetivo: str, elementos: arrStr }) },
   fluxoPrincipal: { type: 'array', items: objeto({ passo: str, oQueVe: str, oQueFaz: str, comoSabeQueDeuCerto: str }) },
   estados: { type: 'array', items: objeto({ estado: str, comoAparece: str }) },
@@ -578,23 +591,61 @@ personalidade
   (sóbrio ou expressivo, denso ou arejado, técnico ou acolhedor) em vez de pedir
   tudo ao mesmo tempo.
 
+assinaturaVisual
+  O elemento que faz ESTE produto ser reconhecível de longe, e que só faz
+  sentido neste negócio. Numa cooperativa que exporta, é o cartão do lote em
+  trânsito com a temperatura e o nome de quem colheu. Numa clínica, é a linha
+  do tempo do paciente. Diga o que é, onde aparece e por que importa.
+  Sem isso o MVP vira "mais um site escuro com cards": correto e esquecível.
+
 paleta
   Hexadecimais concretos. Tema escuro. A cor de marca precisa conversar com o
   SETOR, não com a moda: saúde não é a mesma coisa que logística, e nenhuma das
   duas é roxo de startup genérica. Diga em "contraste" qual é a razão de
   contraste do texto sobre o fundo e confirme que passa de 4,5:1.
 
+gradientes
+  Dois, escritos como CSS pronto para colar. O de marca (usado em botão
+  principal, texto de destaque e barra de progresso) e o de ambiente (um brilho
+  suave e amplo no fundo da página, que dá profundidade sem chamar atenção).
+  Exemplo de forma: "linear-gradient(135deg,#a855f7,#7c3aed)" e
+  "radial-gradient(ellipse at 75% -10%, rgba(168,85,247,.28), transparent 55%)".
+
 tipografia
   Só fontes de sistema ou seguras na web: não há CDN neste MVP. Diga a escala
-  em números (ex.: 13 / 15 / 20 / 28 / 40) em vez de "hierarquia clara".
+  em números (ex.: 13 / 15 / 20 / 28 / 44 / 56) e inclua um degrau grande de
+  verdade para o título da dobra: hero com fonte de 28px parece formulário.
+  Em "entreLetrasTitulo", o ajuste de espaçamento do título grande (títulos
+  grandes pedem valor negativo, algo como -0.02em).
 
 forma
-  Raio da borda, densidade do espaçamento, uso de sombra e de borda. Coerência
-  aqui é o que faz cinco arquivos parecerem um produto só.
+  Raio da borda, densidade, sombra, borda e a escala de espaçamento em números
+  (ex.: 4 / 8 / 12 / 16 / 24 / 40 / 64). Ritmo de espaçamento é o que separa
+  interface desenhada de interface empilhada.
+
+vozDaMarca
+  Como o produto fala. Dê exemplos REAIS e prontos para usar: um título de
+  dobra, um subtítulo e um rótulo de botão. "Saiba mais" não é rótulo de botão;
+  "Ver o rastreio ao vivo" é.
+
+dadosDeExemplo
+  O painel precisa nascer com conteúdo plausível DO DOMÍNIO. Dê a entidade
+  principal (lote, paciente, pedido, safra), as colunas da tabela, cinco linhas
+  com valores que existiriam mesmo (nomes de pessoas e lugares do território do
+  negócio, unidades corretas) e quatro métricas com rótulo, valor e variação.
+  Nada de "Item 1", "Cliente A", "Lorem ipsum" ou "R$ 0,00".
 
 arquiteturaInformacao
   Landing e aplicação. Para cada tela: o objetivo único dela e os elementos, na
   ordem vertical em que aparecem.
+  A Landing tem que ter densidade de produto comercial: dobra com título
+  grande, subtítulo, dois botões e a assinatura visual ao lado; faixa de
+  números; como funciona em três passos com ícone; a seção que prova (quem
+  ganha o quê); preços; chamada final; rodapé. Landing com três cards e um
+  formulário é folheto, não produto.
+  A Aplicação é um PAINEL: barra lateral de navegação, cabeçalho com saudação e
+  ação principal, quatro cartões de métrica, um gráfico e uma tabela ou lista
+  com os dados de exemplo. Não é uma página com um formulário no meio.
 
 fluxoPrincipal
   Do primeiro clique até o momento em que a pessoa percebe o valor. Cada passo
@@ -638,7 +689,10 @@ framework, sem CDN, sem fonte externa, sem imagem hospedada. Tudo que for
 decidido aqui precisa caber nessas regras.`,
     schema: DESIGN_SCHEMA,
     effort: 'high',
-    maxTokens: 10000,
+    // A direção ficou maior (assinatura visual, gradientes, voz e dados de
+    // exemplo) e é o alicerce de tudo o que vem depois: truncá-la é perder o
+    // MVP inteiro para o gerador determinístico.
+    maxTokens: 24000,
     papel: 'codigo',
   });
 }
@@ -649,17 +703,51 @@ function designPadrao(ctx) {
   return {
     conceito: `Painel direto ao ponto para ${ctx.publico}: abrir, ver o que mudou e agir sem treinamento.`,
     personalidade: ['sóbrio', 'denso', 'técnico', 'sem cerimônia'],
+    assinaturaVisual: {
+      oQueE: `Cartão vivo do registro mais recente de ${ctx.nome}, com estado e horário`,
+      ondeAparece: 'ao lado do título na dobra da landing e no topo do painel',
+      porQueImporta: 'mostra o produto funcionando antes de qualquer explicação',
+    },
     paleta: {
       fundo: '#06140d', superficie: '#0b1f16', marca, acento: '#ffc531',
       texto: '#dff6ec', textoFraco: '#9fb8ad', sucesso: '#00ff64', alerta: '#ffc531', erro: '#ff4d8d',
+    },
+    gradientes: {
+      marca: `linear-gradient(135deg, ${marca}, ${ctx.corApoio})`,
+      ambiente: `radial-gradient(ellipse at 78% -12%, ${marca}22, transparent 55%)`,
     },
     contraste: 'Texto #dff6ec sobre fundo #06140d passa de 13:1, bem acima do mínimo de 4,5:1.',
     tipografia: {
       familiaTitulo: 'system-ui, -apple-system, Segoe UI, sans-serif',
       familiaCorpo: 'system-ui, -apple-system, Segoe UI, sans-serif',
-      escala: '13 / 15 / 20 / 28 / 40', pesoTitulo: '700', alturaLinha: '1.55',
+      escala: '13 / 15 / 20 / 28 / 44 / 56', pesoTitulo: '800', alturaLinha: '1.55',
+      entreLetrasTitulo: '-0.02em',
     },
-    forma: { raio: '0 (cantos retos)', densidade: 'compacta, base de 8px', sombra: 'só em elemento flutuante', borda: '1px sólida a 12% de opacidade' },
+    forma: {
+      raio: '14px', densidade: 'compacta, base de 8px', sombra: 'só em elemento flutuante',
+      borda: '1px sólida a 12% de opacidade', escalaEspacamento: '4 / 8 / 12 / 16 / 24 / 40 / 64',
+    },
+    vozDaMarca: {
+      tom: 'direto, concreto, sem adjetivo de folheto',
+      exemploTitulo: ctx.proposta?.slice(0, 90) || ctx.nome,
+      exemploSubtitulo: ctx.descricao?.slice(0, 140) || '',
+      exemploBotao: 'Começar agora',
+    },
+    dadosDeExemplo: {
+      entidade: 'Registro',
+      colunas: ['Registro', 'Responsável', 'Quando', 'Situação'],
+      linhas: [
+        ['#0001', 'Equipe', 'hoje', 'concluído'],
+        ['#0002', 'Equipe', 'ontem', 'em andamento'],
+        ['#0003', 'Equipe', 'esta semana', 'aguardando'],
+      ],
+      metricas: [
+        { rotulo: 'Registros no mês', valor: '128', variacao: '+12%' },
+        { rotulo: 'Em andamento', valor: '7', variacao: 'estável' },
+        { rotulo: 'Concluídos', valor: '121', variacao: '+9%' },
+        { rotulo: 'Tempo médio', valor: '2,4 dias', variacao: '-8%' },
+      ],
+    },
     arquiteturaInformacao: [
       { tela: 'Landing', objetivo: 'Fazer entrar na lista de espera', elementos: ['cabeçalho', 'proposta de valor', 'problema', 'solução', 'preço', 'formulário'] },
       { tela: 'Aplicação', objetivo: 'Registrar e acompanhar', elementos: ['menu lateral', 'métricas', 'formulário', 'tabela'] },
@@ -686,12 +774,22 @@ function resumirDesign(d) {
   const p = d.paleta || {};
   const t = d.tipografia || {};
   const f = d.forma || {};
+  const g = d.gradientes || {};
+  const v = d.vozDaMarca || {};
+  const a = d.assinaturaVisual || {};
+  const ex = d.dadosDeExemplo || {};
   return `DIREÇÃO DE DESIGN (obedeça a ela, não invente outra)
 Conceito: ${d.conceito}
 Personalidade: ${(d.personalidade || []).join(', ')}
+Assinatura visual: ${a.oQueE || '—'} — aparece em ${a.ondeAparece || '—'} (${a.porQueImporta || ''})
 Paleta: fundo ${p.fundo} · superfície ${p.superficie} · marca ${p.marca} · acento ${p.acento} · texto ${p.texto} · texto fraco ${p.textoFraco} · sucesso ${p.sucesso} · alerta ${p.alerta} · erro ${p.erro}
-Tipografia: título ${t.familiaTitulo}, corpo ${t.familiaCorpo}, escala ${t.escala}, peso do título ${t.pesoTitulo}, altura de linha ${t.alturaLinha}
-Forma: raio ${f.raio} · densidade ${f.densidade} · sombra ${f.sombra} · borda ${f.borda}
+Gradientes: marca ${g.marca || '—'} · ambiente ${g.ambiente || '—'}
+Tipografia: título ${t.familiaTitulo}, corpo ${t.familiaCorpo}, escala ${t.escala}, peso do título ${t.pesoTitulo}, altura de linha ${t.alturaLinha}, espaçamento entre letras do título ${t.entreLetrasTitulo || 'normal'}
+Forma: raio ${f.raio} · densidade ${f.densidade} · sombra ${f.sombra} · borda ${f.borda} · escala de espaçamento ${f.escalaEspacamento || '4/8/16/24/40'}
+Voz: ${v.tom || '—'} | título de exemplo: "${v.exemploTitulo || ''}" | subtítulo: "${v.exemploSubtitulo || ''}" | botão: "${v.exemploBotao || ''}"
+Dados de exemplo (${ex.entidade || 'registros'}): colunas ${(ex.colunas || []).join(' | ')}
+${(ex.linhas || []).map(l => `  · ${(l || []).join(' | ')}`).join('\n')}
+Métricas do painel: ${(ex.metricas || []).map(m => `${m.rotulo} = ${m.valor} (${m.variacao})`).join(' · ')}
 Telas: ${(d.arquiteturaInformacao || []).map(a => `${a.tela} (${a.objetivo}): ${(a.elementos || []).join(', ')}`).join(' | ')}
 Fluxo: ${(d.fluxoPrincipal || []).map(x => `${x.passo}: vê ${x.oQueVe}, faz ${x.oQueFaz}, confirma por ${x.comoSabeQueDeuCerto}`).join(' | ')}
 Estados obrigatórios: ${(d.estados || []).map(e => `${e.estado} (${e.comoAparece})`).join(' | ')}
@@ -708,6 +806,55 @@ const ARQUIVO_SCHEMA = {
   additionalProperties: false,
 };
 
+/**
+ * Tira a cerca de markdown que às vezes escapa, mesmo com a instrução.
+ * Um arquivo que começa com ``` quebra o CSS inteiro e o HTML inteiro.
+ */
+function limparCercas(texto) {
+  const t = String(texto || '').trim();
+  if (!t.startsWith('```')) return t;
+  return t.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/, '').trim();
+}
+
+/**
+ * O arquivo devolvido é utilizável?
+ *
+ * Antes desta conferência, qualquer string contava como sucesso: uma resposta
+ * vazia, um CSS cortado no meio de uma regra ou um HTML sem <html> eram
+ * marcados como "concluído" e iam para dentro do ZIP do fundador. Devolve a
+ * descrição do problema, ou `null` quando o arquivo passa.
+ */
+function conferirPeca(peca, bruto) {
+  const t = limparCercas(bruto);
+  if (!t) return 'o arquivo voltou vazio';
+
+  const minimos = { identidade: 1200, landing: 1500, app: 1200, logica: 700, entrega: 400 };
+  if (t.length < (minimos[peca.id] || 400)) {
+    return `o arquivo tem só ${t.length} caracteres, curto demais para ${peca.arquivo}`;
+  }
+
+  if (peca.arquivo.endsWith('.html')) {
+    if (!/<html[\s>]/i.test(t) || !/<\/html>/i.test(t)) return 'o HTML não está inteiro (falta <html> ou </html>)';
+    if (!/<\/body>/i.test(t)) return 'o HTML foi cortado antes de fechar o corpo';
+  }
+  if (peca.arquivo.endsWith('.css')) {
+    if (!/:root\s*\{/.test(t)) return 'o CSS não declara as variáveis da paleta em :root';
+    // Chaves desbalanceadas denunciam corte no meio de uma regra.
+    const abre = (t.match(/\{/g) || []).length;
+    const fecha = (t.match(/\}/g) || []).length;
+    if (abre !== fecha) return `o CSS foi cortado no meio (${abre} chaves abertas para ${fecha} fechadas)`;
+  }
+  if (peca.arquivo.endsWith('.js')) {
+    const abre = (t.match(/\{/g) || []).length;
+    const fecha = (t.match(/\}/g) || []).length;
+    if (abre !== fecha) return `o JavaScript foi cortado no meio (${abre} chaves abertas para ${fecha} fechadas)`;
+  }
+  if (/\bTODO\b|Lorem ipsum|SEU_TEXTO|placeholder aqui/i.test(t)) {
+    return 'o arquivo contém marcador de pendência ou texto de preenchimento';
+  }
+  return null;
+}
+
 async function gerarPecaIA(peca, ctx, jaGerado, design) {
   const base = `PROJETO: ${ctx.nome} (${ctx.bio ? 'biostartup' : 'startup'}, ${ctx.vertical})
 PROPOSTA DE VALOR: ${ctx.proposta}
@@ -719,31 +866,110 @@ ESCOPO DO MVP: ${lista(ctx.mvpEscopo, ['–']).join(' · ')}
 ${ctx.impacto ? `IMPACTO: ${ctx.impacto}` : ''}`;
 
   const instrucoes = {
-    identidade: 'Escreva o arquivo styles.css completo, implementando a direção de design acima: variáveis CSS com a paleta exata, reset, a escala tipográfica declarada, botões (com estado de foco visível e de desabilitado), cards, grid responsivo, formulários com rótulo, tabela, shell de aplicação com barra lateral, e as classes dos estados vazio, carregando, erro e sucesso. Nenhuma cor fora da paleta.',
-    landing: 'Escreva o index.html completo, seguindo a arquitetura de informação da tela de Landing na ordem declarada. HTML semântico, um h1 só, todo campo com <label>, e o fluxo principal precisa terminar no sinal de confirmação descrito. Use apenas as classes do styles.css.',
-    app: 'Escreva o app.html completo, seguindo a arquitetura de informação da tela de Aplicação. Deve incluir o estado VAZIO desenhado no HTML, porque é o primeiro estado que qualquer pessoa vê. Deve parecer o produto real descrito no plano, não um esqueleto.',
-    logica: 'Escreva o app.js completo em JavaScript puro (sem frameworks): captura do formulário da landing, CRUD de registros no localStorage, cálculo das métricas, renderização da tabela e a troca entre os estados vazio, carregando, erro e sucesso conforme a direção de design. Código limpo, comentado em pt-BR, IIFE, sem dependências.',
-    entrega: 'Escreva o README.md: o que é, como rodar, como publicar (Netlify/Vercel/GitHub Pages), estrutura dos arquivos, a direção de design em uma seção curta (conceito, paleta e o que não fazer), onde trocar localStorage por API, escopo desta versão e próximos passos de validação.',
+    identidade: `Escreva o arquivo styles.css completo, implementando a direção acima.
+Obrigatório: variáveis CSS com a paleta e os dois gradientes exatos; reset;
+a escala tipográfica e a de espaçamento declaradas como variáveis; botão
+principal com o gradiente da marca e sombra colorida suave, botão secundário
+com borda; cartão de superfície; grade responsiva; formulário com rótulo,
+foco visível e estado de erro; tabela com cabeçalho discreto e linha em
+destaque no ponteiro; casca de aplicação com barra lateral de navegação e
+estado ativo; cartão de métrica; e as classes dos estados vazio, carregando,
+erro e sucesso. Inclua as transições curtas das microinterações e um
+@media para telas estreitas em que a barra lateral vira barra inferior.
+Nenhuma cor fora da paleta. Nenhuma fonte externa.`,
+    landing: `Escreva o index.html completo, na ordem da arquitetura de informação da
+Landing, com densidade de produto comercial: dobra com título grande (o degrau
+maior da escala), subtítulo, dois botões e a ASSINATURA VISUAL ao lado ou
+abaixo; faixa de números; como funciona em três passos, cada um com um ícone
+SVG desenhado por você em traço (24x24, stroke currentColor, sem biblioteca);
+a seção que prova o valor; preços com um plano em destaque; chamada final;
+rodapé com os dados do negócio.
+Todo texto sai do PLANO acima e da voz da marca: nada de "Lorem ipsum", nada
+de "Seu texto aqui", nada de benefício genérico. HTML semântico, um h1 só,
+todo campo com <label>, e o fluxo principal termina no sinal de confirmação
+descrito. Use as classes do styles.css.`,
+    app: `Escreva o app.html completo: um PAINEL de produto, não uma página com
+formulário. Barra lateral com a navegação do domínio (as seções que este
+negócio realmente tem), cabeçalho com saudação e a ação principal, quatro
+cartões de métrica usando os DADOS DE EXEMPLO da direção, um gráfico em SVG
+puro desenhado por você (linha ou barras, com rótulos de eixo), e a tabela ou
+lista com as colunas e linhas de exemplo. Inclua também o estado VAZIO
+desenhado no HTML, dentro de um bloco escondido que a lógica mostra quando não
+houver registro. Ícones em SVG inline. Parece o produto do plano, com nomes,
+unidades e valores do domínio.`,
+    logica: `Escreva o app.js completo em JavaScript puro (sem framework, sem import):
+captura do formulário da landing com validação e mensagem de sucesso; CRUD dos
+registros em localStorage semeado com os DADOS DE EXEMPLO na primeira visita;
+cálculo das métricas a partir dos registros; renderização da tabela e do
+gráfico; troca entre os estados vazio, carregando, erro e sucesso; e as
+microinterações declaradas. Código limpo, comentado em pt-BR, dentro de uma
+IIFE, sem dependências e sem quebrar se um elemento não existir na página.`,
+    entrega: `Escreva o README.md: o que é, como rodar, como publicar (Netlify, Vercel,
+GitHub Pages), estrutura dos arquivos, a direção de design em uma seção curta
+(conceito, paleta, assinatura visual e o que não fazer), onde trocar
+localStorage por API, escopo desta versão e próximos passos de validação.`,
   };
 
-  const r = await structured({
-    system: `Você é o Dev Master da ZoomDev OS, engenheiro de produto sênior. Você escreve MVPs que FUNCIONAM: código real, sem placeholder, sem "TODO", sem dependência externa. O usuário vai abrir o arquivo no navegador e usar.
-Regras: HTML/CSS/JS puro, sem CDN, sem framework, sem import externo. Responsivo. Texto da interface em pt-BR.
-A direção de design não é sugestão: ela já foi decidida e este arquivo a implementa. Cor, fonte, espaçamento e estados vêm de lá.
-Retorne APENAS o conteúdo do arquivo, sem cercas de markdown e sem explicação.`,
+  // Cada arquivo tem um orçamento próprio. O antigo teto único de 16 mil
+  // tokens não cobria um CSS completo escapado como string JSON mais o
+  // raciocínio do modelo: a resposta era cortada, virava erro de truncamento e
+  // caía em silêncio no gerador determinístico. Era essa a origem do "↩" que
+  // aparecia nas peças grandes.
+  const ORCAMENTO = { identidade: 40000, landing: 40000, app: 40000, logica: 32000, entrega: 12000 };
+
+  const manual = `Você é o Dev Master da ZoomDev OS: engenheiro de produto sênior e
+front-end de altíssimo nível. Você escreve MVPs que FUNCIONAM e que PARECEM
+produto de verdade, do tipo que um fundador mostra sem pedir desculpas.
+
+REGRAS TÉCNICAS
+- HTML, CSS e JavaScript puros. Sem CDN, sem framework, sem import externo,
+  sem fonte hospedada, sem imagem remota. Ícone é SVG inline desenhado por você.
+- Responsivo de verdade, testado mentalmente em 360px de largura.
+- Acessível: foco visível, contraste da direção, rótulo em todo campo, alvo de
+  toque de 44px, e cor nunca é o único sinal.
+- Texto da interface em pt-BR.
+
+O QUE SEPARA UM MVP ESPETACULAR DE UM GENÉRICO
+- Hierarquia: um título grande de verdade na dobra, e um só. O resto desce.
+- Ritmo: espaçamento pela escala declarada, nunca valores avulsos.
+- Profundidade: o gradiente de ambiente no fundo da página e a sombra colorida
+  suave apenas no botão principal e no elemento da assinatura visual.
+- Conteúdo real: cada frase sai do plano do negócio. Texto genérico é o que
+  faz um MVP parecer maquete.
+- Densidade: seções com propósito, não cinco cards vazios em fila.
+- Micro-interações discretas: transição de 150 a 200ms, realce no ponteiro,
+  confirmação depois de agir.
+
+A direção de design não é sugestão: ela já foi decidida e este arquivo a
+implementa. Cor, gradiente, fonte, espaçamento, voz e estados vêm de lá.
+
+Retorne APENAS o conteúdo do arquivo, sem cercas de markdown e sem explicação.`;
+
+  const pedir = async (reforco = '') => structured({
+    system: manual,
     user: `${base}
 
 ${resumirDesign(design)}
 
 ARQUIVO A ESCREVER: ${peca.arquivo}
 ${instrucoes[peca.id]}
-${jaGerado.identidade ? `\nO styles.css já foi escrito e define estas classes, REUTILIZE-AS, não invente novas:\n${jaGerado.identidade.conteudo.match(/^\.[a-z-]+/gm)?.slice(0, 40).join(' ') || ''}` : ''}`,
+${jaGerado.identidade ? `\nO styles.css já foi escrito e define estas classes, REUTILIZE-AS, não invente novas:\n${jaGerado.identidade.conteudo.match(/^\.[a-z-]+/gm)?.slice(0, 60).join(' ') || ''}` : ''}${reforco}`,
     schema: ARQUIVO_SCHEMA,
     effort: 'medium',
-    maxTokens: 16000,
+    maxTokens: ORCAMENTO[peca.id] || 24000,
     papel: 'codigo',
   });
-  return { arquivo: peca.arquivo, conteudo: r.conteudo };
+
+  let r = await pedir();
+  let problema = conferirPeca(peca, r?.conteudo);
+  if (problema) {
+    // Uma segunda chance com o defeito nomeado custa muito menos que entregar
+    // ao fundador um arquivo pela metade marcado como sucesso.
+    r = await pedir(`\n\nATENÇÃO: a tentativa anterior foi recusada porque ${problema}. Escreva o arquivo inteiro, do começo ao fim, sem cortar.`);
+    problema = conferirPeca(peca, r?.conteudo);
+    if (problema) throw Object.assign(new Error(`${peca.arquivo}: ${problema}`), { code: 'PECA_INVALIDA' });
+  }
+  return { arquivo: peca.arquivo, conteudo: limparCercas(r.conteudo) };
 }
 
 /**
@@ -813,7 +1039,10 @@ export async function construirMvp(projeto, onProgress = () => {}) {
       gerado[p.id] = await gerarPecaIA(p, ctx, gerado, design);
       onProgress(p.id, 'concluido', p.arquivo);
     } catch (e) {
-      // Falha em uma peça não derruba o MVP: entra a versão determinística
+      // Falha em uma peça não derruba o MVP: entra a versão determinística.
+      // O motivo vai para o log porque, antes disso, a queda de qualidade era
+      // invisível: o único sinal era um "↩" na tela, sem explicação nenhuma.
+      console.warn(`mvp: peça "${p.id}" caiu no gerador determinístico (${e.code || 'erro'}): ${e.message}`);
       gerado[p.id] = demo[p.id];
       onProgress(p.id, 'fallback', p.arquivo);
     }
@@ -824,4 +1053,4 @@ export async function construirMvp(projeto, onProgress = () => {}) {
 // Exposto para os testes: a correspondência entre o que os agentes escrevem e
 // o que o construtor lê é a peça mais frágil deste arquivo, e a única cujo
 // defeito não aparece como erro, só como MVP genérico.
-export const _interno = { contexto };
+export const _interno = { contexto, conferirPeca, limparCercas, designPadrao, resumirDesign };

@@ -119,3 +119,63 @@ test('mvp builder: o plano do fundador chega inteiro ao construtor', async (t) =
     assert.equal(cru.modelo, 'Assinatura mensal');
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// A conferência de cada peça escrita pela IA.
+//
+// Antes dela, qualquer string contava como sucesso: um CSS cortado no meio de
+// uma regra, um HTML sem fechar o corpo ou uma resposta vazia iam para dentro
+// do ZIP do fundador marcados como "concluído".
+// ═══════════════════════════════════════════════════════════════════════════
+const CSS = { id: 'identidade', arquivo: 'styles.css' };
+const HTML = { id: 'landing', arquivo: 'index.html' };
+const JS = { id: 'logica', arquivo: 'app.js' };
+
+const cssBom = `:root{--brand:#00ff64;--bg:#06140d;--text:#dff6ec}\n${'.classe{color:var(--text);padding:16px}\n'.repeat(60)}`;
+const htmlBom = `<!doctype html><html lang="pt-BR"><head><title>Cunani</title></head><body>${'<section class="bloco"><h2>Rastreio do lote</h2><p>Conteúdo real do plano.</p></section>'.repeat(20)}</body></html>`;
+
+test('mvp builder: nenhuma peça quebrada passa por concluída', async (t) => {
+  const { conferirPeca, limparCercas } = _interno;
+
+  await t.test('arquivos íntegros passam', () => {
+    assert.equal(conferirPeca(CSS, cssBom), null);
+    assert.equal(conferirPeca(HTML, htmlBom), null);
+  });
+
+  await t.test('resposta vazia é recusada', () => {
+    assert.match(conferirPeca(CSS, ''), /vazio/);
+    assert.match(conferirPeca(CSS, null), /vazio/);
+  });
+
+  await t.test('arquivo curto demais é recusado', () => {
+    assert.match(conferirPeca(CSS, ':root{--brand:#000}'), /curto demais/);
+  });
+
+  await t.test('CSS cortado no meio de uma regra é pego pelas chaves', () => {
+    assert.match(conferirPeca(CSS, `${cssBom}\n.cortada{color:red;`), /cortado no meio/);
+  });
+
+  await t.test('CSS sem as variáveis da paleta é recusado', () => {
+    assert.match(conferirPeca(CSS, '.a{color:red}'.repeat(200)), /variáveis da paleta/);
+  });
+
+  await t.test('HTML sem fechar o corpo é recusado', () => {
+    const cortado = htmlBom.replace('</body></html>', '');
+    assert.match(conferirPeca(HTML, cortado), /não está inteiro|cortado antes de fechar/);
+  });
+
+  await t.test('JavaScript cortado é pego', () => {
+    assert.match(conferirPeca(JS, `${'function a(){ return 1; }\n'.repeat(40)}function b(){`), /cortado no meio/);
+  });
+
+  await t.test('marcador de pendência ou texto de preenchimento é recusado', () => {
+    assert.match(conferirPeca(HTML, htmlBom.replace('Conteúdo real do plano.', 'Lorem ipsum dolor sit amet')), /preenchimento/);
+  });
+
+  await t.test('a cerca de markdown é retirada antes de tudo', () => {
+    assert.equal(limparCercas('```css\n:root{--a:1}\n```'), ':root{--a:1}');
+    assert.equal(limparCercas('  já limpo  '), 'já limpo');
+    // Com a cerca, o arquivo continua válido: ela é removida, não recusada
+    assert.equal(conferirPeca(CSS, `\`\`\`css\n${cssBom}\n\`\`\``), null);
+  });
+});
