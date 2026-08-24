@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// PLANO DE NEGÓCIOS ZOOMDEV — a metodologia da casa em quatorze seções.
+// PLANO DE NEGÓCIOS ZOOMDEV — a metodologia da casa em dezessete seções.
 //
 // Um plano de negócios genérico é um texto que ninguém lê duas vezes. O que
 // diferencia este é que cada seção usa um instrumento consagrado em vez de
@@ -9,16 +9,19 @@
 //    2  O problema (JTBD)              a tarefa que o cliente contrata
 //    3  Solução e proposta de valor    o que muda para ele
 //    4  Lean Canvas                    o negócio num quadro só
-//    5  Mercado TAM/SAM/SOM            de cima para baixo E de baixo para cima
+//    5  Mercado e "por que agora"      TAM/SAM/SOM nos dois sentidos
 //    6  Cliente: personas              quem sente a dor e quem assina
 //    7  Concorrência e Oceano Azul     matriz ERRC
-//    8  Modelo de negócio e preço      como entra dinheiro
-//    9  Economia unitária              CAC, LTV, payback, margem
-//   10  Go-to-market (Bullseye)        dezenove canais, três testes, um foco
-//   11  Produto e roadmap              o que se constrói e em que ordem
-//   12  Métrica-Norte e OKR            o número único e as metas do trimestre
-//   13  Impacto: ODS e GHG             onde o negócio toca o mundo
-//   14  Financeiro, riscos e o pedido  números, o que pode dar errado, o ask
+//    8  Fosso competitivo              o que se acumula e defende com o tempo
+//    9  Modelo de negócio e preço      como entra dinheiro
+//   10  Economia unitária              CAC, LTV, payback, margem
+//   11  Go-to-market (Bullseye)        dezenove canais, três testes, um foco
+//   12  Produto e roadmap              o que se constrói e em que ordem
+//   13  Métrica-Norte e OKR            o número único e as metas do trimestre
+//   14  A hipótese mais arriscada      a crença frágil virada experimento
+//   15  Impacto: ODS e GHG             onde o negócio toca o mundo
+//   16  Time                           quem falta, em que mês, por quanto
+//   17  Financeiro, riscos e o pedido  cenários com gatilho, comparáveis, ask
 //
 // A GERAÇÃO ACONTECE EM DUAS ONDAS. A primeira é uma pesquisa real na
 // internet: mercado, concorrentes, regulação e o contexto do território
@@ -126,14 +129,22 @@ const BLOCOS = [
         novaCurva: str,
       }),
       barreirasDeEntrada: arrStr,
-      regulacao: lista({ norma: str, orgao: str, exigencia: str, prazo: str }),
+      regulacao: lista({ norma: str, orgao: str, exigencia: str, prazo: str, custoEstimado: str }),
+      // A pergunta que separa boa ideia de boa oportunidade, e que todo
+      // investidor faz nos primeiros cinco minutos.
+      porQueAgora: obj({ oQueMudou: str, quando: str, janela: str, fonte: str, selo }),
+      // O "EXIT" do IDEA TO EXIT deixa de ser slogan: quem comprou empresa
+      // parecida, por quanto, e o que isso diz sobre o teto deste negócio.
+      comparaveisDeSaida: lista({ empresa: str, comprador: str, valor: str, ano: str, porQueSeParece: str, fonte: str }),
     }),
     encomenda: `Escreva as seções de MERCADO.
 - TAM, SAM e SOM com o CÁLCULO explícito em "comoChegamos", não só o número. Cite a fonte real que apareceu na pesquisa; se não houver, diga que é estimativa e baixe o selo.
 - deBaixoParaCima: refaça a conta partindo de clientes alcançáveis vezes ticket. Se o resultado divergir muito do SOM de cima para baixo, EXPLIQUE a divergência em vez de esconder. Investidor faz essa conta na frente do fundador.
 - concorrentes: 4 a 6, incluindo os indiretos e o "não fazer nada".
 - oceanoAzul: matriz ERRC de verdade, com itens específicos deste mercado, e uma frase sobre a nova curva de valor.
-- regulacao: normas brasileiras que de fato incidem (ANVISA, IBAMA, LGPD, Banco Central, CONAMA, INMETRO, o que couber). Se não houver regulação relevante, devolva lista vazia em vez de inventar.`,
+- regulacao: normas brasileiras que de fato incidem (ANVISA, IBAMA, LGPD, Banco Central, CONAMA, INMETRO, o que couber), cada uma com o prazo típico de obtenção e o custo estimado em reais. Se não houver regulação relevante, devolva lista vazia em vez de inventar.
+- porQueAgora: o que mudou no mundo (norma nova, tecnologia que barateou, comportamento, preço de insumo, programa público) que torna este negócio possível AGORA e não cinco anos atrás, com a data da mudança e por quanto tempo a janela fica aberta. Se a resposta serviria para qualquer negócio, ela está errada.
+- comparaveisDeSaida: 2 a 4 empresas parecidas que foram compradas ou abriram capital, com comprador, valor, ano e por que se parecem. Se a pesquisa não trouxe nenhuma, devolva lista vazia: inventar múltiplo é o tipo de mentira que o investidor confere em trinta segundos.`,
   },
 
   {
@@ -155,6 +166,31 @@ const BLOCOS = [
         razaoLtvCac: num, paybackMeses: num, premissas: arrStr, selo,
       }),
       projecao36Meses: lista({ mes: { type: 'integer' }, receita: num, clientes: { type: 'integer' }, custos: num }),
+      // Uma projeção única é adivinhação com casas decimais. Três cenários com
+      // gatilho dizem o que fazer quando a realidade não obedecer à planilha.
+      cenarios: lista({
+        nome: str,                   // pessimista · base · otimista
+        premissa: str,
+        receitaAno1: str,
+        receitaAno3: str,
+        gatilho: str,                // o que o fundador vê acontecer que confirma este cenário
+        oQueFazer: str,              // a decisão que esse gatilho dispara
+      }),
+      // Por que, daqui a três anos, um concorrente com mais dinheiro não copia
+      // isto num fim de semana.
+      fosso: obj({
+        hojeTemos: str,
+        oQueSeAcumula: str,          // dado, relação, certificação, rede: o que fica mais forte com o uso
+        em12Meses: str,
+        em36Meses: str,
+        oQueDestruiria: str,         // honestidade sobre o que dissolve o fosso
+        selo,
+      }),
+      time: obj({
+        quemJaTem: arrStr,
+        lacunas: lista({ papel: str, quando: str, custoMensal: str, porque: str, comoResolverAntes: str }),
+        conselheiros: arrStr,
+      }),
       financeiro: obj({
         investimentoNecessario: str,
         usoDosRecursos: lista({ rubrica: str, percentual: num, para: str }),
@@ -167,6 +203,9 @@ const BLOCOS = [
 - precificacao: 2 a 3 planos em reais, com o raciocínio de quem paga cada um.
 - economiaUnitaria: números coerentes entre si. ticketMedio x mesesDeVida deve dar o ltv; ltv/cacEstimado deve dar a razão; cac/ticket deve dar o payback. Liste as premissas: um número sem premissa é chute com aparência de conta.
 - projecao36Meses: 36 pontos, curva realista partindo de zero, com custos junto da receita. Nada de hóquei no primeiro ano.
+- cenarios: exatamente três, chamados pessimista, base e otimista. Cada um com a premissa que o separa dos outros, a receita no ano 1 e no ano 3, o GATILHO observável que diz "estamos neste cenário" e a decisão que esse gatilho dispara. Cenário sem gatilho é enfeite de slide.
+- fosso: por que este negócio fica mais difícil de copiar com o tempo, e o que exatamente se acumula (base de dados, relação com cooperativa, certificação, rede de fornecedores, custo de troca). Diga também o que destruiria o fosso. Se hoje não existe fosso, diga isso e mostre o caminho para construí-lo: fingir vantagem injusta é o erro mais comum do plano amador.
+- time: quem já está no time, quais papéis faltam, EM QUE MÊS cada um entra, quanto custa por mês e como se resolve o buraco enquanto a pessoa não chega. Contratar todo mundo no mês 1 não é plano, é lista de desejos.
 - financeiro.pedido: quanto se está pedindo, para durar quanto tempo, e qual marco esse dinheiro compra. "Precisamos de investimento" não é pedido.`,
   },
 
@@ -189,6 +228,18 @@ const BLOCOS = [
       funil: lista({ etapa: str, metricaChave: str, referencia: str }),
       retencao: obj({ estrategia: str, gatilhosDeUso: arrStr, sinaisDeAbandono: arrStr }),
       primeiros90Dias: lista({ semana: str, foco: str, entrega: str }),
+      // O plano inteiro fica de pé sobre uma crença. Esta seção nomeia a
+      // crença mais frágil e transforma em experimento com data e custo.
+      hipoteseMaisArriscada: obj({
+        hipotese: str,               // a frase que, se for falsa, derruba o plano
+        porqueEArriscada: str,
+        comoTestar: str,
+        custoDoTeste: str,
+        prazo: str,
+        provaDeVida: str,            // o resultado numérico que confirma
+        provaDeMorte: str,           // o resultado que manda mudar de rota
+        planoB: str,
+      }),
     }),
     encomenda: `Escreva as seções de CRESCIMENTO usando o método Bullseye.
 - candidatos: 8 a 12 canais possíveis para ESTE negócio, não a lista genérica dos dezenove.
@@ -196,7 +247,8 @@ const BLOCOS = [
 - foco: o único canal para o qual apostar, com o porquê.
 - metricaNorte: UMA métrica que, se subir, significa que o negócio está entregando valor de verdade. Some sempre uma contra-métrica: métrica-norte sem contra-métrica é convite para trapacear o número.
 - okrs: 2 objetivos com 3 resultados-chave numéricos cada.
-- primeiros90Dias: plano semana a semana (pode agrupar em blocos de duas semanas), do que fazer segunda-feira que vem em diante.`,
+- primeiros90Dias: plano semana a semana (pode agrupar em blocos de duas semanas), do que fazer segunda-feira que vem em diante.
+- hipoteseMaisArriscada: UMA frase que, se for falsa, derruba o plano inteiro (normalmente não é "sabemos construir", é "alguém paga este preço por isto"). Transforme em experimento com custo em reais, prazo em semanas, o número que confirma e o número que manda mudar de rota. Termine com o plano B caso a hipótese caia.`,
   },
 
   {
@@ -232,11 +284,13 @@ const BLOCOS = [
 
 const PESQUISA_SCHEMA = obj({
   panorama: str,
-  numeros: lista({ dado: str, valor: str, fonte: str, ano: str }),
+  numeros: lista({ dado: str, valor: str, fonte: str, ano: str, url: str }),
   concorrentesEncontrados: lista({ nome: str, oQueFaz: str, sinal: str }),
   regulacaoEncontrada: arrStr,
   contextoLocal: str,
-  fontes: lista({ titulo: str, url: str }),
+  // Fonte sem endereço e sem data de acesso não é fonte, é lembrança. O banco
+  // e o edital conferem cada linha, e página de governo muda de lugar.
+  fontes: lista({ titulo: str, url: str, publicadoEm: str, acessadoEm: str, tipo: str }),
   lacunas: arrStr,
 });
 
@@ -257,7 +311,7 @@ Procure especificamente:
 4. Programas de fomento abertos ou recorrentes que se aplicam.
 ${onde ? `5. O que é específico de ${onde}: cadeias produtivas locais, arranjos, incentivos estaduais ou municipais.` : ''}
 
-Regras: prefira fonte primária (IBGE, ministérios, agências, associações setoriais, relatórios de consultoria). Diga o ano de cada dado. Onde não achar dado confiável, registre em "lacunas" em vez de estimar. Responda em pt-BR.`;
+Regras: prefira fonte primária (IBGE, ministérios, agências, associações setoriais, relatórios de consultoria). Diga o ano de cada dado e o ENDEREÇO da página onde ele está. Onde não achar dado confiável, registre em "lacunas" em vez de estimar. Responda em pt-BR.`;
 
   const { texto, buscas } = await conversarComInternet({
     system: 'Você é Atlas, o agente de inteligência de mercado da ZoomDev OS. Pesquisa antes de afirmar, cita fonte e ano, e diz quando não encontrou.',
@@ -274,14 +328,23 @@ Regras: prefira fonte primária (IBGE, ministérios, agências, associações se
   // cinco agentes seguintes sem que cada um precise reinterpretar o texto.
   const dossie = await structured({
     system: 'Você organiza um dossiê de pesquisa em JSON, sem inventar nada que não esteja no texto recebido.',
-    user: `Organize este dossiê de pesquisa em JSON. Não acrescente dados que não estejam no texto:\n\n${texto}`,
+    user: `Organize este dossiê de pesquisa em JSON. Não acrescente dados que não estejam no texto.
+Em "fontes", copie o endereço exatamente como apareceu; se o texto não trouxe endereço para aquela fonte, deixe url em branco em vez de inventar um. Em "tipo", diga o que é a fonte (órgão oficial, associação setorial, consultoria, imprensa, artigo acadêmico). Deixe "acessadoEm" em branco: quem preenche é o sistema.
+
+${texto}`,
     schema: PESQUISA_SCHEMA,
     effort: 'low',
     maxTokens: 8000,
     papel: 'extracao',
   });
 
-  return { ...dossie, buscas };
+  // A data de acesso é do sistema, não do modelo: quem gerou o plano não sabe
+  // que dia é hoje, e uma data errada na bibliografia invalida a citação
+  // inteira aos olhos de quem confere.
+  const hoje = new Date().toISOString().slice(0, 10);
+  const fontes = (dossie.fontes || []).map(f => ({ ...f, acessadoEm: f.url ? hoje : '' }));
+
+  return { ...dossie, fontes, buscas };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -465,7 +528,10 @@ function paraFormatoClassico(p) {
         tam: so(p.mercado?.mercado?.tam),
         sam: so(p.mercado?.mercado?.sam),
         som: so(p.mercado?.mercado?.som),
-        contexto: p.mercado?.mercado?.tam?.comoChegamos || '',
+        // A ficha clássica tem um campo só de contexto: o "por que agora" vale
+        // mais nele do que a memória de cálculo do TAM, então vai na frente.
+        contexto: [p.mercado?.porQueAgora?.oQueMudou, p.mercado?.mercado?.tam?.comoChegamos]
+          .filter(Boolean).join(' ') || '',
       },
       concorrentes: (p.mercado?.concorrentes || []).map(c => ({
         nome: c.nome, forca: c.forca, fraqueza: c.fraqueza,
@@ -516,12 +582,26 @@ function montarSwot(p) {
   return {
     forcas: [
       p.negocio?.leanCanvas?.vantagemInjusta,
+      p.negocio?.fosso?.oQueSeAcumula,
       ...(p.mercado?.oceanoAzul?.criar || []).slice(0, 2),
     ].filter(Boolean),
     fraquezas: (p.impacto?.grauDeEvidencia?.elosFracos || []).slice(0, 4),
-    oportunidades: (p.mercado?.mercado?.tendencias || []).map(t => t.tendencia).slice(0, 4),
-    ameacas: (p.impacto?.riscos || []).map(r => r.risco).slice(0, 4),
+    oportunidades: [
+      p.mercado?.porQueAgora?.oQueMudou,
+      ...(p.mercado?.mercado?.tendencias || []).map(t => t.tendencia),
+    ].filter(Boolean).slice(0, 4),
+    // O que dissolve o fosso é ameaça por definição, e é a única que o próprio
+    // plano confessa.
+    ameacas: [
+      p.negocio?.fosso?.oQueDestruiria,
+      ...(p.impacto?.riscos || []).map(r => r.risco),
+    ].filter(Boolean).slice(0, 4),
   };
 }
 
 export { descreverLocal };
+
+// Aberto para o teste: a ficha clássica é o que alimenta o MVP Builder e as
+// exportações antigas, então uma quebra silenciosa aqui só apareceria no
+// documento do usuário.
+export const _interno = { paraFormatoClassico, montarSwot, BLOCOS, PESQUISA_SCHEMA };

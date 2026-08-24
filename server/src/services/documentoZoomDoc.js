@@ -134,9 +134,26 @@ export function montarDocumento(plano, projeto = {}) {
 
   // ── 5. Mercado ──────────────────────────────────────────────────────────
   const mk = mercado.mercado || {};
-  if (mk.tam || mk.som) {
+  const pqa = mercado.porQueAgora;
+  if (mk.tam || mk.som || pqa?.oQueMudou) {
     B(h1('Mercado'));
-    B(
+
+    // A primeira pergunta de qualquer investidor, respondida antes do
+    // primeiro número: por que este negócio não existia cinco anos atrás.
+    if (temAlgo(pqa?.oQueMudou)) {
+      B(
+        h2('Por que agora'),
+        citacao(pqa.oQueMudou),
+        tabela(['Dimensão', 'Resposta'], [
+          ['Quando mudou', pqa.quando],
+          ['Por quanto tempo a janela fica aberta', pqa.janela],
+        ]),
+        pqa.fonte ? fonteCitada('A mudança que abriu a janela', pqa.fonte) : '',
+        pqa.selo ? seloDe(pqa.selo, 'Leitura do momento de entrada neste mercado.') : '',
+      );
+    }
+
+    if (mk.tam || mk.som) B(
       h2('De cima para baixo'),
       tabela(['Camada', 'Valor', 'Como chegamos', 'Evidência'], [
         ['TAM · mercado total', mk.tam?.valor, mk.tam?.comoChegamos, mk.tam?.selo],
@@ -186,7 +203,10 @@ export function montarDocumento(plano, projeto = {}) {
   }
 
   // ── 7. Concorrência e oceano azul ───────────────────────────────────────
-  if (temAlgo(mercado.concorrentes) || mercado.oceanoAzul) {
+  // Regulação e barreiras moram aqui dentro, então a seção precisa abrir
+  // também quando o mercado é novo e ainda não tem concorrente nomeado.
+  if (temAlgo(mercado.concorrentes) || mercado.oceanoAzul
+      || temAlgo(mercado.regulacao) || temAlgo(mercado.barreirasDeEntrada)) {
     B(h1('Concorrência e diferenciação'));
     if (temAlgo(mercado.concorrentes)) {
       B(
@@ -213,10 +233,30 @@ export function montarDocumento(plano, projeto = {}) {
     if (temAlgo(mercado.regulacao)) {
       B(
         h2('Regulação aplicável'),
-        tabela(['Norma', 'Órgão', 'O que exige', 'Prazo'],
-          mercado.regulacao.map(r => [r.norma, r.orgao, r.exigencia, r.prazo])),
+        tabela(['Norma', 'Órgão', 'O que exige', 'Prazo', 'Custo estimado'],
+          mercado.regulacao.map(r => [r.norma, r.orgao, r.exigencia, r.prazo, r.custoEstimado])),
       );
     }
+  }
+
+  // ── 7b. Fosso competitivo ───────────────────────────────────────────────
+  const fs = negocio.fosso;
+  if (temAlgo(fs?.oQueSeAcumula) || temAlgo(fs?.hojeTemos)) {
+    B(
+      h1('Fosso competitivo'),
+      p('Diferencial é o que separa hoje. Fosso é o que separa mais a cada mês que passa. A pergunta aqui não é se alguém consegue copiar, é quanto custa copiar daqui a três anos.'),
+      p(fs.hojeTemos),
+      temAlgo(fs.oQueSeAcumula) ? h2('O que se acumula com o uso') : '',
+      p(fs.oQueSeAcumula),
+      tabela(['Horizonte', 'Onde o fosso chega'], [
+        ['Em 12 meses', fs.em12Meses],
+        ['Em 36 meses', fs.em36Meses],
+      ]),
+      temAlgo(fs.oQueDestruiria) ? h2('O que dissolveria este fosso') : '',
+      temAlgo(fs.oQueDestruiria) ? p('Registrado de propósito. Fosso que ninguém sabe como perder é fosso que ninguém está defendendo.') : '',
+      p(fs.oQueDestruiria),
+      fs.selo ? seloDe(fs.selo, 'Avaliação da vantagem defensável deste negócio.') : '',
+    );
   }
 
   // ── 8. Modelo de negócio e preço ────────────────────────────────────────
@@ -342,6 +382,27 @@ export function montarDocumento(plano, projeto = {}) {
     }
   }
 
+  // ── 12b. A hipótese mais arriscada ──────────────────────────────────────
+  const hip = crescimento.hipoteseMaisArriscada;
+  if (temAlgo(hip?.hipotese)) {
+    B(
+      h1('A hipótese mais arriscada'),
+      p('Todo plano se apoia numa crença que ainda não foi testada. Nomear a mais frágil e transformá-la em experimento é a diferença entre empreender e apostar.'),
+      citacao(hip.hipotese),
+      p(hip.porqueEArriscada),
+      h2('O experimento'),
+      tabela(['Dimensão', 'Definição'], [
+        ['Como testar', hip.comoTestar],
+        ['Custo do teste', hip.custoDoTeste],
+        ['Prazo', hip.prazo],
+        ['Prova de vida', hip.provaDeVida],
+        ['Prova de morte', hip.provaDeMorte],
+      ]),
+      temAlgo(hip.planoB) ? h2('Se a hipótese cair') : '',
+      p(hip.planoB),
+    );
+  }
+
   // ── 13. Impacto ─────────────────────────────────────────────────────────
   if (impacto.teoriaDaMudanca || temAlgo(impacto.ods)) {
     B(h1('Impacto'));
@@ -391,6 +452,24 @@ export function montarDocumento(plano, projeto = {}) {
     }
   }
 
+  // ── 13b. Time ───────────────────────────────────────────────────────────
+  const tm2 = negocio.time;
+  if (temAlgo(tm2?.quemJaTem) || temAlgo(tm2?.lacunas)) {
+    B(
+      h1('Time'),
+      p('Quem já está, quem falta, e em que mês cada pessoa entra. Investidor não compra organograma cheio, compra sequência de contratações que o dinheiro dele sustenta.'),
+      temAlgo(tm2.quemJaTem) ? h2('Quem já está') : '',
+      ul(tm2.quemJaTem),
+      temAlgo(tm2.lacunas) ? h2('O que falta e quando entra') : '',
+      temAlgo(tm2.lacunas)
+        ? tabela(['Papel', 'Quando entra', 'Custo mensal', 'Por quê', 'Como se resolve até lá'],
+            tm2.lacunas.map(l => [l.papel, l.quando, l.custoMensal, l.porque, l.comoResolverAntes]))
+        : '',
+      temAlgo(tm2.conselheiros) ? h2('Conselho e apoio externo') : '',
+      ul(tm2.conselheiros),
+    );
+  }
+
   // ── 14. Financeiro, riscos e o pedido ───────────────────────────────────
   B(h1('Financeiro, riscos e o pedido'));
   const fin = negocio.financeiro;
@@ -416,11 +495,27 @@ export function montarDocumento(plano, projeto = {}) {
           .map(x => [`Mês ${x.mes}`, brl(x.receita), String(x.clientes ?? ''), brl(x.custos)])),
     );
   }
+  if (temAlgo(negocio.cenarios)) {
+    B(
+      h2('Três cenários e seus gatilhos'),
+      p('A projeção acima é o cenário base. Estes são os três caminhos possíveis, cada um com o sinal observável que diz em qual deles o negócio entrou e a decisão que esse sinal dispara. Cenário sem gatilho é enfeite; com gatilho, vira regra de condução.'),
+      tabela(['Cenário', 'Premissa', 'Receita ano 1', 'Receita ano 3', 'Gatilho observável', 'O que fazer'],
+        negocio.cenarios.map(c => [c.nome, c.premissa, c.receitaAno1, c.receitaAno3, c.gatilho, c.oQueFazer])),
+    );
+  }
   if (temAlgo(impacto.riscos)) {
     B(
       h2('Riscos'),
       tabela(['Risco', 'Probabilidade', 'Impacto', 'Mitigação', 'Sinal de alerta'],
         impacto.riscos.map(r => [r.risco, r.probabilidade, r.impacto, r.mitigacao, r.sinalDeAlerta])),
+    );
+  }
+  if (temAlgo(mercado.comparaveisDeSaida)) {
+    B(
+      h2('Comparáveis de saída'),
+      p('O EXIT do IDEA TO EXIT com número em cima. Quem comprou empresa parecida, por quanto e por quê. Não é promessa de valor: é a referência pública que diz qual é o teto conhecido deste mercado.'),
+      tabela(['Empresa', 'Comprador', 'Valor', 'Ano', 'Por que se parece'],
+        mercado.comparaveisDeSaida.map(c => [c.empresa, c.comprador, c.valor, c.ano, c.porQueSeParece])),
     );
   }
   if (temAlgo(impacto.fomento)) {
@@ -445,8 +540,14 @@ export function montarDocumento(plano, projeto = {}) {
       );
     }
     if (pesquisa?.fontes?.length) {
-      B(h2('Fontes consultadas'));
-      for (const f of pesquisa.fontes) B(fonteCitada(f.titulo || f.url, f.titulo || 'Fonte', f.url || ''));
+      B(
+        h2('Fontes consultadas'),
+        // Página de governo muda de endereço. Sem a data de acesso, um link
+        // quebrado vira "a fonte não existe" em vez de "a fonte se mudou".
+        p('Cada linha traz o endereço e a data em que a página foi lida. Quem conferir daqui a um ano vai encontrar links mudados: a data de acesso é o que permite recuperar a versão certa.'),
+        tabela(['Fonte', 'Tipo', 'Publicada em', 'Acessada em', 'Endereço'],
+          pesquisa.fontes.map(f => [f.titulo || f.url, f.tipo, f.publicadoEm, f.acessadoEm, f.url])),
+      );
     }
     if (temAlgo(pesquisa?.lacunas)) {
       B(

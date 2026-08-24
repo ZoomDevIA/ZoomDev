@@ -145,7 +145,7 @@ justamente o passo que melhora o resultado dele.
 
 `server/src/agents/planoZoomDev.js` · `server/src/services/documentoZoomDoc.js`
 
-Quatorze seções, cada uma com um instrumento consagrado em vez de prosa livre.
+Dezessete seções, cada uma com um instrumento consagrado em vez de prosa livre.
 
 | # | Seção | Instrumento |
 |---|---|---|
@@ -153,16 +153,46 @@ Quatorze seções, cada uma com um instrumento consagrado em vez de prosa livre.
 | 2 | O problema | Jobs to be Done |
 | 3 | Solução e proposta de valor | inclui escopo negativo |
 | 4 | Lean Canvas | os nove quadros |
-| 5 | Mercado | TAM/SAM/SOM de cima para baixo **e** de baixo para cima |
+| 5 | Mercado | "por que agora" + TAM/SAM/SOM nos dois sentidos |
 | 6 | Cliente | personas separando quem sente a dor de quem assina |
-| 7 | Concorrência | matriz ERRC do Oceano Azul |
-| 8 | Modelo de negócio e preço | planos e take rate |
-| 9 | Economia unitária | CAC, LTV, payback, margem de contribuição |
-| 10 | Go-to-market | Bullseye: listar amplo, testar barato, focar em um |
-| 11 | Produto e roadmap | etapas com critério de saída objetivo |
-| 12 | Métrica-Norte e OKRs | com contra-métrica obrigatória |
-| 13 | Impacto | teoria da mudança, ODS, GHG Protocol por escopo |
-| 14 | Financeiro, riscos e o pedido | riscos com sinal de alerta |
+| 7 | Concorrência | matriz ERRC do Oceano Azul, regulação com custo |
+| 8 | Fosso competitivo | o que se acumula, em 12 e 36 meses, e o que o dissolve |
+| 9 | Modelo de negócio e preço | planos e take rate |
+| 10 | Economia unitária | CAC, LTV, payback, margem de contribuição |
+| 11 | Go-to-market | Bullseye: listar amplo, testar barato, focar em um |
+| 12 | Produto e roadmap | etapas com critério de saída objetivo |
+| 13 | Métrica-Norte e OKRs | com contra-métrica obrigatória |
+| 14 | A hipótese mais arriscada | experimento com custo, prazo, prova de vida e de morte |
+| 15 | Impacto | teoria da mudança, ODS, GHG Protocol por escopo |
+| 16 | Time | lacunas com mês de entrada, custo e plano até lá |
+| 17 | Financeiro, riscos e o pedido | três cenários com gatilho, comparáveis de saída |
+
+### As seis perguntas que o plano passou a responder
+
+As quatorze seções originais descreviam bem o negócio. Faltavam as perguntas
+que um investidor faz antes de olhar qualquer planilha, e que separam plano
+de apresentação:
+
+- **Por que agora?** O que mudou no mundo, quando, e por quanto tempo a janela
+  fica aberta. Resposta que serviria para qualquer negócio está errada.
+- **Por que você e não o incumbente com mais dinheiro?** É o fosso: o que se
+  acumula com o uso e fica impossível de refazer para trás. Plano que não tem
+  fosso hoje diz isso e mostra o caminho, em vez de inventar vantagem injusta.
+- **E se der errado?** Três cenários, cada um com o gatilho observável que diz
+  em qual deles o negócio entrou e a decisão que esse gatilho dispara.
+- **Qual é a crença mais frágil?** Uma frase que, se for falsa, derruba o plano,
+  virada experimento com custo em reais, prazo em semanas, o número que confirma
+  e o número que manda mudar de rota.
+- **Quem falta no time e quando entra?** Contratar todo mundo no mês 1 não é
+  plano, é lista de desejos.
+- **Como é a saída?** O EXIT do IDEA TO EXIT com número em cima: quem comprou
+  empresa parecida, por quanto, em que ano. Sem comparável na pesquisa, a lista
+  volta vazia — inventar múltiplo é mentira que se confere em trinta segundos.
+
+Todas carregam selo de evidência, e as fontes da pesquisa passaram a guardar
+endereço, data de publicação e data de acesso. Página de governo muda de lugar:
+sem a data de acesso, um link quebrado vira "a fonte não existe" em vez de "a
+fonte se mudou".
 
 ### Como a geração acontece
 
@@ -261,7 +291,7 @@ partir de uma decisão escrita, e não de "deixa mais bonito".
 
 Recalibrado com a chegada do Studio. O plano deixou de ser cinco chamadas de
 texto e passou a ser uma pesquisa real na internet mais cinco agentes
-escrevendo quatorze seções com esquema fechado.
+escrevendo dezessete seções com esquema fechado.
 
 | Operação | Custo |
 |---|---|

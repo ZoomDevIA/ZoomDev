@@ -49,7 +49,7 @@ const esc = (t) => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<':
 // fundador. Nada dava erro: o produto saía bonito e genérico.
 //
 // Os dois formatos (o clássico de cinco agentes e a projeção do plano de
-// quatorze seções) usam os MESMOS nomes, então um mapa só serve para ambos.
+// dezessete seções) usam os MESMOS nomes, então um mapa só serve para ambos.
 // O teste `mvpBuilder` trava esta correspondência: se um agente renomear
 // campo, o teste quebra antes de o fundador receber um MVP de plástico.
 function contexto(projeto) {

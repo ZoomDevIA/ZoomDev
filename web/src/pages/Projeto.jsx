@@ -101,7 +101,7 @@ export default function Projeto() {
         <section className="zd-card rounded-2xl p-6">
           <h2 className="font-heading text-lg font-bold">📐 Plano de Negócios ZoomDev</h2>
           <p className="text-sm text-white/55 mt-1 leading-relaxed">
-            O plano é escrito no Studio, dentro do ZoomDoc, em quatorze seções pela metodologia ZoomDev.
+            O plano é escrito no Studio, dentro do ZoomDoc, em dezessete seções pela metodologia ZoomDev.
             Antes de escrever, os agentes pesquisam mercado, concorrência e regulação na internet, e
             consideram o território onde o negócio vai operar. Você recebe um documento editável, com
             selo de evidência em cada afirmação, e não um resumo.

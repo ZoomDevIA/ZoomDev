@@ -30,7 +30,7 @@ export const config = {
   // ── Economia de créditos ("seiva") ──────────────────────────────────────
   // Recalibrada com a chegada do Studio. O plano ZoomDev deixou de ser cinco
   // chamadas de texto e passou a ser uma pesquisa real na internet mais cinco
-  // agentes escrevendo quatorze seções com esquema fechado: custa perto de
+  // agentes escrevendo dezessete seções com esquema fechado: custa perto de
   // quatro vezes o que custava o plano anterior, e o preço acompanha.
   //
   // O que continua de graça é de propósito. A classificação faz parte da
@@ -39,7 +39,7 @@ export const config = {
   // resultado dele.
   credits: {
     initial: 500,
-    planGeneration: 180,     // plano ZoomDev: pesquisa na internet + 5 agentes, 14 seções
+    planGeneration: 180,     // plano ZoomDev: pesquisa na internet + 5 agentes, 17 seções
     mvpBuild: 120,           // construção do MVP navegável (5 peças de código)
     studioTurno: 5,          // cada rodada de conversa no console do Studio
     documentoRevisao: 10,    // agente reescrevendo trechos do documento

@@ -7,7 +7,7 @@
 //
 //   documento      o HTML do plano no ZoomDoc, de 25 a 40 KB por projeto
 //   mvp.arquivos   o código gerado, perto de 50 KB por projeto
-//   planoZoomDev   a estrutura das quatorze seções
+//   planoZoomDev   a estrutura das dezessete seções
 //   anexos         o texto extraído do que a pessoa enviou, até 40 KB cada
 //   trilha         a conversa com os agentes
 //

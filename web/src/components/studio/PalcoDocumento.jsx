@@ -39,7 +39,7 @@ export default function PalcoDocumento({
               <h3 className="font-heading font-bold text-[15px]">Seu plano de negócios ainda não existe</h3>
               <p className="text-[13px] text-white/45 mt-2 leading-relaxed">
                 Os agentes pesquisam o mercado na internet, consideram o seu território e escrevem
-                as quatorze seções da metodologia ZoomDev. Você recebe um documento editável, não um resumo.
+                as dezessete seções da metodologia ZoomDev. Você recebe um documento editável, não um resumo.
               </p>
             </div>
 

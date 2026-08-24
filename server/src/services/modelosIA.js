@@ -25,7 +25,7 @@ export const MODELOS_DISPONIVEIS = [
 const BUSCAM_NA_INTERNET = new Set(['claude-fable-5', 'claude-opus-5', 'claude-sonnet-5']);
 
 export const PAPEIS = [
-  { id: 'plano', nome: 'Plano ZoomDev', usa: 'Os 5 agentes que escrevem as 14 seções do plano de negócios' },
+  { id: 'plano', nome: 'Plano ZoomDev', usa: 'Os 5 agentes que escrevem as 17 seções do plano de negócios' },
   { id: 'pesquisa', nome: 'Pesquisa na internet', usa: 'Atlas (pesquisa do plano), Sexta-Feira com internet e Radar de Editais', exige: 'busca' },
   { id: 'codigo', nome: 'Código', usa: 'MVP Builder e console do Studio' },
   { id: 'chat', nome: 'Conversa e análise', usa: 'Sexta-Feira (chat, relatórios, autoevolução) e Conselho dos Agentes' },
