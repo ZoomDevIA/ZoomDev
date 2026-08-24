@@ -8,10 +8,12 @@ import { store, save, id } from '../store.js';
 import { radarProjeto, aderenciaHeuristica, diasParaPrazo } from './unicornio.js';
 import { EDITAIS_SEED } from '../data/seeds.js';
 import { picDoAgente } from '../protocols/picAgentes.js';
+import { hojeBR } from './calendario.js';
 
 const MAX_NUDGES_DIA = 2;
 
-const hoje = () => new Date().toISOString().slice(0, 10);
+// O limite de dois nudges por dia é o dia do fundador, não o do servidor.
+const hoje = () => hojeBR();
 
 function estadoNudges(userId) {
   if (!store.nudges[userId]) store.nudges[userId] = { enviados: [], dispensados: [], aceitos: [] };
@@ -69,7 +71,7 @@ function candidatos(user) {
     // Varre TODAS as janelas urgentes (score ≥ 70 e prazo ≤ 60 dias), não só a de maior score.
     const urgente = EDITAIS_SEED
       .map(e => ({ edital: e, score: aderenciaHeuristica(e, p), dias: diasParaPrazo(e) }))
-      .filter(x => x.dias >= 0 && x.dias <= 60 && x.score >= 70)
+      .filter(x => Number.isFinite(x.dias) && x.dias >= 0 && x.dias <= 60 && x.score >= 70)
       .sort((a, b) => b.score - a.score || a.dias - b.dias)[0];
     if (urgente) {
       lista.push({

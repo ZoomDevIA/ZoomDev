@@ -6,7 +6,7 @@ import { config } from './config.js';
 import { cabecalhos, cors, dominios, POLITICA_PREVIA, POLITICA_SITE } from './services/blindagem.js';
 import { lerPrevia, montarPrevia } from './services/previa.js';
 import { migrarConteudo } from './services/conteudo.js';
-import { siteDoSlug, montarPagina, registrarLead, registrarVisita, paginaObrigado, PREFIXO } from './services/publicacao.js';
+import { siteDoSlug, montarPagina, registrarLead, registrarVisita, paginaObrigado, esc as escaparHtml, PREFIXO } from './services/publicacao.js';
 import { register, login, loginComGoogle, authMiddleware, adminMiddleware, publicUser, rotularAparelho } from './auth.js';
 import { modoLoginGoogle, clientIdGoogle, verificarCredencialGoogle } from './services/loginGoogle.js';
 import { save, store, salvarAgoraSePendente } from './store.js';
@@ -118,10 +118,19 @@ app.post(`${PREFIXO}/:slug/lead`,
       await registrarLead(req.params.slug, req.body, { ip: req.ip });
       res.send(paginaObrigado(site?.proj?.nome));
     } catch (e) {
-      res.status(e.status || 500).send(
+      // Duas coisas erradas moravam nesta linha: a mensagem interna ia para a
+      // página pública, e ia sem escape, dentro de HTML montado à mão. Agora o
+      // visitante recebe o recado dele quando o erro é dele (4xx) e uma frase
+      // neutra quando o erro é nosso, sempre escapado.
+      const status = e.status || 500;
+      const recado = status < 500
+        ? String(e.message || '').slice(0, 160)
+        : 'Tivemos um problema para registrar seu contato. Tente de novo em instantes.';
+      if (status >= 500) console.error('[lead]', e);
+      res.status(status).send(
         '<!doctype html><meta charset="utf-8">'
         + '<body style="font:15px system-ui;background:#06140d;color:#dff6ec;padding:32px">'
-        + `Não consegui registrar seu contato: ${String(e.message).slice(0, 160)}`);
+        + escaparHtml(recado));
     }
   });
 
@@ -271,10 +280,29 @@ app.use('/api', (req, res) => {
   res.status(404).json({ error: `Rota não encontrada: ${req.method} ${req.baseUrl}${req.path}` });
 });
 
+// Erro de 4xx é conversa com o usuário: a mensagem foi escrita para ele ler e
+// vai inteira. Erro de 5xx é defeito nosso, e a mensagem foi escrita para o
+// log: caminho de arquivo, corpo de resposta de terceiro, nome de variável.
+// Nada disso ajuda quem está do outro lado, e parte disso é mapa da casa para
+// quem procura brecha. Sai uma frase útil e um código curto de referência; o
+// texto real fica no log, indexado pelo mesmo código.
+//
+// A exceção é o 5xx marcado com `publico: true`: são os "não configurado"
+// escritos de propósito para quem opera a instalação (falta a chave da IA,
+// falta o GOOGLE_CLIENT_ID). Esses dizem exatamente o que fazer e não contêm
+// nada de dentro.
 app.use((err, _req, res, _next) => {
   const status = err.status || 500;
-  if (status >= 500) console.error(err);
-  res.status(status).json({ error: err.message || 'Erro interno.', code: err.code });
+  if (status < 500 || err.publico) {
+    return res.status(status).json({ error: err.message || 'Requisição inválida.', code: err.code });
+  }
+  const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
+  console.error(`[erro ${ref}]`, err);
+  res.status(status).json({
+    error: 'Algo quebrou do nosso lado. Tente de novo em instantes; se insistir, informe o código abaixo ao suporte.',
+    code: err.code || 'ERRO_INTERNO',
+    ref,
+  });
 });
 
 // ── Frontend compilado ────────────────────────────────────────────────────

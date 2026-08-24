@@ -32,6 +32,7 @@
 
 import { structured, conversarComInternet } from './claude.js';
 import { config } from '../config.js';
+import { modeloDoPapel } from '../services/modelosIA.js';
 
 const str = { type: 'string' };
 const num = { type: 'number' };
@@ -278,6 +279,10 @@ const BLOCOS = [
   },
 ];
 
+// Quantos agentes escrevem o plano. A rota usa este número para calcular o
+// estorno proporcional quando alguma seção não sai.
+export const TOTAL_BLOCOS = BLOCOS.length;
+
 // ═══════════════════════════════════════════════════════════════════════════
 // PESQUISA — a primeira onda
 // ═══════════════════════════════════════════════════════════════════════════
@@ -360,7 +365,7 @@ export async function gerarPlanoZoomDev(projeto, { local, anexos = [], aoProgred
   if (!config.hasApiKey) {
     throw Object.assign(
       new Error('A geração do plano precisa da chave da IA configurada no servidor.'),
-      { code: 'NO_API_KEY', status: 503 },
+      { code: 'NO_API_KEY', status: 503, publico: true },
     );
   }
 
@@ -383,43 +388,84 @@ export async function gerarPlanoZoomDev(projeto, { local, anexos = [], aoProgred
   const base = contexto(projeto, local, pesquisa, anexos);
 
   // ── Onda 2: cinco agentes em paralelo ───────────────────────────────────
+  //
+  // Antes, o primeiro bloco que falhasse derrubava a geração inteira com um
+  // throw: quatro agentes tinham escrito, o modelo já tinha sido pago nos
+  // quatro, e o fundador recebia zero. Agora cada bloco tem uma segunda
+  // chance e, se ainda assim cair, o plano sai com o que os outros
+  // escreveram, dizendo em voz alta o que ficou faltando. Plano incompleto
+  // e declarado é útil; plano nenhum não é.
   const resultados = {};
+  const faltando = [];
+
   await Promise.all(BLOCOS.map(async (bloco) => {
     aoProgredir(bloco.id, { estado: 'executando' });
-    try {
-      resultados[bloco.id] = await structured({
-        system: `${base}\n\nVocê é o ${bloco.nome} da ZoomDev OS.`,
-        user: `${bloco.encomenda}
+    const encomenda = `${bloco.encomenda}
 
 SELO DE EVIDÊNCIA: onde o esquema pedir "selo", classifique honestamente a afirmação:
 VERIFICADO (documento oficial conferido) · LAUDO (laudo técnico assinado) · CAMPO (medição em campo) · PESQUISA (literatura ou fonte primária citada) · ESTRATEGIA (projeção fundamentada) · HIPOTESE (a testar) · VISAO (futuro desejado).
-Dado que veio da pesquisa com fonte e ano é PESQUISA. Estimativa própria é ESTRATEGIA. Nunca use VERIFICADO sem documento na mão.`,
-        schema: bloco.schema,
-        effort: 'high',
-        maxTokens: 16000,
-        papel: 'plano',
-      });
+Dado que veio da pesquisa com fonte e ano é PESQUISA. Estimativa própria é ESTRATEGIA. Nunca use VERIFICADO sem documento na mão.`;
+
+    const escrever = () => structured({
+      system: `${base}\n\nVocê é o ${bloco.nome} da ZoomDev OS.`,
+      user: encomenda,
+      schema: bloco.schema,
+      effort: 'high',
+      maxTokens: 16000,
+      papel: 'plano',
+    });
+
+    try {
+      resultados[bloco.id] = await escrever();
       aoProgredir(bloco.id, { estado: 'ok' });
-    } catch (e) {
-      aoProgredir(bloco.id, { estado: 'erro', detalhe: e.message.slice(0, 90) });
-      throw e;
+    } catch (primeira) {
+      // Uma segunda tentativa cobre a maioria das quedas: corte de resposta,
+      // esquema recusado por um campo, instabilidade momentânea do provedor.
+      aoProgredir(bloco.id, { estado: 'executando', detalhe: 'primeira tentativa falhou, refazendo' });
+      try {
+        resultados[bloco.id] = await escrever();
+        aoProgredir(bloco.id, { estado: 'ok', detalhe: 'na segunda tentativa' });
+      } catch (segunda) {
+        faltando.push({ id: bloco.id, nome: bloco.nome, motivo: segunda.message.slice(0, 140) });
+        aoProgredir(bloco.id, { estado: 'erro', detalhe: segunda.message.slice(0, 90) });
+      }
     }
   }));
+
+  // Todos caíram: aí não há plano nenhum para entregar, e o estorno é total.
+  if (faltando.length === BLOCOS.length) {
+    console.error('[plano] todos os blocos falharam:', faltando);
+    throw Object.assign(
+      new Error('Nenhum dos agentes conseguiu escrever o plano desta vez. A seiva foi devolvida; tente de novo em alguns minutos.'),
+      { code: 'PLANO_VAZIO', status: 502, publico: true },
+    );
+  }
 
   aoProgredir('montagem', { estado: 'executando' });
 
   const plano = {
     versao: 'zoomdev-1',
     geradoEm: new Date().toISOString(),
-    modelo: config.model,
+    // O modelo que REALMENTE escreveu, resolvido no papel "plano". Antes o
+    // documento carimbava config.model, o padrão do servidor, e mentia sempre
+    // que o admin trocava o modelo do papel no painel.
+    modelo: modeloDoPapel('plano'),
     local: local || null,
     pesquisa,
     ...resultados,
+    // Só aparece quando falta alguma coisa: chave presente é sinal de plano
+    // parcial, e quem consome (rota, documento, estorno) trata a partir dela.
+    ...(faltando.length ? { secoesFaltando: faltando } : {}),
   };
 
   aoProgredir('montagem', { estado: 'ok' });
 
-  return { plano, planoClassico: paraFormatoClassico(plano) };
+  return {
+    plano,
+    planoClassico: paraFormatoClassico(plano),
+    faltando,
+    fracaoEntregue: (BLOCOS.length - faltando.length) / BLOCOS.length,
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

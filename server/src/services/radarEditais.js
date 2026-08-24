@@ -12,9 +12,10 @@ import { config } from '../config.js';
 import { EDITAIS_SEED } from '../data/seeds.js';
 import { structured } from '../agents/claude.js';
 import { conversarComInternet } from '../agents/claude.js';
+import { hojeBR, diasAtePrazo } from './calendario.js';
 
 const DIA_MS = 86400000;
-const hoje = () => new Date().toISOString().slice(0, 10);
+const hoje = () => hojeBR();
 
 // ── Estado do radar ────────────────────────────────────────────────────────
 export function estadoRadar() {
@@ -31,11 +32,12 @@ export function todosEditais() {
   return [...EDITAIS_SEED, ...Object.values(r.descobertos)];
 }
 
+// O prazo acaba à meia-noite de Brasília, não à meia-noite do contêiner. Sem
+// o fuso explícito, um edital que fecha dia 30 aparecia como encerrado às 21h
+// do dia 30 para quem ainda tinha três horas para submeter.
 export function diasParaPrazo(edital, agora = Date.now()) {
   if (!edital?.prazo) return null;
-  const t = new Date(`${edital.prazo}T23:59:59`).getTime();
-  if (Number.isNaN(t)) return null;
-  return Math.ceil((t - agora) / DIA_MS);
+  return diasAtePrazo(edital.prazo, agora);
 }
 
 export const editaisAbertos = () =>

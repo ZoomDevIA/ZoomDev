@@ -92,7 +92,7 @@ export async function verificarCredencialGoogle(credential) {
   if (modoLoginGoogle() === 'desligado') {
     throw Object.assign(
       new Error('Login com Google não está configurado nesta instalação (defina GOOGLE_CLIENT_ID).'),
-      { status: 503 },
+      { status: 503, publico: true },
     );
   }
   const partes = String(credential || '').split('.');

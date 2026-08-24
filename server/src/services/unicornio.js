@@ -4,6 +4,7 @@
 // Impacto/ESG (15). Cada ponto tem motivo: a Sexta-Feira nunca "acha", ela mostra.
 // ═══════════════════════════════════════════════════════════════════════════
 import { EDITAIS_SEED } from '../data/seeds.js';
+import { diasAtePrazo } from './calendario.js';
 
 /** Aderência heurística projeto × edital (mesma régua do modo demo da plataforma). */
 export function aderenciaHeuristica(edital, projeto) {
@@ -13,8 +14,10 @@ export function aderenciaHeuristica(edital, projeto) {
   return Math.min(96, base + (bio && editalBio ? 18 : 0) + (!bio && !editalBio ? 10 : 0));
 }
 
+// Meia-noite de Brasília, não do contêiner: o servidor roda em UTC e sem o
+// fuso explícito o edital fechava três horas antes para quem ia submeter.
 export function diasParaPrazo(edital, agora = Date.now()) {
-  return Math.ceil((new Date(`${edital.prazo}T23:59:59`).getTime() - agora) / 86400000);
+  return diasAtePrazo(edital?.prazo, agora);
 }
 
 /** Melhor edital para um projeto: { edital, score, dias }. */
@@ -22,7 +25,8 @@ export function melhorEdital(projeto) {
   let melhor = null;
   for (const e of EDITAIS_SEED) {
     const dias = diasParaPrazo(e);
-    if (dias < 0) continue;
+    // Prazo ausente ou malformado não vira "vence hoje": fica de fora.
+    if (!Number.isFinite(dias) || dias < 0) continue;
     const score = aderenciaHeuristica(e, projeto);
     if (!melhor || score > melhor.score) melhor = { edital: e, score, dias };
   }

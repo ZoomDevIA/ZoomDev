@@ -185,7 +185,7 @@ const SUBSTITUTO_ARMAZENAMENTO = `<script>
 })();
 </script>`;
 
-const esc = (v) => String(v ?? '')
+export const esc = (v) => String(v ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /**

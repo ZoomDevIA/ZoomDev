@@ -1,6 +1,8 @@
 // Filosofia gamificada da ZoomDev: XP por progresso real, níveis bio-amazônicos,
 // missões encadeadas por fase e streak. Ver docs/gamificacao.md.
 
+import { hojeBR, ontemBR } from './calendario.js';
+
 export const FASES = ['ideacao', 'validacao', 'mvp', 'tracao', 'escala'];
 
 export const FASE_LABEL = {
@@ -79,11 +81,12 @@ export function awardXP(user, evento, detalhe = {}) {
   g.xp += xp;
   const depois = nivelFundador(g.xp).nivel;
 
-  // streak diário
-  const hoje = new Date().toISOString().slice(0, 10);
+  // Streak diário no calendário de Brasília. Em UTC, quem entrava às nove da
+  // noite via a sequência zerar sozinha: a marcação já caía no dia seguinte,
+  // e a conta de "ontem" nunca fechava.
+  const hoje = hojeBR();
   if (g.streak.ultimoDia !== hoje) {
-    const ontem = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    g.streak.dias = g.streak.ultimoDia === ontem ? g.streak.dias + 1 : 1;
+    g.streak.dias = g.streak.ultimoDia === ontemBR() ? g.streak.dias + 1 : 1;
     g.streak.ultimoDia = hoje;
   }
 

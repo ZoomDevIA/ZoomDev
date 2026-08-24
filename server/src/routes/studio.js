@@ -22,7 +22,7 @@ import multer from 'multer';
 import { store, save } from '../store.js';
 import { config } from '../config.js';
 import { structured } from '../agents/claude.js';
-import { gerarPlanoZoomDev, ETAPAS } from '../agents/planoZoomDev.js';
+import { gerarPlanoZoomDev, ETAPAS, TOTAL_BLOCOS as TOTAL_BLOCOS_PLANO } from '../agents/planoZoomDev.js';
 import { montarDocumento } from '../services/documentoZoomDoc.js';
 import { extrair, ehAudio, LIMITE_BYTES } from '../services/extracao.js';
 import { modoTranscricao } from '../services/transcricao.js';
@@ -30,6 +30,7 @@ import { awardXP, FASES, FASE_LABEL, NIVEL_STARTUP, missoesValidacaoPadrao } fro
 import { limitar } from '../services/limite.js';
 import { lerConteudo, gravarConteudo, arquivosMvp } from '../services/conteudo.js';
 import { jaEmAndamento } from '../services/retomada.js';
+import { paraCliente } from '../services/erros.js';
 
 export const studioRouter = Router();
 
@@ -234,7 +235,7 @@ studioRouter.get('/:id/documento/gerar', async (req, res) => {
   enviar('inicio', { custo, etapas: ETAPAS });
 
   try {
-    const { plano, planoClassico } = await gerarPlanoZoomDev(proj, {
+    const { plano, planoClassico, faltando = [] } = await gerarPlanoZoomDev(proj, {
       local: req.user.local?.recusado ? null : req.user.local,
       anexos: lerConteudo(proj.id).anexos || [],
       aoProgredir: (id, dados) => {
@@ -252,14 +253,35 @@ studioRouter.get('/:id/documento/gerar', async (req, res) => {
 
     const html = montarDocumento(plano, proj);
 
+    // Plano parcial não custa preço cheio. Cada seção que não saiu devolve a
+    // sua fatia da seiva na hora, sem o fundador precisar abrir chamado.
+    let estornoParcial = 0;
+    if (faltando.length) {
+      estornoParcial = Math.round((custo * faltando.length) / TOTAL_BLOCOS_PLANO);
+      req.user.creditos += estornoParcial;
+    }
+
     // O plano e o documento vão para o arquivo de conteúdo do projeto; o
     // índice fica só com o resumo clássico, que as listas e a ficha leem.
     gravarConteudo(proj.id, { planoZoomDev: plano, documento: html });
     proj.plano = planoClassico;
     proj.documentoEm = new Date().toISOString();
-    proj.geracao = { status: 'concluida', metodologia: 'zoomdev-1', concluidaEm: proj.documentoEm };
+    proj.geracao = {
+      status: faltando.length ? 'parcial' : 'concluida',
+      metodologia: 'zoomdev-1',
+      concluidaEm: proj.documentoEm,
+      ...(faltando.length ? { faltando, estornoParcial } : {}),
+    };
 
     enviar('documento', { html });
+    if (faltando.length) {
+      enviar('parcial', {
+        faltando,
+        estornado: estornoParcial,
+        mensagem: `${faltando.length} de ${TOTAL_BLOCOS_PLANO} seções não saíram (${faltando.map(f => f.nome).join(', ')}). `
+          + `Devolvemos ${estornoParcial} 🌿 e você pode mandar gerar de novo: o que já está escrito fica no documento.`,
+      });
+    }
 
     // O plano puxa a fase seguinte: a jornada não espera clique.
     let gamificacao = null;
@@ -277,12 +299,15 @@ studioRouter.get('/:id/documento/gerar', async (req, res) => {
     }
 
     save();
-    enviar('fim', { gamificacao, creditos: req.user.creditos });
+    enviar('fim', { gamificacao, creditos: req.user.creditos, estornoParcial });
   } catch (e) {
     req.user.creditos += custo;
+    // O texto interno fica no registro do projeto (que só o dono e o admin
+    // leem) e no log; o que viaja pelo fluxo de eventos passa pela régua.
     proj.geracao = { status: 'erro', erro: e.message };
     save();
-    enviar('erro', { error: e.message, code: e.code, estornado: custo });
+    const { status: _s, ...publico } = paraCliente(e, 'plano');
+    enviar('erro', { ...publico, estornado: custo });
   } finally {
     res.end();
   }

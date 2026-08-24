@@ -57,7 +57,7 @@ async function enviarPorSmtp({ para, assunto, html, texto }) {
   try {
     ({ default: nodemailer } = await import('nodemailer'));
   } catch {
-    throw Object.assign(new Error('SMTP_URL definido mas o pacote nodemailer não está instalado.'), { status: 500 });
+    throw Object.assign(new Error('SMTP_URL definido mas o pacote nodemailer não está instalado.'), { status: 500, publico: true });
   }
   const transporte = nodemailer.createTransport(SMTP_URL);
   await transporte.sendMail({ from: REMETENTE, to: para, subject: assunto, html, text: texto });

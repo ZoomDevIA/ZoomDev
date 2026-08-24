@@ -135,11 +135,20 @@ export default function Studio() {
           documentoServidor.current = d.html;
           setSalvandoEm(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
         },
+        // Plano parcial: algumas seções não saíram, o resto saiu e a fatia de
+        // seiva correspondente já voltou. É aviso, não erro: o documento está
+        // aberto na tela e mandar gerar de novo completa o que faltou.
+        parcial: (d) => {
+          setAviso(d.mensagem);
+          setMensagens(m => [...m, { id: `sys${Date.now()}`, papel: 'marco', texto: d.mensagem }]);
+        },
         fim: async (d) => {
           await carregar();
           await ctx?.refreshUser?.();
           if (d?.gamificacao) ctx?.celebrar?.(d.gamificacao);
-          setMensagens(m => [...m, { id: `sys${Date.now()}`, papel: 'marco', texto: 'Plano de negócios pronto' }]);
+          if (!d?.estornoParcial) {
+            setMensagens(m => [...m, { id: `sys${Date.now()}`, papel: 'marco', texto: 'Plano de negócios pronto' }]);
+          }
         },
         erro: (d) => setErro(d.error || 'A geração falhou.'),
       });

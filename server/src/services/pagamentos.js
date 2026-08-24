@@ -232,7 +232,7 @@ export function confirmarTransacao(txId, { origem = 'manual' } = {}) {
 export async function processarWebhookStripe(rawBody, assinatura) {
   const s = await stripe();
   const segredo = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!s || !segredo) throw Object.assign(new Error('Webhook do Stripe não configurado.'), { status: 503 });
+  if (!s || !segredo) throw Object.assign(new Error('Webhook do Stripe não configurado.'), { status: 503, publico: true });
 
   const evento = s.webhooks.constructEvent(rawBody, assinatura, segredo);
   if (evento.type === 'checkout.session.completed') {

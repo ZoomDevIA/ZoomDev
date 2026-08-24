@@ -67,6 +67,12 @@ async function chamar(caminho, params = {}) {
 }
 
 // Percorre a paginação Relay até juntar todos os nós (com teto de segurança).
+//
+// O teto de páginas não basta. Um provedor que responde has_next_page: true
+// sem devolver end_cursor faz o laço repetir a MESMA página dez vezes: o teto
+// segura a chamada infinita, mas o resultado sai com os mesmos nós dez vezes,
+// e a tela mostra dez vezes o mesmo crédito de carbono. Cursor ausente ou
+// igual ao anterior encerra a varredura.
 async function todasAsPaginas(caminho, { maxPaginas = 10 } = {}) {
   const nos = [];
   let cursor = null;
@@ -74,7 +80,9 @@ async function todasAsPaginas(caminho, { maxPaginas = 10 } = {}) {
     const pagina = await chamar(caminho, cursor ? { after: cursor } : {});
     nos.push(...(pagina.nodes || []));
     if (!pagina.page_info?.has_next_page) break;
-    cursor = pagina.page_info.end_cursor;
+    const proximo = pagina.page_info.end_cursor;
+    if (!proximo || proximo === cursor) break;
+    cursor = proximo;
   }
   return nos;
 }
@@ -96,6 +104,11 @@ function via(id) {
   return VIAS[id] || { ...VIAS.outro, id: id || 'outro' };
 }
 
+// Número do provedor que não é número vira zero, não NaN. Um NaN solto aqui
+// contamina toda soma a jusante: o total de créditos do registro inteiro
+// aparece como "NaN t" na tela por causa de um campo estranho num projeto.
+const numero = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+
 function normalizarProjeto(bruto) {
   return {
     id: bruto.id || null,
@@ -103,9 +116,9 @@ function normalizarProjeto(bruto) {
     fornecedor: bruto.supplier?.name || bruto.fornecedor || null,
     via: via(bruto.pathway || bruto.via),
     pais: bruto.country || bruto.pais || null,
-    creditosEmitidos: Number(bruto.credits_issued ?? bruto.creditosEmitidos ?? 0),
-    creditosAposentados: Number(bruto.credits_retired ?? bruto.creditosAposentados ?? 0),
-    durabilidadeAnos: Number(bruto.durability_years ?? bruto.durabilidadeAnos ?? 0) || null,
+    creditosEmitidos: numero(bruto.credits_issued ?? bruto.creditosEmitidos),
+    creditosAposentados: numero(bruto.credits_retired ?? bruto.creditosAposentados),
+    durabilidadeAnos: numero(bruto.durability_years ?? bruto.durabilidadeAnos) || null,
     url: bruto.registry_url || bruto.url || null,
   };
 }
@@ -239,4 +252,4 @@ export function estadoIsometric() {
 }
 
 // Só para os testes conseguirem exercitar a normalização sem rede.
-export const _interno = { normalizarProjeto, via, DEMO_PROJETOS };
+export const _interno = { normalizarProjeto, via, numero, todasAsPaginas, DEMO_PROJETOS };

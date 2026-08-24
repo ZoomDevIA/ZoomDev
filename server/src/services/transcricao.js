@@ -35,7 +35,7 @@ export function modoTranscricao() {
  */
 export async function transcrever({ buffer, mime = 'audio/mpeg', nome = 'audio', idioma = 'pt-BR' }) {
   const chave = (process.env.DEEPGRAM_API_KEY || '').trim();
-  if (!chave) throw erro(503, 'DEEPGRAM_API_KEY não configurada.');
+  if (!chave) throw Object.assign(erro(503, 'DEEPGRAM_API_KEY não configurada.'), { publico: true });
 
   const parametros = new URLSearchParams({
     model: 'nova-3',

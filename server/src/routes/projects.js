@@ -16,6 +16,7 @@ import { hidratar, gravarConteudo, arquivosMvp, apagarConteudo } from '../servic
 import { publicarSite, despublicarSite, sugerirSlug, urlPublica, leadsDe, PREFIXO } from '../services/publicacao.js';
 import { exigir } from '../auth.js';
 import { jaEmAndamento } from '../services/retomada.js';
+import { paraCliente } from '../services/erros.js';
 import JSZip from 'jszip';
 
 export const projectsRouter = Router();
@@ -163,7 +164,8 @@ projectsRouter.get('/:id/gerar-plano', async (req, res) => {
     proj.geracao.status = 'erro';
     proj.geracao.erro = e.message;
     save();
-    send('erro', { error: e.message, code: e.code || 'ERRO', estornado: true, creditosRestantes: req.user.creditos });
+    const { status: _s, ...publico } = paraCliente(e, 'plano-compat');
+    send('erro', { ...publico, code: publico.code || 'ERRO', estornado: true, creditosRestantes: req.user.creditos });
   } finally {
     res.end();
   }
@@ -346,7 +348,8 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
     req.user.creditos += custo;
     proj.mvp = { status: 'erro', erro: e.message };
     save();
-    send('erro', { error: e.message, estornado: true, creditosRestantes: req.user.creditos });
+    const { status: _s, ...publico } = paraCliente(e, 'mvp');
+    send('erro', { ...publico, estornado: true, creditosRestantes: req.user.creditos });
   } finally {
     res.end();
   }
