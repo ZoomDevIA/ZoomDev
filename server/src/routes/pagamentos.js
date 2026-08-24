@@ -6,7 +6,7 @@ import { store, save } from '../store.js';
 import { config } from '../config.js';
 import {
   criarCheckoutPlano, criarPix, confirmarTransacao,
-  transacoesDoUsuario, transacoes, statusPagamentos,
+  transacoesDoUsuario, transacoes, statusPagamentos, pagamentosConfig,
 } from '../services/pagamentos.js';
 import { awardXP } from '../services/gamification.js';
 import { isAdmin } from '../auth.js';
@@ -82,6 +82,17 @@ pagamentosRouter.post('/transacoes/:id/confirmar', (req, res, next) => {
     }
     if (!t.simulado && !isAdmin(req.user)) {
       return res.status(409).json({ error: 'Esta cobrança é confirmada automaticamente pelo provedor de pagamento.' });
+    }
+    // Transação SIMULADA é a que nasce quando não há meio de pagamento
+    // configurado: nada foi pago. Deixá-la ser confirmada pelo próprio dono
+    // era entregar seiva e plano de graça a quem descobrisse a rota. Só o
+    // administrador confirma, ou a instalação inteira declara que está em
+    // demonstração (ZOOMDEV_PAGAMENTO_DEMO=1), para feiras e apresentações.
+    if (t.simulado && !isAdmin(req.user) && !pagamentosConfig.demoLiberado) {
+      return res.status(402).json({
+        error: 'Pagamento ainda não configurado nesta instalação. Peça a confirmação ao administrador.',
+        code: 'PAGAMENTO_NAO_CONFIGURADO',
+      });
     }
     const r = confirmarTransacao(req.params.id, { origem: isAdmin(req.user) ? 'admin' : 'usuario' });
     let gam = null;

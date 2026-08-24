@@ -13,6 +13,7 @@ import { store } from '../store.js';
 import { pagamentosConfig } from '../services/pagamentos.js';
 import { CATALOGO } from '../services/elenco.js';
 import { origensPermitidas } from '../services/blindagem.js';
+import { isAdmin, quemPede } from '../auth.js';
 
 export const diagnosticoRouter = Router();
 
@@ -99,7 +100,31 @@ function verificarDisco() {
   return resultado;
 }
 
+// ── Quanto o diagnóstico conta, e para quem ────────────────────────────────
+//
+// Esta rota é pública de propósito: ela existe para o operador conferir a
+// instalação ANTES de ter conta. Só que ela contava demais para quem não é
+// operador nenhum: e-mail do administrador quase inteiro, prefixo e tamanho
+// das chaves, se o pagamento estava em modo simulado, nome do ambiente,
+// caminho do volume e a contagem de usuários. Era um mapa de alvos.
+//
+// Agora o detalhe fica atrás do administrador; o público vê o suficiente para
+// saber se a plataforma está de pé e o que falta configurar, sem pistas.
+const CHAVES_SENSIVEIS = new Set(['ia', 'admin', 'stripe', 'pix', 'transcricao', 'email', 'copernicus', 'isometric', 'loginGoogle']);
+
+/** Versão pública de uma checagem: mantém o veredito, remove a pista. */
+function semPista(c) {
+  if (!CHAVES_SENSIVEIS.has(c.id)) return c;
+  return {
+    ...c,
+    detalhe: c.status === 'ok'
+      ? 'Configurado e ativo.'
+      : 'Não configurado: o módulo roda em modo demonstração.',
+  };
+}
+
 diagnosticoRouter.get('/status', async (req, res) => {
+  const detalhado = isAdmin(quemPede(req));
   const chaveIA = process.env.ANTHROPIC_API_KEY || '';
   const testeIA = req.query.testar === 'ia' ? await testarChave() : null;
   const disco = verificarDisco();
@@ -229,26 +254,37 @@ diagnosticoRouter.get('/status', async (req, res) => {
   const erros = checagens.filter(c => c.status === 'erro');
   const atencoes = checagens.filter(c => c.status === 'atencao');
 
+  const visiveis = detalhado ? checagens : checagens.map(semPista);
+  const errosVisiveis = visiveis.filter(c => c.status === 'erro');
+  const atencoesVisiveis = visiveis.filter(c => c.status === 'atencao');
+
   res.json({
     resumo: erros.length ? 'Há problemas críticos' : atencoes.length ? 'Funcionando, com pontos de atenção' : 'Tudo certo',
     pronto: erros.length === 0,
-    checagens,
-    ...(testeIA ? { testeIA } : {}),
-    plataforma: {
-      ambiente: process.env.RAILWAY_ENVIRONMENT_NAME || process.env.RENDER_SERVICE_NAME || 'local',
-      versaoNode: process.version,
-      tempoNoAr: `${Math.floor(process.uptime() / 60)} min`,
-      volumeRailway: process.env.RAILWAY_VOLUME_MOUNT_PATH || null,
-    },
-    ecossistema: {
-      usuarios: usuarios.length,
-      projetos: Object.keys(store.projects).length,
-      agentes: `${CATALOGO.length} no elenco`,
-    },
+    detalhado,
+    checagens: visiveis,
+    ...(testeIA && detalhado ? { testeIA } : {}),
+    ...(detalhado ? {
+      plataforma: {
+        ambiente: process.env.RAILWAY_ENVIRONMENT_NAME || process.env.RENDER_SERVICE_NAME || 'local',
+        versaoNode: process.version,
+        tempoNoAr: `${Math.floor(process.uptime() / 60)} min`,
+        volumeRailway: process.env.RAILWAY_VOLUME_MOUNT_PATH || null,
+      },
+      ecossistema: {
+        usuarios: usuarios.length,
+        projetos: Object.keys(store.projects).length,
+        agentes: `${CATALOGO.length} no elenco`,
+      },
+    } : {
+      // O censo público conta o elenco, que é vitrine, e não a base de
+      // usuários, que é inventário.
+      ecossistema: { agentes: `${CATALOGO.length} no elenco` },
+    }),
     proximosPassos: [
-      ...(erros.length ? erros.map(e => `Corrigir: ${e.nome}, ${e.detalhe}`) : []),
-      ...atencoes.map(a => `Opcional: ${a.nome}, ${a.detalhe}`),
-      ...(erros.length + atencoes.length === 0 ? ['Nada pendente. Crie sua conta e comece.'] : []),
+      ...errosVisiveis.map(e => `Corrigir: ${e.nome}, ${e.detalhe}`),
+      ...atencoesVisiveis.map(a => `Opcional: ${a.nome}, ${a.detalhe}`),
+      ...(errosVisiveis.length + atencoesVisiveis.length === 0 ? ['Nada pendente. Crie sua conta e comece.'] : []),
     ],
   });
 });

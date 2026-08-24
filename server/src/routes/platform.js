@@ -56,7 +56,14 @@ platformRouter.post('/analyze', async (req, res, next) => {
   try {
     const { tipo, projetoId, nome, descricao } = req.body || {};
     if (!TIPOS_ANALISE[tipo]) return res.status(400).json({ error: 'Tipo de análise inválido.' });
+    // Id de projeto não é autorização. Sem esta conferência, qualquer pessoa
+    // logada pedia a análise de um projeto alheio (os ids circulam na vitrine
+    // pública) e recebia de volta a descrição CRUA dele, que é justamente o
+    // que a vitrine remove antes de publicar.
     const proj = projetoId ? store.projects[projetoId] : null;
+    if (projetoId && (!proj || proj.userId !== req.user.id)) {
+      return res.status(404).json({ error: 'Projeto não encontrado.' });
+    }
     const alvoNome = proj?.nome || nome || 'seu projeto';
     const alvoDesc = proj?.descricao || descricao || '';
 

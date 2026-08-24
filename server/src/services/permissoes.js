@@ -25,6 +25,7 @@ export const CAPACIDADES = {
   'agentes.ler': 'Consultar o elenco e os protocolos cognitivos',
   'agentes.ativar': 'Ligar e desligar agentes da reserva',
   'agentes.evoluir': 'Aprovar, rejeitar e reverter evoluções de PIC',
+  'territorio.evidenciar': 'Registrar evidências na cadeia de custódia dos lotes',
   'usuarios.ler': 'Ver quem tem acesso à plataforma',
   'usuarios.gerenciar': 'Criar, alterar papel e desativar usuários',
   'financeiro.ler': 'Ver transações, assinaturas e receita',
@@ -53,6 +54,8 @@ export const PAPEIS = {
       'conteudo.editar',
       'editais.gerenciar',
       'agentes.ler',
+      // Quem vai a campo é editor: registra a visita, o laudo e a medição.
+      'territorio.evidenciar',
       'usuarios.ler',
     ],
   },

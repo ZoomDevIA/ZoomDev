@@ -24,7 +24,7 @@ import { config } from '../config.js';
 import { structured } from '../agents/claude.js';
 import { gerarPlanoZoomDev, ETAPAS } from '../agents/planoZoomDev.js';
 import { montarDocumento } from '../services/documentoZoomDoc.js';
-import { extrair, LIMITE_BYTES } from '../services/extracao.js';
+import { extrair, ehAudio, LIMITE_BYTES } from '../services/extracao.js';
 import { modoTranscricao } from '../services/transcricao.js';
 import { awardXP, FASES, FASE_LABEL, NIVEL_STARTUP, missoesValidacaoPadrao } from '../services/gamification.js';
 import { limitar } from '../services/limite.js';
@@ -70,14 +70,21 @@ studioRouter.post('/anexo',
   limitar({ max: 40, janelaSeg: 600, mensagem: 'Muitos anexos em pouco tempo. Aguarde alguns minutos.' }),
   upload.single('arquivo'),
   async (req, res, next) => {
+    // Quanto foi REALMENTE debitado nesta requisição. O estorno devolve isto,
+    // e só isto: antes ele devolvia o preço da transcrição em qualquer falha,
+    // inclusive quando nada tinha sido cobrado, e um arquivo qualquer enviado
+    // como áudio virava uma fábrica de seiva.
+    let cobrado = 0;
     try {
       if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo recebido.' });
 
-      const ehAudio = (req.file.mimetype || '').startsWith('audio/')
-        || (req.file.mimetype || '').startsWith('video/');
-      // Transcrição usa serviço pago por minuto: é o único anexo que cobra.
-      if (ehAudio && modoTranscricao() === 'deepgram') {
+      // Mesma regra de quem roteia o arquivo (tipo declarado OU extensão):
+      // senão um `.mp3` sem cabeçalho de áudio era transcrito de graça.
+      const vaiTranscrever = ehAudio(req.file.originalname, req.file.mimetype)
+        && modoTranscricao() === 'deepgram';
+      if (vaiTranscrever && config.credits.transcricao > 0) {
         cobrar(req.user, config.credits.transcricao, 'a transcrição de áudio');
+        cobrado = config.credits.transcricao;
         save();
       }
 
@@ -91,9 +98,11 @@ studioRouter.post('/anexo',
       // é o que interessa para o resto do sistema. O binário morre aqui.
       res.json(r);
     } catch (e) {
-      // Cobrança estornada quando a extração falha: ninguém paga por erro nosso
-      if (e.status && e.status >= 500 && config.credits.transcricao) {
-        req.user.creditos += config.credits.transcricao;
+      // Falhou depois de cobrar? Devolve. Falha da plataforma (5xx) e falha do
+      // serviço de transcrição (401 da chave revogada, 402 sem crédito, 429,
+      // 422 áudio ilegível) são todas nossas: o fundador não paga por nenhuma.
+      if (cobrado > 0) {
+        req.user.creditos += cobrado;
         save();
       }
       next(e);

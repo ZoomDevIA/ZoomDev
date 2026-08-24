@@ -19,6 +19,10 @@ export const pagamentosConfig = {
   pixNome: (process.env.PIX_NOME || 'ZOOMDEV OS').slice(0, 25),
   pixCidade: (process.env.PIX_CIDADE || 'BELEM').slice(0, 15),
   urlBase: process.env.ZOOMDEV_URL || 'http://localhost:5173',
+  // Feiras e apresentações: com isto ligado, o próprio usuário confirma a
+  // transação simulada e vê o fluxo completo. Desligado (o padrão), só o
+  // administrador confirma o que ninguém pagou.
+  demoLiberado: process.env.ZOOMDEV_PAGAMENTO_DEMO === '1',
 };
 
 let stripeClient = null;

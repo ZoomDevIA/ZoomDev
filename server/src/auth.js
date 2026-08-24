@@ -367,6 +367,26 @@ export function authMiddleware(req, res, next) {
   next();
 }
 
+/**
+ * Quem está pedindo, para rotas PÚBLICAS que mostram mais a quem tem direito.
+ *
+ * Não é autenticação: não recusa ninguém, não renova sessão, não muda nada.
+ * Devolve o usuário quando o token é válido e `null` no resto dos casos, para
+ * a rota decidir o quanto conta.
+ */
+export function quemPede(req) {
+  const token = (req.headers.authorization || '').replace(/^Bearer /, '');
+  const session = store.sessions[token];
+  if (!session) return null;
+  const user = store.users[session.userId];
+  if (!user || user.ativo === false) return null;
+  const limite = session.expiraEm
+    ? Date.parse(session.expiraEm)
+    : Date.parse(session.criadoEm || 0) + VALIDADE_MS;
+  if (!Number.isFinite(limite) || limite < Date.now()) return null;
+  return user;
+}
+
 export function adminMiddleware(req, res, next) {
   if (!isAdmin(req.user)) {
     return res.status(403).json({ error: 'Acesso restrito ao administrador do ecossistema.' });

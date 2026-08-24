@@ -17,6 +17,7 @@ import { semearSePreciso } from '../services/territorioDemo.js';
 import { recentes } from '../services/barramento.js';
 import { ndviDoLote, registrarNdviComoEvidencia, modoSentinel } from '../services/sentinel.js';
 import { seloResultante } from '../science/selos.js';
+import { exigir } from '../auth.js';
 
 export const territorioRouter = Router();
 
@@ -70,7 +71,7 @@ territorioRouter.get('/territorio/ndvi/:loteId', (req, res, next) => {
 });
 
 // Só o NDVI REAL entra na cadeia; o demonstrativo é recusado com instrução.
-territorioRouter.post('/territorio/ndvi/:loteId/registrar', (req, res, next) => {
+territorioRouter.post('/territorio/ndvi/:loteId/registrar', exigir('territorio.evidenciar'), (req, res, next) => {
   semearSePreciso();
   registrarNdviComoEvidencia(req.params.loteId, req.user?.id || null)
     .then(ev => res.json({ evidencia: ev, selo: seloDoLote(req.params.loteId) }))
@@ -87,7 +88,12 @@ territorioRouter.get('/territorio/sentinel/estado', (_req, res) => {
   });
 });
 
-territorioRouter.post('/evidencias', (req, res, next) => {
+// Escrever na cadeia de custódia é ato de quem responde pelo território, não
+// de qualquer pessoa logada. Sem esta guarda, um visitante registrava uma
+// evidência VISAO em lote alheio e, pela regra do elo mais fraco, REBAIXAVA o
+// selo daquele hectare no passaporte público: vandalismo na própria prova que
+// a plataforma existe para vender.
+territorioRouter.post('/evidencias', exigir('territorio.evidenciar'), (req, res, next) => {
   try {
     const { loteId, tipo, descricao, selo, anexoHash } = req.body || {};
     const ev = registrarEvidencia({ loteId, tipo, descricao, selo, anexoHash }, req.user?.id || null);
