@@ -427,7 +427,8 @@ export function montarDocumento(plano, projeto = {}) {
     B(
       h2('Fomento público compatível'),
       tabela(['Programa', 'Órgão', 'Aderência', 'Por quê', 'O que preparar'],
-        impacto.fomento.map(f => [f.programa, f.orgao, `${f.aderencia}%`, f.porque, f.oQuePreparar])),
+        // Aderência em um dígito veio na escala 0-10 (planos antigos): vira %
+        impacto.fomento.map(f => [f.programa, f.orgao, `${f.aderencia > 0 && f.aderencia <= 10 ? f.aderencia * 10 : f.aderencia}%`, f.porque, f.oQuePreparar])),
     );
   }
 

@@ -143,20 +143,26 @@ export default function PlanoView({ projeto }) {
 
       <Secao emoji="📋" titulo="Editais & Fomento · Agente Editais">
         <div className="space-y-3">
-          {(p.editais.editaisRecomendados || []).map((e, i) => (
-            <div key={i} className="rounded-xl bg-white/[.04] border border-white/10 p-4">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="text-sm font-bold">{e.nome} <span className="text-white/40 font-normal text-xs">· {e.orgao}</span></div>
-                <div className="flex items-center gap-2">
-                  <div className="w-28 h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full" style={{ width: `${e.aderencia}%`, background: 'linear-gradient(90deg,#00ff64,#00c8ff)' }} />
+          {(p.editais.editaisRecomendados || []).map((e, i) => {
+            // Planos antigos trazem a aderência em escala 0-10; um dígito numa
+            // lista de recomendados nunca é "9 de 100", é 9 de 10.
+            const bruto = Number(e.aderencia) || 0;
+            const nota = bruto > 0 && bruto <= 10 ? bruto * 10 : bruto;
+            return (
+              <div key={i} className="rounded-xl bg-white/[.04] border border-white/10 p-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="text-sm font-bold">{e.nome} <span className="text-white/40 font-normal text-xs">· {e.orgao}</span></div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-28 h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full" style={{ width: `${nota}%`, background: 'linear-gradient(90deg,#00ff64,#00c8ff)' }} />
+                    </div>
+                    <span className="text-xs zd-green font-bold">{nota}/100</span>
                   </div>
-                  <span className="text-xs zd-green font-bold">{e.aderencia}/100</span>
                 </div>
+                <p className="text-xs text-white/55 mt-1.5">{e.motivo}</p>
               </div>
-              <p className="text-xs text-white/55 mt-1.5">{e.motivo}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <Sub>Documentação necessária</Sub><Lista itens={p.editais.documentacaoNecessaria} />
         <Sub>Dicas de submissão</Sub><Lista itens={p.editais.dicasSubmissao} />

@@ -105,7 +105,7 @@ export const AGENTES = [
     schema: {
       type: 'object',
       properties: {
-        editaisRecomendados: { type: 'array', items: { type: 'object', properties: { nome: str, orgao: str, aderencia: { type: 'integer' }, motivo: str }, required: ['nome', 'orgao', 'aderencia', 'motivo'], additionalProperties: false } },
+        editaisRecomendados: { type: 'array', items: { type: 'object', properties: { nome: str, orgao: str, aderencia: { type: 'integer', minimum: 0, maximum: 100, description: 'Aderência do edital ao projeto, de 0 a 100' }, motivo: str }, required: ['nome', 'orgao', 'aderencia', 'motivo'], additionalProperties: false } },
         documentacaoNecessaria: arrStr,
         dicasSubmissao: arrStr,
       },

@@ -213,7 +213,7 @@ const BLOCOS = [
       }),
       kpisImpacto: lista({ indicador: str, unidade: str, linhaDeBase: str, meta: str, comoMedir: str }),
       riscos: lista({ risco: str, probabilidade: str, impacto: str, mitigacao: str, sinalDeAlerta: str }),
-      fomento: lista({ programa: str, orgao: str, aderencia: { type: 'integer' }, porque: str, oQuePreparar: str }),
+      fomento: lista({ programa: str, orgao: str, aderencia: { type: 'integer', minimum: 0, maximum: 100, description: 'Aderência do programa ao projeto, de 0 a 100 (um encaixe forte fica acima de 70)' }, porque: str, oQuePreparar: str }),
       grauDeEvidencia: obj({ nivelGeral: selo, elosFracos: arrStr, comoSubir: arrStr }),
     }),
     encomenda: `Escreva as seções de IMPACTO.
