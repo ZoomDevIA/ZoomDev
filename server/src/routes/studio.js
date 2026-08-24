@@ -29,6 +29,7 @@ import { modoTranscricao } from '../services/transcricao.js';
 import { awardXP, FASES, FASE_LABEL, NIVEL_STARTUP, missoesValidacaoPadrao } from '../services/gamification.js';
 import { limitar } from '../services/limite.js';
 import { lerConteudo, gravarConteudo, arquivosMvp } from '../services/conteudo.js';
+import { jaEmAndamento } from '../services/retomada.js';
 
 export const studioRouter = Router();
 
@@ -197,6 +198,16 @@ studioRouter.put('/local', (req, res) => {
 studioRouter.get('/:id/documento/gerar', async (req, res) => {
   const proj = meuProjeto(req, res);
   if (!proj) return;
+
+  // Recarregar a aba durante os três minutos da geração e clicar de novo
+  // cobrava duas vezes e deixava duas execuções escrevendo no mesmo projeto.
+  const andando = jaEmAndamento(proj, 'documento');
+  if (andando) {
+    return res.status(409).json({
+      error: 'Este plano já está sendo gerado agora mesmo. Aguarde a conclusão nesta tela.',
+      code: 'JA_EM_ANDAMENTO', desde: andando.desde,
+    });
+  }
 
   const custo = config.credits.planGeneration;
   if (req.user.creditos < custo) {

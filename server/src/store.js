@@ -29,16 +29,42 @@ export function load() {
 }
 
 let saveTimer = null;
+
+/** A escrita em si, sem espera. Usada pelo agendamento e pelo encerramento. */
+function gravarAgora() {
+  clearTimeout(saveTimer);
+  saveTimer = null;
+  try {
+    fs.mkdirSync(config.dataDir, { recursive: true });
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    return true;
+  } catch (e) {
+    console.error('store: falha ao salvar', e.message);
+    return false;
+  }
+}
+
+/**
+ * Salvamento agendado: cem milissegundos de espera juntam as dez escritas de
+ * uma mesma requisição numa só. É o que mantém o disco calmo.
+ */
 export function save() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try {
-      fs.mkdirSync(config.dataDir, { recursive: true });
-      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-    } catch (e) {
-      console.error('store: falha ao salvar', e.message);
-    }
-  }, 100);
+  saveTimer = setTimeout(gravarAgora, 100);
+}
+
+/**
+ * Salvamento imediato, para o encerramento do processo.
+ *
+ * Sem isto, cada deploy descartava a janela de escritas pendentes: o handler
+ * de sinal chamava `save()`, que apenas AGENDA, e em seguida encerrava o
+ * processo antes de o agendamento disparar. Para a cadeia de custódia o
+ * estrago era pior que perder um dado: a evidência sumia do disco e o elo
+ * seguinte apontava para um hash que não existia mais.
+ */
+export function salvarAgoraSePendente() {
+  if (saveTimer === null) return false;
+  return gravarAgora();
 }
 
 export const store = {

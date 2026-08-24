@@ -9,7 +9,7 @@ import { migrarConteudo } from './services/conteudo.js';
 import { siteDoSlug, montarPagina, registrarLead, registrarVisita, paginaObrigado, PREFIXO } from './services/publicacao.js';
 import { register, login, loginComGoogle, authMiddleware, adminMiddleware, publicUser, rotularAparelho } from './auth.js';
 import { modoLoginGoogle, clientIdGoogle, verificarCredencialGoogle } from './services/loginGoogle.js';
-import { save, store } from './store.js';
+import { save, store, salvarAgoraSePendente } from './store.js';
 import { projectsRouter } from './routes/projects.js';
 import { carbonRouter } from './routes/carbon.js';
 import { platformRouter } from './routes/platform.js';
@@ -24,6 +24,7 @@ import { homeRouter } from './routes/home.js';
 import { painelRouter } from './routes/painel.js';
 import { contaRouter } from './routes/conta.js';
 import { destravarNaPartida } from './services/recuperacaoSenha.js';
+import { varrerInterrompidos } from './services/retomada.js';
 import { studioRouter } from './routes/studio.js';
 import { pedirRedefinicao, redefinir } from './services/recuperacaoSenha.js';
 import { limitar } from './services/limite.js';
@@ -299,7 +300,16 @@ agendarPulso();
 // de imagem no deploy, não contra escrita corrompida ou exclusão acidental.
 agendarBackup();
 
-process.on('SIGINT', () => { save(); process.exit(0); });
+// Encerramento: gravar AGORA o que estava agendado, e cobrir o SIGTERM, que
+// é o sinal que a hospedagem manda em todo deploy. O SIGINT sozinho protegia
+// só o Ctrl-C do desenvolvedor.
+const encerrar = (sinal) => () => {
+  salvarAgoraSePendente();
+  console.log(`ZoomDev OS encerrando (${sinal}): estado gravado.`);
+  process.exit(0);
+};
+process.on('SIGINT', encerrar('SIGINT'));
+process.on('SIGTERM', encerrar('SIGTERM'));
 
 // Exportado para o teste de rota poder subir a aplicação de verdade, ler a
 // porta que o sistema deu e fechar no fim. Com PORT=0 o sistema escolhe uma
@@ -309,4 +319,7 @@ export const servidor = app.listen(config.port, async () => {
   // Destravamento de emergência: só faz alguma coisa se ZOOMDEV_RECUPERAR
   // estiver definida. Imprime um link de uso único no log e nada mais.
   await destravarNaPartida().catch(e => console.error('ZOOMDEV_RECUPERAR falhou:', e.message));
+  // Nenhum trabalho longo sobrevive ao processo que o iniciou: o que ficou
+  // pendurado numa queda anterior é encerrado e a seiva volta para quem pagou.
+  varrerInterrompidos();
 });

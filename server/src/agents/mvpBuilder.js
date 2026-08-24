@@ -39,27 +39,57 @@ export const PECAS = [
 const esc = (t) => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // ── Extração do plano ─────────────────────────────────────────────────────
+//
+// ATENÇÃO, e é o coração do MVP Builder: os nomes lidos aqui têm que ser os
+// nomes que os agentes ESCREVEM. Durante meses este mapa procurava
+// `propostaValor`, `dores`, `funcionalidades` e `modeloReceita`, campos que
+// não existem em nenhum dos dois formatos de plano. Todos caíam no vazio, os
+// valores de reserva entravam no lugar, e o construtor montava cada MVP a
+// partir de "Cadastro simples · Painel · Relatórios" em vez do plano real do
+// fundador. Nada dava erro: o produto saía bonito e genérico.
+//
+// Os dois formatos (o clássico de cinco agentes e a projeção do plano de
+// quatorze seções) usam os MESMOS nomes, então um mapa só serve para ambos.
+// O teste `mvpBuilder` trava esta correspondência: se um agente renomear
+// campo, o teste quebra antes de o fundador receber um MVP de plástico.
 function contexto(projeto) {
   const p = projeto.plano || {};
   const prod = p.produto || {};
   const neg = p.negocio || {};
   const eng = p.engenharia || {};
   const imp = p.impacto || {};
+
+  // A dor de cada persona é mais concreta que o enunciado do problema, e é
+  // dela que sai a seção "para quem isto resolve" da landing.
+  const doresDasPersonas = (prod.personas || []).map(x => x.dor).filter(Boolean);
+  const primeiraFase = (eng.roadmapTecnico || [])[0];
+
   return {
     nome: projeto.nome,
     descricao: projeto.descricao,
     bio: projeto.classificacao === 'biostartup',
     vertical: projeto.vertical || 'Inovação',
-    proposta: prod.propostaValor || prod.proposta || projeto.descricao,
-    publico: prod.publicoAlvo || prod.publico || 'primeiros usuários',
-    dores: prod.dores || prod.problemas || [],
-    funcionalidades: prod.funcionalidades || prod.features || [],
-    diferencial: prod.diferencial || neg.diferencial || '',
-    modelo: neg.modeloReceita || neg.modelo || 'Assinatura mensal',
-    precos: neg.precos || neg.pricing || [],
-    stack: eng.stack || eng.tecnologias || [],
-    mvpEscopo: eng.escopoMvp || eng.mvp || [],
-    impacto: imp.descricao || imp.teseImpacto || '',
+    proposta: prod.propostaDeValor || projeto.descricao,
+    problema: prod.problema || '',
+    solucao: prod.solucao || '',
+    publico: prod.publicoAlvo || 'primeiros usuários',
+    personas: prod.personas || [],
+    dores: doresDasPersonas.length ? doresDasPersonas : (prod.problema ? [prod.problema] : []),
+    funcionalidades: prod.funcionalidadesMvp || [],
+    diferencial: (prod.diferenciais || []).join(' · '),
+    diferenciais: prod.diferenciais || [],
+    modelo: neg.modeloDeNegocio || 'Assinatura mensal',
+    precos: neg.pricing || [],
+    concorrentes: neg.concorrentes || [],
+    goToMarket: neg.goToMarket || [],
+    stack: eng.stack || [],
+    arquitetura: eng.arquitetura || '',
+    // O escopo do MVP é a primeira fase do roadmap técnico; sem roadmap, são
+    // as próprias funcionalidades essenciais.
+    mvpEscopo: (primeiraFase?.entregas?.length ? primeiraFase.entregas : prod.funcionalidadesMvp) || [],
+    impacto: (imp.ods || []).map(o => o.contribuicao).filter(Boolean).join(' ')
+      || (imp.kpisImpacto || []).slice(0, 2).join(' · '),
+    kpis: imp.kpisImpacto || [],
     ods: imp.ods || [],
     // As duas cores da marca do MVP. Vivem aqui, e não no gerador demo, porque
     // o andaime também precisa delas: ícone, manifesto e `theme-color` têm que
@@ -790,3 +820,8 @@ export async function construirMvp(projeto, onProgress = () => {}) {
   }
   return { arquivos: montar(PECAS.map(p => gerado[p.id]), ctx, onProgress), modo: 'ia', design };
 }
+
+// Exposto para os testes: a correspondência entre o que os agentes escrevem e
+// o que o construtor lê é a peça mais frágil deste arquivo, e a única cujo
+// defeito não aparece como erro, só como MVP genérico.
+export const _interno = { contexto };

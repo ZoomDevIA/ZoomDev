@@ -21,8 +21,15 @@ export default function MvpBuilder({ projetoId }) {
   const [baixando, setBaixando] = useState(false);
   const [urlPrevia, setUrlPrevia] = useState(null);
 
+  const [interrompido, setInterrompido] = useState(null);
+
   useEffect(() => {
-    api.mvp(projetoId).then(m => { if (m.status === 'pronto') setMvp(m); }).catch(() => {});
+    api.mvp(projetoId).then(m => {
+      if (m.status === 'pronto') setMvp(m);
+      // Construção que caiu junto com o servidor: dizer o que houve vale mais
+      // que um botão que parece travado sem motivo.
+      if (m.status === 'interrompido') setInterrompido(m);
+    }).catch(() => {});
   }, [projetoId]);
 
   // A prévia é servida por uma rota própria, com política de conteúdo isolada:
@@ -37,7 +44,7 @@ export default function MvpBuilder({ projetoId }) {
   }, [projetoId, mvp, aba, arquivoAtivo]);
 
   const construir = async () => {
-    setErro(null); setConstruindo(true); setProgresso({}); setMvp(null);
+    setErro(null); setInterrompido(null); setConstruindo(true); setProgresso({}); setMvp(null);
     try {
       await construirMvpSSE(projetoId, {
         inicio: (d) => setPecas(d.pecas),
@@ -108,6 +115,14 @@ export default function MvpBuilder({ projetoId }) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {interrompido && !construindo && !mvp && (
+        <div className="text-sm text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2.5">
+          A construção anterior foi interrompida quando o servidor reiniciou.
+          {interrompido.seivaEstornada > 0 && <> A seiva ({interrompido.seivaEstornada} 🌿) já voltou para a sua conta.</>}
+          {' '}Pode construir de novo quando quiser.
         </div>
       )}
 

@@ -15,6 +15,7 @@ import { emitirPrevia } from '../services/previa.js';
 import { hidratar, gravarConteudo, arquivosMvp, apagarConteudo } from '../services/conteudo.js';
 import { publicarSite, despublicarSite, sugerirSlug, urlPublica, leadsDe, PREFIXO } from '../services/publicacao.js';
 import { exigir } from '../auth.js';
+import { jaEmAndamento } from '../services/retomada.js';
 import JSZip from 'jszip';
 
 export const projectsRouter = Router();
@@ -299,6 +300,14 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
   if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto não encontrado.' });
   if (!proj.plano) return res.status(409).json({ error: 'Gere o plano de negócios antes de construir o MVP.' });
 
+  const andando = jaEmAndamento(proj, 'mvp');
+  if (andando) {
+    return res.status(409).json({
+      error: 'Este MVP já está sendo construído agora mesmo. Aguarde a conclusão nesta tela.',
+      code: 'JA_EM_ANDAMENTO', desde: andando.desde,
+    });
+  }
+
   const custo = config.credits.mvpBuild;
   if (req.user.creditos < custo) {
     return res.status(402).json({ error: `Seiva insuficiente: construir o MVP custa ${custo} 🌿.` });
@@ -389,6 +398,10 @@ projectsRouter.get('/:id/mvp', (req, res) => {
   if (!proj.mvp) return res.json({ status: 'nao_iniciado' });
   res.json({
     status: proj.mvp.status, modo: proj.mvp.modo, construidoEm: proj.mvp.construidoEm,
+    // Construção que morreu com o processo: a tela precisa poder dizer o que
+    // houve e que a seiva voltou, em vez de deixar o botão parecendo travado.
+    motivo: proj.mvp.motivo || null,
+    seivaEstornada: proj.mvp.seivaEstornada || 0,
     design: proj.mvp.design || null,
     arquivos: arquivosMvp(proj.id).map(a => ({
       arquivo: a.arquivo, bytes: Buffer.byteLength(a.conteudo, 'utf8'), conteudo: a.conteudo,
