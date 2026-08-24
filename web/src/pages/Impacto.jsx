@@ -226,14 +226,21 @@ function Simulador({ dossie }) {
 function Dossie({ dossie }) {
   const [filtro, setFiltro] = useState('todas');
   const selos = dossie?.selos || [];
-  const cats = useMemo(() => {
-    const c = [...new Set((dossie?.evidencias || []).map(e => e.categoria))];
-    return ['todas', ...c];
-  }, [dossie]);
-  const LABEL = { todas: 'Todas', regulatorio: 'Regulatório', institucional: 'Institucional', agronomico: 'Agronômico', ambiental: 'Ambiental', modelo: 'Modelo de negócio', mecanismo: 'Mecanismo' };
+
+  // O filtro lia `dossie.evidencias`, que a rota nunca mandou, e comparava com
+  // `efeito.categoria`, que os efeitos não têm. Resultado: uma única aba morta
+  // escrita "Todas". Aqui ele passa a filtrar pela dimensão que estes dados de
+  // fato carregam, que é também a régua da casa: o grau de evidência.
+  const niveis = useMemo(() => {
+    const usados = new Set((dossie?.efeitos || []).map(e => e.selo).filter(Boolean));
+    // Na ordem da escala, não na ordem em que apareceram na lista.
+    const ordenados = selos.map(s => s.id).filter(id => usados.has(id));
+    return ['todas', ...ordenados];
+  }, [dossie, selos]);
 
   if (!dossie) return <div className="text-white/40 text-sm">Carregando dossiê…</div>;
-  const lista = filtro === 'todas' ? dossie.efeitos : dossie.efeitos.filter(e => e.categoria === filtro);
+  const lista = filtro === 'todas' ? dossie.efeitos : dossie.efeitos.filter(e => e.selo === filtro);
+  const contar = (id) => (id === 'todas' ? dossie.efeitos.length : dossie.efeitos.filter(e => e.selo === id).length);
 
   return (
     <div className="space-y-5">
@@ -273,14 +280,17 @@ function Dossie({ dossie }) {
         </div>
       </div>
 
-      <div className="flex gap-1.5 flex-wrap">
-        {cats.map(c => (
-          <button key={c} onClick={() => setFiltro(c)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filtro === c ? 'text-[#00ff64] bg-[#00ff6414] border border-[#00ff6433]' : 'text-white/50 hover:text-white/85 hover:bg-white/5 border border-transparent'}`}>
-            {LABEL[c] || c}
-          </button>
-        ))}
-      </div>
+      {niveis.length > 1 && (
+        <div className="flex gap-1.5 flex-wrap">
+          {niveis.map(c => (
+            <button key={c} onClick={() => setFiltro(c)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filtro === c ? 'text-[#00ff64] bg-[#00ff6414] border border-[#00ff6433]' : 'text-white/50 hover:text-white/85 hover:bg-white/5 border border-transparent'}`}>
+              {c === 'todas' ? 'Todas' : (selos.find(s => s.id === c)?.nome || c)}
+              <span className="ml-1.5 text-[10px] opacity-55">{contar(c)}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-2.5">
         {lista.map(e => (

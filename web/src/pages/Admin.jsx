@@ -5,6 +5,7 @@ import AgentAvatar from '../components/AgentAvatar.jsx';
 import Reator from '../components/nave/Reator.jsx';
 import { useFoco } from '../lib/foco.js';
 import '../nave.css';
+import Carga from '../components/Carga.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SUPER DASHBOARD DO ECOSSISTEMA: comandado pela Sexta-Feira 🕶️
@@ -242,10 +243,13 @@ function PainelPic({ notify }) {
   const [propondo, setPropondo] = useState(false);
   const [secaoAberta, setSecaoAberta] = useState(null);
 
-  const carregar = () => api.adminPic().then(setPic).catch(() => {});
+  const [erro, setErro] = useState(null);
+  // O `.catch(() => {})` engolia a falha e deixava a aba em "Carregando
+  // protocolo…" para sempre, sem dizer nada e sem nada para clicar.
+  const carregar = () => { setErro(null); api.adminPic().then(setPic).catch(e => setErro(e.message)); };
   useEffect(() => { carregar(); }, []);
 
-  if (!pic) return <div className="text-white/40 text-sm">Carregando protocolo…</div>;
+  if (!pic) return <Carga erro={erro} oQue="o protocolo" aoTentar={carregar} />;
 
   const propor = async () => {
     setPropondo(true);
@@ -429,7 +433,8 @@ function PainelModelos({ notify }) {
   const [dados, setDados] = useState(null);
   const [salvando, setSalvando] = useState(null);
 
-  const carregar = () => api.adminModelos().then(setDados).catch(() => {});
+  const [erroCarga, setErroCarga] = useState(null);
+  const carregar = () => { setErroCarga(null); api.adminModelos().then(setDados).catch(e => setErroCarga(e.message)); };
   useEffect(() => { carregar(); }, []);
 
   const trocar = async (papelId, modelo) => {
@@ -444,7 +449,7 @@ function PainelModelos({ notify }) {
     setSalvando(null);
   };
 
-  if (!dados) return <div className="text-white/40 text-sm">Carregando o mapa de modelos…</div>;
+  if (!dados) return <Carga erro={erroCarga} oQue="o mapa de modelos" aoTentar={carregar} />;
   const infoDe = (id) => dados.modelos.find(m => m.id === id);
 
   return (
@@ -697,7 +702,10 @@ function EstadoSextaFeira({ overview }) {
           <span>propostas pendentes</span>
           <span>{overview?.pic?.propostasPendentes ?? '—'}</span>
         </div>
-        <div className="nave-linha"><span>agentes em campo</span><span>23/35</span></div>
+        <div className="nave-linha">
+          <span>agentes em campo</span>
+          <span>{overview?.elenco ? `${overview.elenco.ativos}/${overview.elenco.total}` : '—'}</span>
+        </div>
       </div>
     </div>
   );

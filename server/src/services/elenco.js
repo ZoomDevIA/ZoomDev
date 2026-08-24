@@ -62,6 +62,12 @@ export function elencoCompleto() {
   };
 }
 
+/** Contagem viva do elenco, para painéis que só precisam do placar. */
+export function resumoElenco() {
+  const e = estadoElenco();
+  return { total: CATALOGO.length, ativos: CATALOGO.filter(a => e.ativacao[a.id]).length };
+}
+
 /** Só os agentes ativos: é o que o resto da plataforma consome. */
 export function agentesAtivos() {
   const e = estadoElenco();

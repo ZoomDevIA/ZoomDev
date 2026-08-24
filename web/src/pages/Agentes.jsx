@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import { useUser } from '../App.jsx';
 import AgentAvatar from '../components/AgentAvatar.jsx';
+import Carga from '../components/Carga.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ELENCO: 35 agentes em 4 castas.
@@ -24,7 +25,12 @@ export default function Agentes() {
     catch (e) { setErro(e.message); }
   };
 
-  if (!elenco) return <div className="text-white/40 text-sm">Carregando elenco…</div>;
+  // O erro vem antes do carregando: sem isto, uma consulta que falha deixa a
+  // tela em "Carregando elenco…" para sempre, com a mensagem preenchida e
+  // inalcançável.
+  if (!elenco) {
+    return <Carga erro={erro} oQue="o elenco" aoTentar={() => { setErro(null); carregar(); }} />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-7">

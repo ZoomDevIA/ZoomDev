@@ -119,8 +119,15 @@ export default function Home() {
   }, [ajustarAltura]);
 
   useEffect(() => { api.home().then(setDados).catch(() => {}); }, []);
+  // "Tudo" também é um filtro. A saída antecipada que morava aqui (`if (filtro
+  // === 'todos') return`) existia para poupar uma chamada na primeira carga,
+  // já que a home vem com a vitrine completa, mas ela tornava o botão "Tudo"
+  // inerte na volta: quem filtrava por BioStartups e clicava em Tudo continuava
+  // vendo só as BioStartups, com a aba certa acesa. Agora quem pula a primeira
+  // consulta é a montagem, não o valor do filtro.
+  const filtroMontado = useRef(false);
   useEffect(() => {
-    if (filtro === 'todos') return;
+    if (!filtroMontado.current) { filtroMontado.current = true; return; }
     api.vitrine(filtro).then(v => setDados(d => (d ? { ...d, vitrine: v } : d))).catch(() => {});
   }, [filtro]);
 

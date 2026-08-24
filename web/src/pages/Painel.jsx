@@ -6,6 +6,7 @@ import BrandLockup from '../components/BrandLockup.jsx';
 import Icon from '../components/Icon.jsx';
 import { Painel as Bloco, Rotulo, Etiqueta, Botao, Campo, Abas, Estatistica } from '../components/hud/index.jsx';
 import Sessoes from '../components/conta/Sessoes.jsx';
+import Carga from '../components/Carga.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PAINEL DE ADMINISTRAÇÃO: área com porta própria.
@@ -229,7 +230,7 @@ function Usuarios({ contexto }) {
     try { await fn(); await carregar(); } catch (e) { setErro(e.message); }
   };
 
-  if (!dados) return <div className="text-white/40 text-sm">Carregando…</div>;
+  if (!dados) return <Carga erro={erro} oQue="os usuários" aoTentar={() => { setErro(null); carregar(); }} />;
 
   return (
     <div className="space-y-4">
@@ -461,8 +462,9 @@ function Vitrine() {
 
   useEffect(() => { api.painelVitrine().then(setItens).catch(e => setErro(e.message)); }, []);
   const agir = async (fn) => { setErro(null); try { setItens(await fn()); } catch (e) { setErro(e.message); } };
+  const buscar = () => { setErro(null); api.painelVitrine().then(setItens).catch(e => setErro(e.message)); };
 
-  if (!itens) return <div className="text-white/40 text-sm">Carregando…</div>;
+  if (!itens) return <Carga erro={erro} oQue="a vitrine" aoTentar={buscar} />;
 
   return (
     <div className="space-y-3">
@@ -509,16 +511,31 @@ const ICONE_ACAO = {
   'usuario.desativado': '🚫', 'vitrine.destaque': '★', 'vitrine.ocultacao': '👁️',
 };
 
+// O teto que o servidor guarda na trilha (ver sessaoPainel.js). Pedir menos
+// que isto e anunciar o número cheio foi o defeito que estava aqui.
+const LIMITE_AUDITORIA = 500;
+
 function Auditoria() {
   const [registros, setRegistros] = useState(null);
-  useEffect(() => { api.painelAuditoria(200).then(setRegistros).catch(() => setRegistros([])); }, []);
+  const [erro, setErro] = useState(null);
+  // A tela dizia "as 500 mais recentes" e pedia 200: quem fosse conferir uma
+  // ação de trezentas atrás não a encontrava e concluía que ela não existiu.
+  // 500 é o teto que o servidor guarda, e é o que a trilha pede agora.
+  const buscar = () => {
+    setErro(null);
+    api.painelAuditoria(LIMITE_AUDITORIA).then(setRegistros).catch(e => setErro(e.message));
+  };
+  useEffect(() => { buscar(); }, []);
 
-  if (!registros) return <div className="text-white/40 text-sm">Carregando…</div>;
+  if (!registros) return <Carga erro={erro} oQue="a trilha" aoTentar={buscar} />;
 
   return (
     <div className="space-y-2">
       <p className="text-white/50 text-sm">
-        As 500 ações administrativas mais recentes, com autor, horário e origem. Somente leitura.
+        {registros.length === LIMITE_AUDITORIA
+          ? `As ${LIMITE_AUDITORIA} ações administrativas mais recentes`
+          : `${registros.length} ${registros.length === 1 ? 'ação administrativa registrada' : 'ações administrativas registradas'}`}
+        , com autor, horário e origem. Somente leitura.
       </p>
       {registros.length === 0 && <Bloco className="p-8 text-center text-white/45 text-sm">Nada registrado ainda.</Bloco>}
       {registros.map(r => (

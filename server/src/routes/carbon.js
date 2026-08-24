@@ -12,6 +12,16 @@ import { planoCompensacaoHtml, planoCompensacaoDocx } from '../services/exportPl
 import { awardXP } from '../services/gamification.js';
 import { CARBONPAY_ITENS, SEQUESTRO_BIOMAS, SEQUESTRO_TIPOS } from '../data/seeds.js';
 
+// Número que vem do formulário, dentro de limites que fazem sentido no mundo.
+// `Number(v) || 0` sozinho deixa Infinity passar (`Number('1e999')`), e daí em
+// diante toda conta derivada vira Infinity: área infinita, receita infinita,
+// "R$ Infinity" na tela. Fora de faixa cai no padrão, não no infinito.
+function faixa(v, { min = 0, max = 1e9, padrao = 0 } = {}) {
+  const x = Number(v);
+  if (!Number.isFinite(x)) return padrao;
+  return Math.min(max, Math.max(min, x));
+}
+
 export const carbonRouter = Router();
 
 // Marketplace CarbonPay (itens seed do protótipo) + stats agregadas
@@ -35,11 +45,13 @@ carbonRouter.get('/marketplace', (_req, res) => {
 // Calculadora de SEQUESTRO (protótipo): quanto uma área pode GERAR de créditos
 carbonRouter.post('/sequestro', (req, res) => {
   const { areaHa, bioma = 'amazonia', tipo = 'restauracao', duracaoAnos = 10, precoPorTon = 90 } = req.body || {};
-  const area = Math.max(0, Number(areaHa) || 0);
-  const anos = Math.min(40, Math.max(1, Number(duracaoAnos) || 10));
+  // Teto de área: 850 milhões de hectares é o Brasil inteiro. Acima disso é
+  // dedo escorregando, não fazenda.
+  const area = faixa(areaHa, { max: 850_000_000 });
+  const anos = Math.round(faixa(duracaoAnos, { min: 1, max: 40, padrao: 10 }));
   const b = SEQUESTRO_BIOMAS[bioma] || SEQUESTRO_BIOMAS.amazonia;
   const t = SEQUESTRO_TIPOS[tipo] || SEQUESTRO_TIPOS.restauracao;
-  const preco = Math.max(10, Number(precoPorTon) || 90);
+  const preco = faixa(precoPorTon, { min: 10, max: 100_000, padrao: 90 });
 
   const tco2PorAno = Math.round(area * b.taxa * t.mult * 10) / 10;
   const tco2Total = Math.round(tco2PorAno * anos * 10) / 10;
@@ -62,7 +74,7 @@ carbonRouter.post('/sequestro', (req, res) => {
 carbonRouter.post('/comprar', (req, res) => {
   const { itemId, toneladas, metodo = 'pix', projetoZoomDevId } = req.body || {};
   const item = CARBONPAY_ITENS.find(i => i.id === itemId && i.tons);
-  const ton = Math.max(0.1, Number(toneladas) || 0);
+  const ton = faixa(toneladas, { min: 0.1, max: 1e7, padrao: 0.1 });
   if (!item) return res.status(400).json({ error: 'Item de carbono inválido.' });
   if (!['pix', 'cartao'].includes(metodo)) return res.status(400).json({ error: 'Método de pagamento inválido.' });
 
@@ -185,7 +197,7 @@ carbonRouter.get('/plano-compensacao/:id', (req, res) => {
 carbonRouter.post('/compensar', (req, res) => {
   const { projetoId, toneladas, projetoZoomDevId } = req.body || {};
   const projeto = PROJETOS_CARBONPAY.find(p => p.id === projetoId);
-  const ton = Math.max(0.1, Number(toneladas) || 0);
+  const ton = faixa(toneladas, { min: 0.1, max: 1e7, padrao: 0.1 });
   if (!projeto) return res.status(400).json({ error: 'Projeto de compensação inválido.' });
 
   const orderId = id('co2');

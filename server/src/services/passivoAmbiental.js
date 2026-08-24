@@ -8,8 +8,22 @@
 // Um inventário honesto declara sua incerteza. Número único é falsa precisão.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const n = (v) => Math.max(0, Number(v) || 0);
-const r2 = (v) => Math.round(v * 100) / 100;
+// `Number(v) || 0` já barrava texto e negativo, mas deixava passar o infinito:
+// `Number('1e999')` é Infinity, e Infinity sobrevive ao Math.max. Uma conta de
+// luz digitada como 1e999 devolvia um inventário inteiro de "Infinity tCO2e" e
+// um custo de compensação de "R$ Infinity".
+//
+// Valor impossível vira zero, como já acontecia com texto: descartar o campo é
+// honesto, inventar um teto no lugar dele não. O teto de um bilhão existe para
+// o outro caso, o número grande mas finito, que também não é dado de operação
+// real e sim dedo escorregando no teclado.
+const TETO = 1e9;
+const n = (v) => {
+  const x = Number(v);
+  if (!Number.isFinite(x) || x <= 0) return 0;
+  return Math.min(x, TETO);
+};
+const r2 = (v) => (Number.isFinite(v) ? Math.round(v * 100) / 100 : 0);
 
 // ── Fatores de emissão ────────────────────────────────────────────────────
 // Fontes: MCTI/SIRENE (rede elétrica BR), IPCC 2019 Refinement (N₂O agrícola),

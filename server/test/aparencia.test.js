@@ -23,16 +23,22 @@ const {
   FUNDOS, ACENTOS, contraste, distancia, guardaDeContraste, normalizar, DISTANCIA_MINIMA,
 } = await import(path.join(RAIZ, 'web/src/lib/tema.js'));
 
-/** Varre as telas e devolve os passos de opacidade de uma família de classe. */
-function passosUsados(familia) {
+/**
+ * Varre as telas e devolve os passos de opacidade de uma família de classe.
+ * `prefixo` isola a variante: '' pega o estado parado, 'hover:' pega o realce.
+ */
+function passosUsados(familia, prefixo = '') {
   const achados = new Set();
+  // Sem o prefixo, a busca precisa recusar `hover:text-white/70`, senão os
+  // dois estados viram um só e a guarda da variante nunca vê nada de novo.
+  const antes = prefixo ? prefixo.replace(':', '\\:') : '(?<![\\w:-])';
   const varrer = (dir) => {
     for (const nome of fs.readdirSync(dir)) {
       const alvo = path.join(dir, nome);
       if (fs.statSync(alvo).isDirectory()) { varrer(alvo); continue; }
       if (!/\.jsx?$/.test(nome)) continue;
       const texto = fs.readFileSync(alvo, 'utf8');
-      for (const m of texto.matchAll(new RegExp(`${familia}\\/(\\d+)`, 'g'))) achados.add(m[1]);
+      for (const m of texto.matchAll(new RegExp(`${antes}${familia}\\/(\\d+)`, 'g'))) achados.add(m[1]);
     }
   };
   varrer(path.join(RAIZ, 'web/src'));
@@ -63,6 +69,21 @@ test('tema claro', async (t) => {
       const faltando = passosUsados(familia).filter(n => !CSS.includes(`.${familia}\\/${n} {`));
       assert.deepEqual(faltando, [],
         `estes passos ficariam brancos sobre papel: ${faltando.map(n => `${familia}/${n}`).join(', ')}`);
+    });
+  }
+
+  // ── A mesma guarda para o passar do mouse ────────────────────────────────
+  // O Tailwind compila `hover:text-white/70` como um seletor próprio. Inverter
+  // `.text-white/70` não toca nele, e o defeito que sobra é o mais cruel de
+  // todos: a tela está certa parada e o texto some no item que a pessoa mira.
+  for (const familia of ['text-white', 'bg-white', 'border-white']) {
+    await t.test(`todo passo de hover:${familia} tem inversão no tema claro`, () => {
+      const propriedade = familia === 'text-white' ? 'color'
+        : familia === 'bg-white' ? 'background-color' : 'border-color';
+      const faltando = passosUsados(familia, 'hover:')
+        .filter(n => !CSS.includes(`.hover\\:${familia}\\/${n}:hover { ${propriedade}`));
+      assert.deepEqual(faltando, [],
+        `no tema claro estes sumiriam ao passar o mouse: ${faltando.map(n => `hover:${familia}/${n}`).join(', ')}`);
     });
   }
 

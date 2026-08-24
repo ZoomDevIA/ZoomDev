@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import BrandLockup from '../components/BrandLockup.jsx';
 import Icon from '../components/Icon.jsx';
 import { Painel, Rotulo } from '../components/hud/index.jsx';
+import { useUser } from '../App.jsx';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TERMOS E PRIVACIDADE — páginas públicas, uma rota cada.
@@ -84,24 +85,39 @@ const PRIVACIDADE = [
 
 export default function Legal() {
   const { pathname } = useLocation();
+  const ctx = useUser();
   const ehPrivacidade = pathname.includes('privacidade');
   const secoes = ehPrivacidade ? PRIVACIDADE : TERMOS;
 
-  return (
-    <div className="min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan">
-      <header className="border-b border-[#00e5ff1f]">
-        <div className="max-w-3xl mx-auto flex items-center justify-between gap-4 px-5 py-4">
-          <Link to="/"><BrandLockup symbolSize={32} wordmarkHeight={25} /></Link>
-          <div className="flex gap-1.5">
-            <Link to="/termos"
-              className={`hud-aba hud-caps px-3 py-1.5 text-[10px] ${!ehPrivacidade ? 'ativa' : ''}`}>Termos</Link>
-            <Link to="/privacidade"
-              className={`hud-aba hud-caps px-3 py-1.5 text-[10px] ${ehPrivacidade ? 'ativa' : ''}`}>Privacidade</Link>
-          </div>
-        </div>
-      </header>
+  // Estas duas rotas existem nos dois mundos: para o visitante, que chega pelo
+  // rodapé da home e precisa de uma página inteira com marca e navegação; e
+  // para quem já está logado, onde o App as monta DENTRO do chassi. No segundo
+  // caso o cabeçalho próprio virava um segundo cabeçalho embaixo do da
+  // plataforma, com dois logos e duas fileiras de abas na mesma tela.
+  const dentroDoChassi = Boolean(ctx?.user);
 
-      <main className="max-w-3xl mx-auto px-5 py-10 md:py-14 relative z-10">
+  const abas = (
+    <div className="flex gap-1.5">
+      <Link to="/termos"
+        className={`hud-aba hud-caps px-3 py-1.5 text-[10px] ${!ehPrivacidade ? 'ativa' : ''}`}>Termos</Link>
+      <Link to="/privacidade"
+        className={`hud-aba hud-caps px-3 py-1.5 text-[10px] ${ehPrivacidade ? 'ativa' : ''}`}>Privacidade</Link>
+    </div>
+  );
+
+  return (
+    <div className={dentroDoChassi ? '' : 'min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan'}>
+      {!dentroDoChassi && (
+        <header className="border-b border-[#00e5ff1f]">
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-4 px-5 py-4">
+            <Link to="/"><BrandLockup symbolSize={32} wordmarkHeight={25} /></Link>
+            {abas}
+          </div>
+        </header>
+      )}
+
+      <main className={`max-w-3xl mx-auto relative z-10 ${dentroDoChassi ? 'py-2' : 'px-5 py-10 md:py-14'}`}>
+        {dentroDoChassi && <div className="flex justify-end mb-4">{abas}</div>}
         <Rotulo>{ehPrivacidade ? 'POLÍTICA DE PRIVACIDADE' : 'TERMOS DE USO'}</Rotulo>
         <h1 className="font-heading text-2xl md:text-3xl font-bold mt-2.5">
           {ehPrivacidade ? 'Como tratamos seus dados' : 'As regras da plataforma'}
@@ -128,11 +144,13 @@ export default function Legal() {
           ))}
         </div>
 
-        <div className="mt-8 text-center">
-          <Link to="/" className="hud-botao-vazio px-5 py-2.5 text-sm inline-flex items-center gap-2">
-            <Icon nome="home" tam={14} /> voltar para a plataforma
-          </Link>
-        </div>
+        {!dentroDoChassi && (
+          <div className="mt-8 text-center">
+            <Link to="/" className="hud-botao-vazio px-5 py-2.5 text-sm inline-flex items-center gap-2">
+              <Icon nome="home" tam={14} /> voltar para a plataforma
+            </Link>
+          </div>
+        )}
       </main>
     </div>
   );

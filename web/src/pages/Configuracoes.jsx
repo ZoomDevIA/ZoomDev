@@ -182,8 +182,15 @@ function PlanoECreditos({ user }) {
 function Gamificacao({ user }) {
   const xp = user.gamification?.xp || 0;
   const nivel = user.nivel || {};
-  const faltam = nivel.proximoNivelXp ? nivel.proximoNivelXp - xp : null;
-  const pct = nivel.proximoNivelXp ? (xp / nivel.proximoNivelXp) * 100 : 100;
+
+  // O campo se chama `proximoXp`, e esta tela lia `proximoNivelXp`, que não
+  // existe: a barra ficava cheia desde o primeiro XP e o "faltam N" nunca
+  // aparecia. O servidor também já manda `progresso` pronto, de propósito,
+  // porque a conta certa desconta o piso do nível atual: sem isso, quem está
+  // no nível 4 com 1.100 de 1.400 XP veria a barra em 78% quando ela deveria
+  // estar em 30% do trecho que ainda falta andar.
+  const faltam = nivel.proximoXp ? Math.max(0, nivel.proximoXp - xp) : null;
+  const pct = Number.isFinite(nivel.progresso) ? nivel.progresso * 100 : 100;
 
   return (
     <Secao rotulo="PROGRESSO" titulo="Sua jornada">

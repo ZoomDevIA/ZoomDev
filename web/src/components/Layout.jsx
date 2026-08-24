@@ -82,10 +82,12 @@ const GRUPOS_PADRAO = MENU.filter(m => m.grupo).map(m => m.to);
 
 // O cardápio da paleta ⌘K: a navegação inteira mais as ações que valem um
 // atalho. `apelidos` são os outros nomes pelos quais alguém procuraria.
-const ACOES_PALETA = [
-  ...MENU.flatMap(m => (m.grupo
-    ? m.filhos.map(f => ({ rotulo: f.label, para: f.to, dominio: m.label }))
-    : [{ rotulo: m.label, para: m.to }])),
+//
+// Uma entrada com o MESMO rótulo de um item do menu não vira linha nova: ela
+// empresta os apelidos para a linha que já existe. Sem isto, "Malha do
+// Ecossistema" aparecia duas vezes na paleta, idênticas, e a pessoa ficava
+// escolhendo entre dois itens iguais sem saber qual a diferença.
+const EXTRAS_PALETA = [
   { rotulo: 'Registrar evidência', para: '/evidencias', dominio: 'Provar', apelidos: 'laudo foto prova lacrar cadeia custodia' },
   { rotulo: 'Verificar cadeia de custódia', para: '/evidencias', dominio: 'Provar', apelidos: 'hash integridade' },
   { rotulo: 'Passaporte público do hectare', para: '/p/AP-0042', dominio: 'Provar', apelidos: 'qr lote publico' },
@@ -94,6 +96,24 @@ const ACOES_PALETA = [
   { rotulo: 'Planos e assinatura', para: '/planos', apelidos: 'preco upgrade pro business seiva' },
   { rotulo: 'Malha do Ecossistema', para: '/malha', dominio: 'Sistema', apelidos: 'barramento conectores eventos diagnostico' },
 ];
+
+const ACOES_PALETA = (() => {
+  const linhas = MENU.flatMap(m => (m.grupo
+    ? m.filhos.map(f => ({ rotulo: f.label, para: f.to, dominio: m.label }))
+    : [{ rotulo: m.label, para: m.to }]));
+  const porChave = new Map(linhas.map(l => [`${l.rotulo}|${l.para}`, l]));
+  for (const extra of EXTRAS_PALETA) {
+    const chave = `${extra.rotulo}|${extra.para}`;
+    const existente = porChave.get(chave);
+    if (existente) {
+      existente.apelidos = [existente.apelidos, extra.apelidos].filter(Boolean).join(' ');
+    } else {
+      porChave.set(chave, extra);
+      linhas.push(extra);
+    }
+  }
+  return linhas;
+})();
 
 // v2: a chave versionada zera o estado salvo da navegação antiga, senão quem
 // já usava a plataforma veria os quatro domínios novos nascerem fechados.

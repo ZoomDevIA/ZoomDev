@@ -12,6 +12,7 @@ import { structured, conversar, conversarComInternet } from './claude.js';
 import { PIC_SEXTA_FEIRA_BASE, renderSystemPromptSextaFeira } from '../protocols/picSextaFeira.js';
 import { radarProjeto, aderenciaHeuristica, diasParaPrazo } from '../services/unicornio.js';
 import { estatisticasBus } from '../services/agentBus.js';
+import { resumoElenco } from '../services/elenco.js';
 import { EDITAIS_SEED } from '../data/seeds.js';
 import { FASE_LABEL } from '../services/gamification.js';
 
@@ -186,6 +187,9 @@ export function snapshotEcossistema() {
       valorTotal: Math.round(pedidos.reduce((s, o) => s + (o.valorTotal || 0), 0) * 100) / 100,
     },
     bus: estatisticasBus(),
+    // O painel mostrava "23/35 agentes em campo" cravado no JSX: um número
+    // que já estava errado no dia em que foi escrito e que nunca mais mudaria.
+    elenco: resumoElenco(),
     pic: { versao: initPic().versaoAtual, propostasPendentes: initPic().propostas.filter(p => p.status === 'pendente').length },
   };
 
