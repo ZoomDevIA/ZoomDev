@@ -437,9 +437,9 @@ function PainelModelos({ notify }) {
     try {
       await api.adminDefinirModelo(papelId, modelo);
       await carregar();
-      notify?.(modelo ? 'Modelo trocado. Vale já na próxima chamada.' : 'Padrão restaurado.', 'sucesso');
+      notify?.({ titulo: modelo ? 'Modelo trocado' : 'Padrão restaurado', detalhe: modelo ? 'Vale já na próxima chamada de IA deste módulo.' : 'O módulo voltou ao modelo definido no ambiente.' });
     } catch (e) {
-      notify?.(e.message, 'erro');
+      notify?.({ titulo: 'Não deu para trocar o modelo', detalhe: e.message });
     }
     setSalvando(null);
   };

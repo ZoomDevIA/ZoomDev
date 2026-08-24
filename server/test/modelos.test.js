@@ -80,3 +80,27 @@ test('mapa de modelos por módulo', async (t) => {
     assert.equal(_interno.sistemaCacheado(undefined), undefined);
   });
 });
+
+test('compatibilidade entre papel e modelo', async (t) => {
+  await t.test('papel de pesquisa recusa modelo sem busca na internet', () => {
+    assert.throws(
+      () => definirModelo('pesquisa', 'claude-haiku-4-5'),
+      /não faz busca na internet/,
+      'rebaixar a pesquisa para o tier leve derrubaria radar, plano e Sexta-Feira',
+    );
+    try { definirModelo('pesquisa', 'claude-haiku-4-5'); } catch (e) { assert.equal(e.status, 400); }
+    assert.equal(modeloDoPapel('pesquisa'), config.modelos.pesquisa, 'o papel continua no modelo anterior');
+  });
+
+  await t.test('papel de pesquisa aceita os tiers que buscam', () => {
+    for (const m of ['claude-sonnet-5', 'claude-opus-5', 'claude-fable-5']) {
+      assert.equal(definirModelo('pesquisa', m).modelo, m);
+    }
+    definirModelo('pesquisa', null);
+  });
+
+  await t.test('os outros papéis continuam aceitando o tier leve', () => {
+    assert.equal(definirModelo('extracao', 'claude-haiku-4-5').modelo, 'claude-haiku-4-5');
+    assert.equal(definirModelo('gerado', 'claude-haiku-4-5').modelo, 'claude-haiku-4-5');
+  });
+});

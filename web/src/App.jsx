@@ -109,13 +109,17 @@ export default function App() {
     const aoExpirar = (e) => {
       setUser(null);
       setCarregando(false);
-      setToasts(t => [...t, {
+      // Com prazo, como todo aviso: sem isto o "Sessão encerrada" ficava
+      // colado no canto da tela para sempre, inclusive depois de a pessoa
+      // já ter entrado de novo.
+      setToasts(t => [...t.filter(x => x.id !== 'sessao'), {
         id: 'sessao',
         titulo: 'Sessão encerrada',
         detalhe: e.detail?.motivo === 'inatividade'
           ? 'Você ficou muito tempo sem usar a plataforma. Entre de novo para continuar.'
           : 'Sua credencial não vale mais. Entre de novo para continuar.',
       }]);
+      setTimeout(() => setToasts(t => t.filter(x => x.id !== 'sessao')), 7000);
     };
     window.addEventListener('zd:sessao-expirada', aoExpirar);
     return () => window.removeEventListener('zd:sessao-expirada', aoExpirar);

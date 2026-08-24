@@ -18,9 +18,15 @@ export const MODELOS_DISPONIVEIS = [
   { id: 'claude-haiku-4-5', nome: 'Haiku 4.5', tier: 'Leve', precoEntrada: 1, precoSaida: 5, nota: 'Classificação e extração em volume, custo mínimo e resposta rápida.' },
 ];
 
+// Modelos capazes de usar a ferramenta de busca na internet. O tier leve não
+// tem esse recurso: apontar o papel de pesquisa para ele derruba a varredura
+// do radar, a pesquisa do plano e a Sexta-Feira com internet, todas com 400 da
+// API e sem nenhuma pista de que a causa foi uma escolha no painel.
+const BUSCAM_NA_INTERNET = new Set(['claude-fable-5', 'claude-opus-5', 'claude-sonnet-5']);
+
 export const PAPEIS = [
   { id: 'plano', nome: 'Plano ZoomDev', usa: 'Os 5 agentes que escrevem as 14 seções do plano de negócios' },
-  { id: 'pesquisa', nome: 'Pesquisa na internet', usa: 'Atlas (pesquisa do plano), Sexta-Feira com internet e Radar de Editais' },
+  { id: 'pesquisa', nome: 'Pesquisa na internet', usa: 'Atlas (pesquisa do plano), Sexta-Feira com internet e Radar de Editais', exige: 'busca' },
   { id: 'codigo', nome: 'Código', usa: 'MVP Builder e console do Studio' },
   { id: 'chat', nome: 'Conversa e análise', usa: 'Sexta-Feira (chat, relatórios, autoevolução) e Conselho dos Agentes' },
   { id: 'extracao', nome: 'Classificação e extração', usa: 'Classificador de ideias, dossiê da pesquisa, pré-leitura e extração do radar' },
@@ -55,6 +61,14 @@ export function definirModelo(papel, modelo, { userId = null } = {}) {
   } else {
     if (!MODELOS_DISPONIVEIS.some(m => m.id === modelo)) {
       throw Object.assign(new Error(`Modelo fora da lista homologada: ${modelo}.`), { status: 400 });
+    }
+    const exigencia = PAPEIS.find(p => p.id === papel)?.exige;
+    if (exigencia === 'busca' && !BUSCAM_NA_INTERNET.has(modelo)) {
+      const nome = MODELOS_DISPONIVEIS.find(m => m.id === modelo)?.nome || modelo;
+      throw Object.assign(
+        new Error(`${nome} não faz busca na internet, e este módulo depende dela. Escolha Sonnet 5, Opus 5 ou Fable 5.`),
+        { status: 400 },
+      );
     }
     store.modelosIA = store.modelosIA || {};
     store.modelosIA[papel] = modelo;

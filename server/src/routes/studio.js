@@ -33,8 +33,10 @@ import { jaEmAndamento } from '../services/retomada.js';
 
 export const studioRouter = Router();
 
-// O documento do editor pode passar de um megabyte com imagens embutidas:
-// o parser global do servidor é apertado demais para esta rota.
+// O documento do editor pode passar de um megabyte com imagens embutidas: o
+// parser global é apertado demais para estas rotas. O limite maior é aplicado
+// no `index.js`, montado antes do parser global; esta linha fica como rede de
+// segurança para quem montar este roteador em outro lugar.
 studioRouter.use(express.json({ limit: '12mb' }));
 
 const upload = multer({
@@ -342,6 +344,7 @@ studioRouter.post('/:id/conversa',
     const proj = meuProjeto(req, res);
     if (!proj) return;
 
+    let cobrado = 0;
     try {
       if (!config.hasApiKey) {
         return res.status(503).json({ error: 'O console precisa da chave da IA configurada no servidor.' });
@@ -354,6 +357,7 @@ studioRouter.post('/:id/conversa',
       const podeEditar = fase === 'ideacao' && typeof documento === 'string' && documento.length > 40;
       const custo = podeEditar ? config.credits.documentoRevisao : config.credits.studioTurno;
       cobrar(req.user, custo, podeEditar ? 'uma revisão do documento' : 'uma rodada no console');
+      cobrado = custo;
       save();
 
       // Anexo enviado agora entra no contexto e fica guardado no projeto: o
@@ -414,7 +418,17 @@ studioRouter.post('/:id/conversa',
         recarregar: novos.length > 0,
         creditos: req.user.creditos,
       });
-    } catch (e) { next(e); }
+    } catch (e) {
+      // A rodada do console é a única cobrança que não estornava em erro
+      // nenhum: um tempo esgotado, uma recusa do modelo ou um 429 da API e o
+      // fundador pagava por uma resposta que nunca existiu. É o oposto da
+      // política das rotas longas, e não havia razão para a diferença.
+      if (cobrado > 0) {
+        req.user.creditos += cobrado;
+        save();
+      }
+      next(e);
+    }
   });
 
 function sistemaConsole(proj, fase, user) {

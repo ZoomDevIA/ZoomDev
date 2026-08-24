@@ -149,6 +149,12 @@ app.get(`${PREFIXO}/:slug/:pagina?`, (req, res) => {
   res.send(html);
 });
 
+// O corpo grande do Studio é lido ANTES do parser geral. Sem esta linha, o
+// `express.json({ limit: '12mb' })` que o roteador do Studio declara nunca
+// executava: o parser global já tinha marcado a requisição como lida, e o
+// documento do ZoomDoc com imagem embutida passava a falhar com 413 a cada
+// salvamento automático, perdendo o trabalho em silêncio.
+app.use('/api/studio', express.json({ limit: '12mb' }));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_req, res) => res.json({

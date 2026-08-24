@@ -1,10 +1,20 @@
 // Cliente da API ZoomDev OS
 let token = localStorage.getItem('zd_token') || null;
 
+// O aviso é único por QUEDA, não por aba: entrar de novo rearma o alarme.
+// Antes ele era único para sempre, e a segunda expiração na mesma aba passava
+// calada, deixando a pessoa numa tela aparentemente logada em que toda ação
+// falhava com "Erro 401", sem explicação e sem volta para o login.
+let jaAvisou = false;
+export function rearmarAvisoDeSessao() { jaAvisou = false; }
+
 export function setToken(t) {
   token = t;
-  if (t) localStorage.setItem('zd_token', t);
-  else localStorage.removeItem('zd_token');
+  if (t) {
+    localStorage.setItem('zd_token', t);
+    // Sessão nova: o alarme de expiração volta a valer para a próxima queda.
+    jaAvisou = false;
+  } else localStorage.removeItem('zd_token');
 }
 
 export function getToken() { return token; }
@@ -46,7 +56,6 @@ async function req(path, opts = {}) {
 // A sessão agora vence por inatividade. Quando isso acontece, o token na mão
 // do navegador virou lixo: mantê-lo faria toda tela seguinte falhar com um
 // erro diferente. Limpa aqui, uma vez só, e avisa a aplicação.
-let jaAvisou = false;
 export function sessaoCaiu(data) {
   setToken(null);
   setPainelToken(null);

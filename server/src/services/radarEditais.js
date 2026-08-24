@@ -184,6 +184,7 @@ export async function varrer({ forcar = false } = {}) {
 
   let novos = 0;
   let modo = 'curadoria';
+  let falha = null;
 
   if (config.hasApiKey) {
     modo = 'internet';
@@ -211,17 +212,29 @@ export async function varrer({ forcar = false } = {}) {
         novos++;
       }
     } catch (e) {
-      modo = 'curadoria';
-      r.ultimoErro = e.message;
+      modo = 'falhou';
+      falha = e.message;
+      r.ultimoErro = { mensagem: e.message, em: agora };
     }
   }
 
-  r.ultimaVarredura = agora;
-  r.execucoes.unshift({ em: agora, modo, novos, totalConhecidos: todosEditais().length });
+  // Varredura que FALHOU não conta como varredura feita. Antes, um 429
+  // passageiro gravava a data mesmo assim e a guarda das 24h recusava toda
+  // nova tentativa pelo dia inteiro, enquanto a tela mostrava uma execução
+  // aparentemente bem-sucedida em modo curadoria. O radar ficava cego sem que
+  // ninguém soubesse.
+  if (!falha) {
+    r.ultimaVarredura = agora;
+    r.ultimoErro = null;
+  }
+  r.execucoes.unshift({ em: agora, modo, novos, totalConhecidos: todosEditais().length, ...(falha ? { erro: falha } : {}) });
   r.execucoes = r.execucoes.slice(0, 30);
   save();
 
-  return { pulado: false, modo, novos, totalConhecidos: todosEditais().length, ultimaVarredura: agora };
+  return {
+    pulado: false, modo, novos, totalConhecidos: todosEditais().length,
+    ultimaVarredura: r.ultimaVarredura, ...(falha ? { erro: falha } : {}),
+  };
 }
 
 /** Resumo do radar para dashboards. */
@@ -236,6 +249,9 @@ export function resumoRadar() {
     abertos: abertos.length,
     descobertosPeloRadar: Object.keys(r.descobertos).length,
     fechandoEm30Dias: abertos.filter(e => e.dias !== null && e.dias <= 30).length,
+    // A falha da última tentativa aparece: radar cego em silêncio é pior que
+    // radar cego com aviso.
+    ultimoErro: r.ultimoErro || null,
     execucoes: r.execucoes.slice(0, 10),
   };
 }

@@ -146,12 +146,30 @@ export async function registrarNdviComoEvidencia(loteId, userId = null) {
     ), { status: 409 });
   }
   const { serie, media, tendencia } = await ndviDoLote(loteId);
+
+  // Céu fechado a safra inteira, polígono fora da cobertura ou resposta com
+  // outro formato devolvem série vazia. Sem esta guarda, a linha seguinte
+  // estourava num 500 genérico justamente no módulo cuja razão de existir é
+  // explicar o que a medição diz.
+  if (!serie.length) {
+    throw Object.assign(new Error(
+      'Não há leitura de satélite utilizável para este lote no período: todas as passagens vieram com nuvem '
+      + 'acima do limite ou fora da cobertura. Tente de novo depois da próxima passagem do Sentinel-2.',
+    ), { status: 422 });
+  }
+
   const ultima = serie[serie.length - 1];
+  // Uma leitura só não tem tendência: dizer "tendência +null" numa descrição
+  // que entra lacrada na cadeia de custódia seria inventar informação.
+  const trecho = Number.isFinite(tendencia)
+    ? `· tendência ${tendencia >= 0 ? '+' : ''}${tendencia} em ${serie.length} quinzenas`
+    : `· leitura única, ainda sem tendência`;
+
   return registrarEvidencia({
     loteId,
     tipo: 'ndvi-satelite',
     selo: 'CAMPO',
     descricao: `NDVI Sentinel-2: última leitura ${ultima.ndvi} em ${ultima.data} · média ${media} `
-      + `· tendência ${tendencia >= 0 ? '+' : ''}${tendencia} em ${serie.length} quinzenas (Copernicus, 10 m)`,
+      + `${trecho} (Copernicus, 10 m)`,
   }, userId);
 }
