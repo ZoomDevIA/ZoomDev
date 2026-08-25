@@ -43,15 +43,24 @@
   background: radial-gradient(ellipse at 50% 46%, transparent 42%, rgba(1, 6, 4, .62) 100%);
 }
 
-/* ── A órbita dos módulos ────────────────────────────────────────────────── */
+/* ── A órbita dos módulos ─────────────────────────────────────────────────
+   A caixa NUNCA passa do que a janela tem. Antes ela media 1520x980 fixos, e
+   em qualquer navegador real (com abas, barra de endereço e barra de tarefas
+   comendo altura) o módulo do topo saía cortado pela borda. As margens
+   descontadas abaixo são o espaço que os discos de 64px precisam para caber
+   inteiros, mais uma folga para não encostarem no cabeçalho. */
 .cena-orbita {
   position: absolute;
-  left: 50%; top: 47%;
-  width: 1520px; height: 980px;
+  left: 50%; top: 50%;
+  width: min(1520px, 100vw - 120px);
+  height: min(980px, 100vh - 170px);
   transform: translate(-50%, -50%);
-  /* a faixa de baixo esmaece para não competir com as sugestões da dobra */
-  -webkit-mask-image: linear-gradient(#000 76%, rgba(0, 0, 0, .2));
-  mask-image: linear-gradient(#000 76%, rgba(0, 0, 0, .2));
+  /* A faixa de baixo esmaece forte. É ali que ficam a caixa de ideação e a
+     linha de sugestões, e os dois módulos daquela altura passariam por cima
+     do texto. Esmaecidos, eles continuam fechando o círculo sem disputar
+     leitura: o olho entende que estão atrás. */
+  -webkit-mask-image: linear-gradient(#000 58%, rgba(0, 0, 0, .5) 76%, rgba(0, 0, 0, .14) 90%);
+  mask-image: linear-gradient(#000 58%, rgba(0, 0, 0, .5) 76%, rgba(0, 0, 0, .14) 90%);
 }
 .cena-aneis { position: absolute; inset: 0; width: 100%; height: 100%; }
 .cena-aneis .anel {
@@ -77,6 +86,7 @@
 .cena-no {
   position: absolute;
   width: 64px; height: 64px;
+  margin: -32px 0 0 -32px;
   border: 1.5px solid rgba(0, 255, 130, .62);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(4, 26, 14, .92), rgba(2, 12, 7, .72));
@@ -103,6 +113,7 @@
 .cena-ponto {
   position: absolute;
   width: 8px; height: 8px;
+  margin: -4px 0 0 -4px;
   border-radius: 50%;
   background: rgba(217, 255, 233, .5);
   box-shadow: 0 0 10px rgba(0, 255, 100, .5);
@@ -116,7 +127,7 @@
   border-radius: 50%;
   background: rgba(0, 255, 100, .85);
   box-shadow: 0 0 12px rgba(0, 255, 100, .8);
-  offset-path: ellipse(710px 448px at 760px 490px);
+  offset-path: ellipse(46.7% 45.7% at 50% 50%);
   animation: cena-viajar 70s linear infinite;
 }
 .cena-satelite.s2 {
@@ -127,17 +138,16 @@
 }
 @keyframes cena-viajar { to { offset-distance: 100%; } }
 
-/* Telas menores que a órbita: ela encolhe em vez de sumir, porque agora é a
-   cena inteira e não um enfeite sobre uma paisagem. A grade continua. */
-@media (max-width: 1560px) {
-  .cena-orbita { transform: translate(-50%, -50%) scale(.86); }
-}
-@media (max-width: 1320px) {
-  .cena-orbita { transform: translate(-50%, -50%) scale(.74); }
-}
+/* A caixa já encolhe sozinha, então não há escala por faixa de largura. Duas
+   saídas continuam necessárias: tela estreita, onde a órbita passaria por
+   cima do conteúdo, e janela baixa, onde a elipse ficaria tão achatada que
+   viraria uma faixa de ícones cruzando o texto. */
 @media (max-width: 1120px) {
   .cena-orbita { display: none; }
   .cena-grade { background-size: 38px 38px; }
+}
+@media (max-height: 620px) {
+  .cena-orbita { display: none; }
 }
 
 /* ── Ganchos do sistema ──────────────────────────────────────────────────── */

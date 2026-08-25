@@ -12,9 +12,15 @@ import './cena-home.css';
 //
 // A versão anterior tinha cordilheira wireframe e chão em perspectiva estilo
 // retrowave. Saíram: a paisagem competia com o conteúdo e puxava o olho para
-// as bordas, quando o que precisa ser lido é a pergunta no meio da tela. O que
-// ficou é o que diz algo sobre o produto, os módulos girando em volta da
-// ideia, sobre um fundo que não disputa atenção.
+// as bordas, quando o que precisa ser lido é a pergunta no meio da tela.
+//
+// POR QUE AS POSIÇÕES SÃO EM PORCENTAGEM E NÃO EM PIXEL. A primeira versão
+// desenhava a órbita numa caixa de 1520x980 pixels fixos. Em qualquer janela
+// mais baixa que isso (e a janela de um navegador com abas, barra de endereço
+// e barra de tarefas é sempre mais baixa que a tela), a elipse não cabia e o
+// módulo do topo era cortado ao meio pela borda. Agora a caixa se adapta à
+// janela e os nove módulos são posicionados em porcentagem dela: a órbita
+// encolhe junto, e nada nunca é cortado.
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Os nove módulos que orbitam a ideia, em traço de linha (tech + bio):
@@ -32,48 +38,52 @@ const ICONES = [
   ['foguete', <g key="foguete"><path d="M12 3.2c2.9 2 3.9 5.8 3.9 8.8L12 15.8 8.1 12c0-3 1-6.8 3.9-8.8z" /><circle cx="12" cy="9" r="1.5" /><path d="M9.8 16.8 9 20M14.2 16.8 15 20" /></g>],
 ];
 
-// Geometria da elipse. O anel dos ícones abre mais que na versão anterior,
-// para os módulos encostarem nas bordas e deixarem o miolo livre para o texto.
-const CX = 760, CY = 490, RX = 710, RY = 448;
-
-// Os dois anéis internos são só desenho: dão profundidade sem carregar ícone.
-const ANEIS = [
-  { rx: RX, ry: RY, classe: 'a1' },
-  { rx: RX - 145, ry: RY - 100, classe: 'a2' },
-  { rx: RX - 290, ry: RY - 200, classe: 'a3' },
-];
-
+// Raio da órbita em porcentagem da caixa. Menos de 50% em cada eixo porque o
+// disco do módulo tem 32px de raio e precisa caber inteiro dentro da caixa.
+const RX = 46.7, RY = 45.7;
 const angulo = (i, n, meio = 0) => ((i + meio) / n) * 2 * Math.PI - Math.PI / 2;
+const emCima = (a, r) => 50 + r * Math.cos(a);
+const naLateral = (a, r) => 50 + r * Math.sin(a);
 
 const NOS = ICONES.map(([id, el], i) => {
   const a = angulo(i, ICONES.length);
-  return { id, el, i, x: CX + RX * Math.cos(a) - 32, y: CY + RY * Math.sin(a) - 32 };
+  return { id, el, i, x: emCima(a, RX), y: naLateral(a, RY) };
 });
 
-// Um ponto no vão entre cada par de ícones, para o anel não ficar careca.
+// Um ponto no vão entre cada par de módulos, para o anel não ficar careca.
 const PONTOS = ICONES.map((_, i) => {
   const a = angulo(i, ICONES.length, 0.5);
-  return { x: CX + RX * Math.cos(a) - 4, y: CY + RY * Math.sin(a) - 4 };
+  return { x: emCima(a, RX), y: naLateral(a, RY) };
 });
+
+// Os anéis internos são só desenho: dão profundidade sem carregar módulo.
+const ANEIS = [
+  { rx: RX, ry: RY, classe: 'a1' },
+  { rx: RX - 9.5, ry: RY - 10.2, classe: 'a2' },
+  { rx: RX - 19, ry: RY - 20.4, classe: 'a3' },
+];
 
 export default function CenaHome() {
   return (
     <div className="cena-home" aria-hidden="true">
       <div className="cena-grade" />
       <div className="cena-orbita">
-        <svg className="cena-aneis" viewBox="0 0 1520 980">
+        {/* preserveAspectRatio="none": a elipse acompanha a caixa quando ela
+            muda de proporção, em vez de sobrar margem de um dos lados. */}
+        <svg className="cena-aneis" viewBox="0 0 100 100" preserveAspectRatio="none">
           {ANEIS.map(a => (
             <ellipse key={a.classe} className={`anel ${a.classe}`}
-              cx={CX} cy={CY} rx={a.rx} ry={a.ry} pathLength="100" />
+              cx="50" cy="50" rx={a.rx} ry={a.ry} pathLength="100"
+              vectorEffect="non-scaling-stroke" />
           ))}
         </svg>
         {NOS.map(n => (
-          <span key={n.id} className="cena-no" style={{ left: n.x, top: n.y, '--i': n.i }}>
+          <span key={n.id} className="cena-no" style={{ left: `${n.x}%`, top: `${n.y}%`, '--i': n.i }}>
             <svg viewBox="0 0 24 24">{n.el}</svg>
           </span>
         ))}
         {PONTOS.map((p, i) => (
-          <span key={i} className="cena-ponto" style={{ left: p.x, top: p.y }} />
+          <span key={i} className="cena-ponto" style={{ left: `${p.x}%`, top: `${p.y}%` }} />
         ))}
         <span className="cena-satelite s1" />
         <span className="cena-satelite s2" />
