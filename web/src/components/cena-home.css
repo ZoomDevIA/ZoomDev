@@ -27,14 +27,14 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0, 255, 100, .07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 100, .07) 1px, transparent 1px);
+    linear-gradient(rgba(0, 255, 100, .1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 100, .1) 1px, transparent 1px);
   background-size: 46px 46px;
-  /* A máscara chega perto das bordas de propósito: a grade some no canto, mas
-     não antes dele. Cortada cedo demais, a tela fica com quatro quinas pretas
-     e o fundo parece um cartão flutuando em cima de nada. */
-  -webkit-mask-image: radial-gradient(ellipse 96% 88% at 50% 46%, #000 42%, rgba(0, 0, 0, .35) 92%, transparent);
-  mask-image: radial-gradient(ellipse 96% 88% at 50% 46%, #000 42%, rgba(0, 0, 0, .35) 92%, transparent);
+  /* A máscara quase não corta: só tira o peso das quinas. Cortada cedo demais,
+     a tela fica com quatro cantos pretos e o fundo parece um cartão flutuando
+     em cima de nada, em vez de um painel que ocupa a tela inteira. */
+  -webkit-mask-image: radial-gradient(ellipse 108% 100% at 50% 46%, #000 55%, rgba(0, 0, 0, .55) 95%, rgba(0, 0, 0, .3));
+  mask-image: radial-gradient(ellipse 108% 100% at 50% 46%, #000 55%, rgba(0, 0, 0, .55) 95%, rgba(0, 0, 0, .3));
 }
 
 .cena-veu {
@@ -56,7 +56,7 @@
 .cena-aneis { position: absolute; inset: 0; width: 100%; height: 100%; }
 .cena-aneis .anel {
   fill: none;
-  stroke: rgba(217, 255, 233, .28);
+  stroke: rgba(217, 255, 233, .38);
   stroke-width: 1;
   stroke-dasharray: .55 .95;
   animation: cena-fluir 80s linear infinite;
@@ -64,12 +64,12 @@
 /* Cada anel para dentro é mais discreto e gira mais devagar: a diferença de
    velocidade é o que dá sensação de profundidade sem precisar de 3D. */
 .cena-aneis .a2 {
-  stroke: rgba(217, 255, 233, .17);
+  stroke: rgba(217, 255, 233, .27);
   animation-duration: 120s;
   animation-direction: reverse;
 }
 .cena-aneis .a3 {
-  stroke: rgba(217, 255, 233, .1);
+  stroke: rgba(217, 255, 233, .19);
   animation-duration: 165s;
 }
 @keyframes cena-fluir { to { stroke-dashoffset: -100; } }
@@ -77,17 +77,25 @@
 .cena-no {
   position: absolute;
   width: 64px; height: 64px;
-  border: 1.5px solid rgba(217, 255, 233, .5);
+  border: 1.5px solid rgba(0, 255, 130, .62);
   border-radius: 50%;
-  background: rgba(2, 10, 6, .55);
-  box-shadow: 0 0 16px rgba(0, 255, 100, .25), inset 0 0 10px rgba(0, 255, 100, .12);
+  background: radial-gradient(circle, rgba(4, 26, 14, .92), rgba(2, 12, 7, .72));
+  /* Três camadas de brilho: o anel aceso, o halo largo que sangra no fundo, e
+     a luz interna que separa o ícone do disco. É o halo largo que faz o módulo
+     parecer aceso em vez de desenhado. */
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 130, .14),
+    0 0 22px rgba(0, 255, 110, .5),
+    0 0 46px rgba(0, 255, 110, .22),
+    inset 0 0 14px rgba(0, 255, 110, .2);
   display: flex; align-items: center; justify-content: center;
   animation: cena-flutuar 7s ease-in-out infinite;
   animation-delay: calc(var(--i) * -.9s);
 }
 .cena-no svg {
   width: 30px; height: 30px;
-  stroke: #d9ffe9; fill: none;
+  stroke: #e6fff1; fill: none;
+  filter: drop-shadow(0 0 5px rgba(0, 255, 120, .55));
   stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
 }
 @keyframes cena-flutuar { 50% { transform: translateY(-7px); } }
@@ -96,8 +104,8 @@
   position: absolute;
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: rgba(217, 255, 233, .4);
-  box-shadow: 0 0 8px rgba(0, 255, 100, .35);
+  background: rgba(217, 255, 233, .5);
+  box-shadow: 0 0 10px rgba(0, 255, 100, .5);
 }
 
 /* Dois "satélites" percorrem a elipse sem parar: o pulso vivo da cena */
