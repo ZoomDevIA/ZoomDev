@@ -1,7 +1,12 @@
-/* ── Cena da Home (Horizonte Vivo) ─────────────────────────────────────────
-   Decoração pura, fixa atrás de todo o conteúdo da porta de entrada:
-   céu estrelado, cordilheira wireframe, chão de grade em perspectiva que
-   desliza, e a órbita de módulos ao redor da caixa de ideação.
+/* ── Cena da Home (Órbita) ─────────────────────────────────────────────────
+   Decoração pura, fixa atrás de todo o conteúdo da porta de entrada: grade
+   fina de circuito, três anéis concêntricos pontilhados e a órbita dos
+   módulos ao redor da caixa de ideação.
+
+   Saíram desta versão a cordilheira wireframe e o chão em perspectiva: a
+   paisagem puxava o olho para as bordas e disputava com a pergunta que
+   precisa ser lida no meio da tela.
+
    Regras da casa: some no tema claro (a cena é intrinsecamente escura),
    some com a textura desligada, e congela com movimento reduzido. */
 
@@ -11,84 +16,61 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: linear-gradient(#010806, #02120a 52%, #010806);
+  background:
+    radial-gradient(ellipse 95% 78% at 50% 44%, #05200f, transparent 76%),
+    linear-gradient(#020c07, #04170d 50%, #010806);
 }
 
-.cena-ceu {
+/* A grade é o único elemento que cobre a tela inteira. Fina, quase invisível,
+   e mais forte no centro: dá a textura de painel técnico sem virar xadrez. */
+.cena-grade {
   position: absolute;
-  inset: 0 0 45% 0;
+  inset: 0;
   background-image:
-    radial-gradient(rgba(234, 255, 245, .5) 1px, transparent 1.5px),
-    radial-gradient(rgba(234, 255, 245, .25) 1px, transparent 1.5px);
-  background-size: 210px 160px, 120px 120px;
-  background-position: 24px 30px, 80px 70px;
-  -webkit-mask-image: linear-gradient(#000 60%, transparent);
-  mask-image: linear-gradient(#000 60%, transparent);
+    linear-gradient(rgba(0, 255, 100, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 100, .07) 1px, transparent 1px);
+  background-size: 46px 46px;
+  /* A máscara chega perto das bordas de propósito: a grade some no canto, mas
+     não antes dele. Cortada cedo demais, a tela fica com quatro quinas pretas
+     e o fundo parece um cartão flutuando em cima de nada. */
+  -webkit-mask-image: radial-gradient(ellipse 96% 88% at 50% 46%, #000 42%, rgba(0, 0, 0, .35) 92%, transparent);
+  mask-image: radial-gradient(ellipse 96% 88% at 50% 46%, #000 42%, rgba(0, 0, 0, .35) 92%, transparent);
 }
-
-.cena-montes {
-  position: absolute;
-  left: 0; right: 0;
-  top: 8%;
-  height: 140px;
-  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'620'%20height%3D'150'%3E%3Cpolyline%20points%3D'0%2C132%2045%2C58%2085%2C98%20130%2C34%20170%2C92%20220%2C52%20265%2C116%20325%2C42%20375%2C86%20430%2C28%20480%2C98%20540%2C56%20620%2C132'%20fill%3D'rgba(0%2C255%2C100%2C.06)'%20stroke%3D'%2300ff64'%20stroke-opacity%3D'.6'%20stroke-width%3D'1.5'%2F%3E%3Cpolyline%20points%3D'0%2C138%2060%2C92%20110%2C118%20165%2C76%20225%2C122%20290%2C84%20350%2C128%20415%2C74%20475%2C118%20545%2C92%20620%2C138'%20fill%3D'none'%20stroke%3D'%2300e5ff'%20stroke-opacity%3D'.3'%20stroke-width%3D'1'%2F%3E%3C%2Fsvg%3E") repeat-x bottom;
-  filter: drop-shadow(0 0 10px rgba(0, 255, 100, .3));
-}
-.cena-montes::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 100, .55), transparent);
-  box-shadow: 0 0 20px rgba(0, 255, 100, .45);
-}
-
-.cena-chao {
-  position: absolute;
-  left: -40%; right: -40%;
-  bottom: -14%;
-  height: 56%;
-  transform: perspective(540px) rotateX(61deg);
-  transform-origin: 50% 0;
-  background-image:
-    linear-gradient(rgba(0, 255, 100, .22) 2px, transparent 2px),
-    linear-gradient(90deg, rgba(0, 255, 100, .22) 2px, transparent 2px);
-  background-size: 64px 64px;
-  -webkit-mask-image: linear-gradient(transparent, #000 26%);
-  mask-image: linear-gradient(transparent, #000 26%);
-  animation: cena-esteira 3.6s linear infinite;
-}
-/* Só a camada das linhas horizontais anda: o chão vem na direção de quem olha */
-@keyframes cena-esteira { to { background-position: 0 64px, 0 0; } }
 
 .cena-veu {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 46%, transparent 48%, rgba(1, 7, 4, .5) 100%);
+  background: radial-gradient(ellipse at 50% 46%, transparent 42%, rgba(1, 6, 4, .62) 100%);
 }
 
 /* ── A órbita dos módulos ────────────────────────────────────────────────── */
 .cena-orbita {
   position: absolute;
-  left: 50%; top: 45%;
-  width: 1250px; height: 830px;
+  left: 50%; top: 47%;
+  width: 1520px; height: 980px;
   transform: translate(-50%, -50%);
   /* a faixa de baixo esmaece para não competir com as sugestões da dobra */
-  -webkit-mask-image: linear-gradient(#000 72%, rgba(0, 0, 0, .18));
-  mask-image: linear-gradient(#000 72%, rgba(0, 0, 0, .18));
+  -webkit-mask-image: linear-gradient(#000 76%, rgba(0, 0, 0, .2));
+  mask-image: linear-gradient(#000 76%, rgba(0, 0, 0, .2));
 }
 .cena-aneis { position: absolute; inset: 0; width: 100%; height: 100%; }
 .cena-aneis .anel {
   fill: none;
-  stroke: rgba(217, 255, 233, .3);
+  stroke: rgba(217, 255, 233, .28);
   stroke-width: 1;
   stroke-dasharray: .55 .95;
   animation: cena-fluir 80s linear infinite;
 }
+/* Cada anel para dentro é mais discreto e gira mais devagar: a diferença de
+   velocidade é o que dá sensação de profundidade sem precisar de 3D. */
 .cena-aneis .a2 {
-  stroke: rgba(217, 255, 233, .16);
+  stroke: rgba(217, 255, 233, .17);
   animation-duration: 120s;
   animation-direction: reverse;
+}
+.cena-aneis .a3 {
+  stroke: rgba(217, 255, 233, .1);
+  animation-duration: 165s;
 }
 @keyframes cena-fluir { to { stroke-dashoffset: -100; } }
 
@@ -126,7 +108,7 @@
   border-radius: 50%;
   background: rgba(0, 255, 100, .85);
   box-shadow: 0 0 12px rgba(0, 255, 100, .8);
-  offset-path: ellipse(585px 360px at 625px 415px);
+  offset-path: ellipse(710px 448px at 760px 490px);
   animation: cena-viajar 70s linear infinite;
 }
 .cena-satelite.s2 {
@@ -137,13 +119,22 @@
 }
 @keyframes cena-viajar { to { offset-distance: 100%; } }
 
-/* Tela estreita: a órbita sai (viraria ruído sobre o conteúdo); o resto fica */
-@media (max-width: 1120px) { .cena-orbita { display: none; } }
+/* Telas menores que a órbita: ela encolhe em vez de sumir, porque agora é a
+   cena inteira e não um enfeite sobre uma paisagem. A grade continua. */
+@media (max-width: 1560px) {
+  .cena-orbita { transform: translate(-50%, -50%) scale(.86); }
+}
+@media (max-width: 1320px) {
+  .cena-orbita { transform: translate(-50%, -50%) scale(.74); }
+}
+@media (max-width: 1120px) {
+  .cena-orbita { display: none; }
+  .cena-grade { background-size: 38px 38px; }
+}
 
 /* ── Ganchos do sistema ──────────────────────────────────────────────────── */
 :root[data-textura='off'] .cena-home { display: none; }
 :root[data-claridade='claro'] .cena-home { display: none; }
-:root[data-movimento='reduzido'] .cena-chao,
 :root[data-movimento='reduzido'] .cena-no,
 :root[data-movimento='reduzido'] .cena-aneis .anel,
 :root[data-movimento='reduzido'] .cena-satelite { animation: none; }

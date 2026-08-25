@@ -2,13 +2,19 @@ import React from 'react';
 import './cena-home.css';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CENA DA HOME · Horizonte Vivo
+// CENA DA HOME · Órbita
 //
-// O fundo escolhido pelo fundador para a porta de entrada: céu estrelado,
-// cordilheira wireframe, chão de grade em perspectiva deslizando, e a órbita
-// dos nove módulos da plataforma ao redor da caixa de ideação. Tudo CSS e
-// SVG inline: zero imagem para baixar, e as preferências de tema claro,
-// textura e movimento são respeitadas na folha de estilo da cena.
+// O fundo da porta de entrada: uma grade fina de circuito, três anéis
+// concêntricos pontilhados e os nove módulos da plataforma orbitando a caixa
+// de ideação. Tudo CSS e SVG inline: zero imagem para baixar, e as
+// preferências de tema claro, textura e movimento são respeitadas na folha de
+// estilo da cena.
+//
+// A versão anterior tinha cordilheira wireframe e chão em perspectiva estilo
+// retrowave. Saíram: a paisagem competia com o conteúdo e puxava o olho para
+// as bordas, quando o que precisa ser lido é a pergunta no meio da tela. O que
+// ficou é o que diz algo sobre o produto, os módulos girando em volta da
+// ideia, sobre um fundo que não disputa atenção.
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Os nove módulos que orbitam a ideia, em traço de linha (tech + bio):
@@ -26,14 +32,25 @@ const ICONES = [
   ['foguete', <g key="foguete"><path d="M12 3.2c2.9 2 3.9 5.8 3.9 8.8L12 15.8 8.1 12c0-3 1-6.8 3.9-8.8z" /><circle cx="12" cy="9" r="1.5" /><path d="M9.8 16.8 9 20M14.2 16.8 15 20" /></g>],
 ];
 
-// Geometria da elipse (o mesmo desenho aprovado no mockup)
-const CX = 625, CY = 415, RX = 585, RY = 360;
+// Geometria da elipse. O anel dos ícones abre mais que na versão anterior,
+// para os módulos encostarem nas bordas e deixarem o miolo livre para o texto.
+const CX = 760, CY = 490, RX = 710, RY = 448;
+
+// Os dois anéis internos são só desenho: dão profundidade sem carregar ícone.
+const ANEIS = [
+  { rx: RX, ry: RY, classe: 'a1' },
+  { rx: RX - 145, ry: RY - 100, classe: 'a2' },
+  { rx: RX - 290, ry: RY - 200, classe: 'a3' },
+];
+
 const angulo = (i, n, meio = 0) => ((i + meio) / n) * 2 * Math.PI - Math.PI / 2;
 
 const NOS = ICONES.map(([id, el], i) => {
   const a = angulo(i, ICONES.length);
   return { id, el, i, x: CX + RX * Math.cos(a) - 32, y: CY + RY * Math.sin(a) - 32 };
 });
+
+// Um ponto no vão entre cada par de ícones, para o anel não ficar careca.
 const PONTOS = ICONES.map((_, i) => {
   const a = angulo(i, ICONES.length, 0.5);
   return { x: CX + RX * Math.cos(a) - 4, y: CY + RY * Math.sin(a) - 4 };
@@ -42,13 +59,13 @@ const PONTOS = ICONES.map((_, i) => {
 export default function CenaHome() {
   return (
     <div className="cena-home" aria-hidden="true">
-      <div className="cena-ceu" />
-      <div className="cena-montes" />
-      <div className="cena-chao" />
+      <div className="cena-grade" />
       <div className="cena-orbita">
-        <svg className="cena-aneis" viewBox="0 0 1250 830">
-          <ellipse className="anel a1" cx={CX} cy={CY} rx={RX} ry={RY} pathLength="100" />
-          <ellipse className="anel a2" cx={CX} cy={CY} rx={RX - 90} ry={RY - 62} pathLength="100" />
+        <svg className="cena-aneis" viewBox="0 0 1520 980">
+          {ANEIS.map(a => (
+            <ellipse key={a.classe} className={`anel ${a.classe}`}
+              cx={CX} cy={CY} rx={a.rx} ry={a.ry} pathLength="100" />
+          ))}
         </svg>
         {NOS.map(n => (
           <span key={n.id} className="cena-no" style={{ left: n.x, top: n.y, '--i': n.i }}>
