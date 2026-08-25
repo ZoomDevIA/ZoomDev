@@ -51,9 +51,13 @@
    inteiros, mais uma folga para não encostarem no cabeçalho. */
 .cena-orbita {
   position: absolute;
+  /* Centrada de verdade. Descer o eixo para ganhar folga em cima foi tentado
+     e sai pior: o módulo do topo desce junto e vai parar em cima do selo
+     "IDEIA -> EXIT". Quem cria a folga é a margem descontada da altura, que
+     encolhe a elipse inteira sem tirá-la do centro. */
   left: 50%; top: 50%;
-  width: min(1520px, 100vw - 120px);
-  height: min(980px, 100vh - 170px);
+  width: min(1520px, 100vw - 150px);
+  height: min(980px, 100vh - 240px);
   transform: translate(-50%, -50%);
   /* A faixa de baixo esmaece forte. É ali que ficam a caixa de ideação e a
      linha de sugestões, e os dois módulos daquela altura passariam por cima
