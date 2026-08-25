@@ -56,8 +56,16 @@
      "IDEIA -> EXIT". Quem cria a folga é a margem descontada da altura, que
      encolhe a elipse inteira sem tirá-la do centro. */
   left: 50%; top: 50%;
-  width: min(1520px, 100vw - 150px);
-  height: min(980px, 100vh - 240px);
+  /* A PROPORÇÃO É TRAVADA, e é isto que faltava. Antes largura e altura
+     encolhiam cada uma por conta própria: numa janela baixa e larga (que é a
+     janela de todo mundo com a tela em escala 125% ou 150%) a elipse achatava
+     e virava uma faixa de ícones colada no topo, encostando no cabeçalho.
+     Agora a caixa escolhe o menor entre o teto, a largura disponível e a
+     ALTURA disponível convertida em largura pela própria proporção. A órbita
+     encolhe inteira, sempre com a mesma forma, e o módulo do topo desce junto
+     em vez de ficar espremido contra a borda. */
+  width: min(1520px, 100vw - 150px, (100vh - 240px) * 1.551);
+  aspect-ratio: 1520 / 980;
   transform: translate(-50%, -50%);
   /* A faixa de baixo esmaece forte. É ali que ficam a caixa de ideação e a
      linha de sugestões, e os dois módulos daquela altura passariam por cima
@@ -150,7 +158,13 @@
   .cena-orbita { display: none; }
   .cena-grade { background-size: 38px 38px; }
 }
-@media (max-height: 620px) {
+/* Piso de altura. Com a proporção travada, uma janela baixa encolhe a órbita
+   inteira, e abaixo de certo ponto ela fica tão pequena que deixa de circundar
+   o conteúdo e passa a pousar em cima dele: os módulos aparecem atrás do
+   título e do subtítulo. Isso acontece em qualquer tela 1080 com escala de
+   150%, que é comum no Windows. Abaixo deste piso fica só a grade, que nunca
+   conflita com texto. */
+@media (max-height: 760px) {
   .cena-orbita { display: none; }
 }
 
