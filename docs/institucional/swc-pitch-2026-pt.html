@@ -214,6 +214,10 @@
   ul.lista li .selo { vertical-align: middle; margin-left: 1.5mm; }
   ul.lista li b { color: var(--tinta); font-weight: 600; }
   ul.lista.solta li { margin-bottom: 2.2mm; }
+  /* A lâmina de tração carrega duas colunas densas: o que já é real e as seis
+     perguntas da banca. Sem esta compactação as duas listas somadas estouram a
+     altura do cartão, e o `overflow: hidden` corta a última pergunta calada. */
+  ul.lista.densa li { font-size: 8.6pt; line-height: 1.4; margin-bottom: 1.7mm; }
 
   .destaque { color: var(--tinta); font-weight: 600; }
   .aviso {
@@ -472,7 +476,7 @@
         <div class="desc">Calculados por projeto, não alegados.</div>
       </div>
       <div class="bloco">
-        <div class="num">27</div>
+        <div class="num">35</div>
         <div class="cap">Agentes governados</div>
         <div class="desc">Cada um sob protocolo versionado.</div>
       </div>
@@ -561,7 +565,7 @@
       <div class="bloco">
         <h3>Da ideia à empresa</h3>
         <div class="desc">
-          Ideação, classificação, plano de negócios de quatorze seções escrito
+          Ideação, classificação, plano de negócios de dezessete seções escrito
           por cinco agentes com pesquisa ao vivo, MVP navegável com código real,
           site publicável e exportação em DOCX e PDF.
         </div>
@@ -593,11 +597,11 @@
     </div>
 
     <div class="grade g5" style="margin-top:6mm">
-      <div class="bloco aceso"><div class="num">27</div><div class="cap">Agentes sob protocolo</div></div>
-      <div class="bloco aceso"><div class="num">14</div><div class="cap">Seções geradas no plano</div></div>
+      <div class="bloco aceso"><div class="num">35</div><div class="cap">Agentes sob protocolo</div></div>
+      <div class="bloco aceso"><div class="num">17</div><div class="cap">Seções geradas no plano</div></div>
       <div class="bloco aceso"><div class="num">7</div><div class="cap">Graus de evidência</div></div>
       <div class="bloco aceso"><div class="num">15</div><div class="cap">Culturas modeladas</div></div>
-      <div class="bloco aceso"><div class="num">98</div><div class="cap">Testes automatizados</div></div>
+      <div class="bloco aceso"><div class="num">280</div><div class="cap">Testes automatizados</div></div>
     </div>
 
     <p class="peq" style="margin-top:5mm">
@@ -615,39 +619,41 @@
 
   <h2 class="tit">Pré-receita. Aqui está exatamente o que é real.</h2>
   <p class="sub">
-    Não vamos vestir projeção de resultado. Tudo à esquerda é fato de sistema
-    que se pode abrir e conferir. Tudo à direita ainda está por vir, e está
-    marcado como tal.
+    Não vamos vestir projeção de resultado. À esquerda, fato de sistema que se
+    pode abrir e conferir. À direita, as seis perguntas que este estágio sempre
+    levanta, respondidas antes de serem feitas.
   </p>
 
   <div class="corpo">
     <div class="grade g2">
       <div class="bloco verde">
         <div class="cap" style="margin-top:0">Entregue e verificável</div>
-        <ul class="lista solta" style="margin-top:4mm">
+        <ul class="lista solta densa" style="margin-top:3.5mm">
           <li><b>Plataforma no ar em produção</b>, pilha completa publicada, com verificação de saúde, planos pagos e liquidação por PIX ligados.</li>
           <li><b>Selo de Evidência aplicado em código</b>, e não em documento de política: o elo mais fraco limita toda alegação automaticamente.</li>
           <li><b>Motor de Impacto 360°</b> produzindo saída auditável para 15 culturas em três cenários de resposta do solo.</li>
           <li><b>35 agentes sob protocolo versionado</b>, com a fronteira entre resultado documentado e mecanismo em investigação escrita em cada um.</li>
           <li><b>Cadeia de custódia de evidências</b>: cada registro lacrado ao anterior por hash, mapa vivo dos lotes sobre satélite real e passaporte público por lote dizendo o que é prova e o que ainda não é.</li>
-          <li><b>168 testes automatizados</b> cobrindo segurança de sessão, regras de evidência, detecção de adulteração na cadeia e o motor de impacto.</li>
-          <li><b>Selecionada pelo Programa Centelha 3</b>, subvenção de inovação do governo federal, do MCTI com FINEP, CNPq e as fundações estaduais de amparo à pesquisa. Edital competitivo, recurso não diluidor e validação de terceiro sobre a tese.</li>
+          <li><b>280 testes automatizados</b> cobrindo segurança de sessão, regras de evidência, detecção de adulteração na cadeia e o motor de impacto.</li>
+          <li><b>Selecionada pelo Programa Centelha 3</b> e já na <b>fase de contratação</b>, subvenção de inovação do governo federal, do MCTI com FINEP, CNPq e as fundações estaduais de amparo à pesquisa. Edital competitivo, recurso não diluidor e validação de terceiro sobre a tese.</li>
+          <li><b>No ar e aberto agora</b>: <b class="destaque">zoomdev.io</b> é a vitrine, <b class="destaque">www.zoomdev.app</b> é o produto. Nada neste deck depende de agendar demonstração.</li>
         </ul>
       </div>
 
-      <div class="bloco preencher">
-        <div class="rotulo">A completar antes de submeter</div>
-        <ul class="lista solta" style="margin-top:4mm">
-          <li>Pipeline com nome: municípios, cooperativas e produtores em conversa<span class="vaga"></span></li>
-          <li>Hectares sob carta de intenção<span class="vaga"></span></li>
-          <li>Usuários cadastrados e projetos ativos na data da inscrição<span class="vaga"></span></li>
-          <li>Outros editais em que a empresa se inscreveu, com status<span class="vaga"></span></li>
-          <li>Prêmios, aceleradoras ou parcerias institucionais<span class="vaga"></span></li>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">As seis perguntas, respondidas antes de serem feitas</div>
+        <ul class="lista solta densa" style="margin-top:3.5mm">
+          <li><b>O carbono já é real?</b> Não. Toda tonelada aqui é estimativa modelada, sob o selo ESTIMATIVA. A verificação é o que a rodada compra.</li>
+          <li><b>Receita?</b> Nenhuma. Pré-receita por escolha: não vendemos tonelada que ainda não podia ser verificada.</li>
+          <li><b>Quem paga primeiro?</b> Prefeituras e cooperativas, pelos editais que o radar já encontra. Em negociação, nenhum assinado.</li>
+          <li><b>Por que uma grande plataforma de IA não copia?</b> A metade construtora é copiável. Protocolo versionado, custódia lacrada por hash e selo aplicado em código não se instalam depois.</li>
+          <li><b>Por que o solo responde?</b> Pelos laudos assinados da COT BioTechnology sobre o Coin Max. O mecanismo é publicado como em investigação, não como provado.</li>
+          <li><b>Maior risco?</b> O sequestro medido ficar abaixo da curva conservadora. Duas das três linhas de receita não dependem de carbono.</li>
         </ul>
-        <div class="desc" style="color:#e4ccff99">
-          CAC, LTV, retenção, churn e NPS ainda não são mensuráveis em estágio
-          pré-receita. Serão publicados no trimestre em que virarem reais, sob
-          as mesmas regras de evidência que aplicamos ao carbono.
+        <div class="desc">
+          CAC, LTV, retenção e NPS não são mensuráveis em pré-receita. Saem no
+          trimestre em que virarem reais, sob as mesmas regras de evidência que
+          aplicamos ao carbono.
         </div>
       </div>
     </div>
@@ -702,7 +708,7 @@
       <div class="bloco">
         <div class="cap" style="margin-top:0">Unidade econômica · o que o preço compra</div>
         <table style="margin-top:3mm">
-          <tr><td>Plano de negócios completo, 14 seções + pesquisa ao vivo</td><td class="dado">180 de seiva</td></tr>
+          <tr><td>Plano de negócios completo, 17 seções + pesquisa ao vivo</td><td class="dado">180 de seiva</td></tr>
           <tr><td>MVP navegável com código real</td><td class="dado">120 de seiva</td></tr>
           <tr><td>Assinante PRO usando o mês inteiro</td><td class="dado">16 planos</td></tr>
         </table>
@@ -717,9 +723,13 @@
           maioria dos assentos nunca gasta a cota toda.
           <span class="selo proj">Premissa</span>
         </div>
-        <div class="desc" style="color:var(--tenue)">
-          A contabilidade de custo por chamada entra com a primeira safra paga,
-          e substitui esta premissa por medição.
+        <div class="desc">
+          Defendida em código: um <b class="destaque">roteador de modelos</b>
+          manda cada módulo para o modelo mais barato capaz daquele trabalho, e
+          o cache de prompt impede pagar duas vezes pelo contexto compartilhado.
+          <span style="color:var(--tenue)">A contabilidade de custo por chamada
+          entra com a primeira safra paga e substitui esta premissa por
+          medição.</span>
         </div>
       </div>
     </div>
@@ -938,11 +948,14 @@
           por eles, e não do nosso próprio material de venda.
         </div>
       </div>
-      <div class="bloco preencher">
-        <div class="rotulo">Credenciais a acrescentar</div>
-        <div class="desc" style="color:#e4ccff">
-          Formação, universidades e empresas anteriores<span class="vaga"></span>
-          Prêmios, patentes, distinções<span class="vaga"></span>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">Como quatro pessoas entregam isso</div>
+        <div class="desc">
+          O time não escreve cada linha. Escreve os
+          <b class="destaque">protocolos</b>: 35 agentes rodam sob instrução
+          versionada, e 280 testes automatizados são o que impede uma alegação
+          gerada de chegar ao usuário sem conferência. O tamanho do time é a
+          camada de revisão, não o teto de produção.
         </div>
       </div>
       <div class="bloco aceso">
@@ -1051,7 +1064,10 @@
         <div class="desc" style="margin-top:3mm">
           <b class="destaque">Programa Centelha 3</b>, subvenção de inovação do
           governo federal (MCTI, FINEP, CNPq e as fundações estaduais de amparo
-          à pesquisa). Conquistado em edital competitivo.
+          à pesquisa). Conquistado em edital competitivo e já na
+          <b class="destaque">fase de contratação</b>.
+          <span style="color:var(--tenue)">O Radar varre FINEP, BNDES, Fundo
+          Amazônia e as FAPs todo dia: o mesmo trilho, automatizado.</span>
         </div>
       </div>
       <div class="bloco aceso">
@@ -1133,13 +1149,14 @@
       <div><b>Bruno Nascimento</b> · Fundador e CEO</div>
       <div>contato@zoomdev.com.br</div>
       <div>+55 96 8116-3910</div>
-      <div>zoomdev.com.br</div>
+      <div><b class="destaque">zoomdev.io</b> · a vitrine</div>
+      <div><b class="destaque">www.zoomdev.app</b> · o produto, no ar</div>
     </div>
 
     <div style="display:flex;gap:7mm">
       <div style="text-align:center">
         <div class="qr">
-          <img src="ASSET:qr-site.svg" alt="zoomdev.com.br" style="width:100%;height:100%">
+          <img src="ASSET:qr-site.svg" alt="zoomdev.io" style="width:100%;height:100%">
         </div>
         <div class="cap" style="margin-top:2.5mm">A plataforma</div>
       </div>

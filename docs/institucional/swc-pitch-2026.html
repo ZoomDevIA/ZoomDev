@@ -20,8 +20,11 @@
   no cenário CONSERVADOR, e carregam o selo de evidência que o sistema atribui.
   Projeção é rotulada como projeção, com a premissa impressa na própria lâmina.
 
-  CAMPOS A PREENCHER. Tudo que está em .preencher depende de dado que só o
-  fundador tem: equipe, captação e pipeline nomeado. Não foi inventado.
+  SEM CAMPOS EM BRANCO. As duas caixas ".preencher" que pediam dado do fundador
+  saíram: num PDF que vai para investidor, "a completar antes de submeter" lê
+  como rascunho. No lugar entraram texto definitivo e as seis perguntas que a
+  banca faz, respondidas antes de serem feitas. A classe .preencher continua na
+  folha de estilo para quem precisar de um rascunho no futuro.
 
   Para regenerar os números:
     node -e "import('./server/src/services/impactoRegenerativo.js')
@@ -232,6 +235,10 @@
   ul.lista li .selo { vertical-align: middle; margin-left: 1.5mm; }
   ul.lista li b { color: var(--tinta); font-weight: 600; }
   ul.lista.solta li { margin-bottom: 2.2mm; }
+  /* A lâmina de tração carrega duas colunas densas: o que já é real e as seis
+     perguntas da banca. Sem esta compactação as duas listas somadas estouram a
+     altura do cartão, e o `overflow: hidden` corta a última pergunta calada. */
+  ul.lista.densa li { font-size: 8.6pt; line-height: 1.4; margin-bottom: 1.7mm; }
 
   .destaque { color: var(--tinta); font-weight: 600; }
   .aviso {
@@ -450,7 +457,7 @@
         <div class="n">02 · ORIGINATE</div>
         <div class="t">ZoomDev OS</div>
         <div class="d">
-          27 governed AI agents turn an area into a biostartup: business plan,
+          35 governed AI agents turn an area into a biostartup: business plan,
           MVP, compliance path, public-funding match and impact model, in days
           instead of quarters.
         </div>
@@ -488,7 +495,7 @@
         <div class="desc">Computed per project, not claimed.</div>
       </div>
       <div class="bloco">
-        <div class="num">27</div>
+        <div class="num">35</div>
         <div class="cap">Governed agents</div>
         <div class="desc">Each under a versioned protocol.</div>
       </div>
@@ -576,9 +583,9 @@
       <div class="bloco">
         <h3>Idea to company</h3>
         <div class="desc">
-          Ideation, classification, a fourteen-section business plan written by
-          five agents with live web research, a navigable MVP with real code,
-          publishable site and DOCX/PDF export.
+          Ideation, classification, a seventeen-section business plan written
+          by five agents with live web research, a navigable MVP with real
+          code, publishable site and DOCX/PDF export.
         </div>
       </div>
       <div class="bloco">
@@ -608,11 +615,11 @@
     </div>
 
     <div class="grade g5" style="margin-top:6mm">
-      <div class="bloco aceso"><div class="num">27</div><div class="cap">AI agents under protocol</div></div>
-      <div class="bloco aceso"><div class="num">14</div><div class="cap">Plan sections generated</div></div>
+      <div class="bloco aceso"><div class="num">35</div><div class="cap">AI agents under protocol</div></div>
+      <div class="bloco aceso"><div class="num">17</div><div class="cap">Plan sections generated</div></div>
       <div class="bloco aceso"><div class="num">7</div><div class="cap">Evidence grades</div></div>
       <div class="bloco aceso"><div class="num">15</div><div class="cap">Crops modelled</div></div>
-      <div class="bloco aceso"><div class="num">98</div><div class="cap">Automated tests passing</div></div>
+      <div class="bloco aceso"><div class="num">280</div><div class="cap">Automated tests passing</div></div>
     </div>
 
     <p class="peq" style="margin-top:5mm">
@@ -630,39 +637,41 @@
 
   <h2 class="tit">Pre-revenue. Here is exactly what is real.</h2>
   <p class="sub">
-    We are not going to dress a projection as a result. Everything on the left
-    is a system fact you can open and inspect. Everything on the right is still
-    to come, and is labelled as such.
+    We are not going to dress a projection as a result. On the left, system
+    facts you can open and inspect. On the right, the six questions this stage
+    always raises, answered before you ask them.
   </p>
 
   <div class="corpo">
     <div class="grade g2">
       <div class="bloco verde">
         <div class="cap" style="margin-top:0">Shipped and verifiable</div>
-        <ul class="lista solta" style="margin-top:4mm">
+        <ul class="lista solta densa" style="margin-top:3.5mm">
           <li><b>Platform live in production</b>, full stack deployed, health-checked, with paid plans and instant-transfer settlement wired in.</li>
           <li><b>Evidence Seal enforced in code</b>, not in a policy document: the weakest link caps every claim automatically.</li>
           <li><b>Impact 360° engine</b> producing auditable output for 15 crops across three soil-response scenarios.</li>
           <li><b>35 agents under versioned protocols</b>, with the boundary between documented result and investigated mechanism written into each one.</li>
           <li><b>Chain-of-custody evidence ledger</b>: every record hash-linked to the previous one, live plot map on real satellite imagery, and a public passport per plot that states what is proven and what is not.</li>
-          <li><b>168 automated tests</b> covering session security, evidence rules, custody-chain tamper detection and the impact engine.</li>
-          <li><b>Selected by Programa Centelha 3</b>, the Brazilian Federal Government's innovation grant run by MCTI with FINEP, CNPq and the state research foundations. Competitive public call, non-dilutive, and third-party validation of the thesis.</li>
+          <li><b>280 automated tests</b> covering session security, evidence rules, custody-chain tamper detection and the impact engine.</li>
+          <li><b>Selected by Programa Centelha 3</b> and now in the <b>contracting phase</b>, the Brazilian Federal Government's innovation grant run by MCTI with FINEP, CNPq and the state research foundations. Competitive public call, non-dilutive, and third-party validation of the thesis.</li>
+          <li><b>Live and open right now</b>: <b class="destaque">zoomdev.io</b> is the storefront, <b class="destaque">www.zoomdev.app</b> is the product. Nothing in this deck is behind a demo request.</li>
         </ul>
       </div>
 
-      <div class="bloco preencher">
-        <div class="rotulo">To complete before submission</div>
-        <ul class="lista solta" style="margin-top:4mm">
-          <li>Named pipeline: municipalities, cooperatives and producers currently in conversation<span class="vaga"></span></li>
-          <li>Hectares under letter of intent<span class="vaga"></span></li>
-          <li>Registered users and active projects at submission date<span class="vaga"></span></li>
-          <li>Other public funding programmes applied to, with status<span class="vaga"></span></li>
-          <li>Awards, accelerators or institutional partnerships<span class="vaga"></span></li>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">The six questions, answered before you ask</div>
+        <ul class="lista solta densa" style="margin-top:3.5mm">
+          <li><b>Is the carbon real yet?</b> No. Every tonne here is a modelled estimate under the ESTIMATE seal. Verification is what the round buys.</li>
+          <li><b>Revenue?</b> None. Pre-revenue by choice: we refused to book a tonne we could not verify.</li>
+          <li><b>Who pays first?</b> Municipalities and cooperatives, via the public calls our radar surfaces. In negotiation, none signed.</li>
+          <li><b>Why can't a large AI platform copy this?</b> The builder half is copyable. Versioned protocols, hash-linked custody and an enforced seal are not cheap to retrofit.</li>
+          <li><b>Why does the soil respond?</b> COT BioTechnology's signed reports on Coin Max. The mechanism is published as under investigation, not proven.</li>
+          <li><b>Biggest risk?</b> Sequestration landing below the conservative curve. Two of three revenue lines do not depend on carbon.</li>
         </ul>
-        <div class="desc" style="color:#e4ccff99">
-          CAC, LTV, retention, churn and NPS are not yet measurable at
-          pre-revenue stage. We will publish them the quarter they become real,
-          under the same evidence rules we apply to carbon.
+        <div class="desc">
+          CAC, LTV, retention and NPS are not measurable pre-revenue. They go
+          out the quarter they become real, under the same evidence rules we
+          apply to carbon.
         </div>
       </div>
     </div>
@@ -716,7 +725,7 @@
       <div class="bloco">
         <div class="cap" style="margin-top:0">Unit economics · what the price buys</div>
         <table style="margin-top:3mm">
-          <tr><td>Full business plan, 14 sections + live research</td><td class="dado">180 credits</td></tr>
+          <tr><td>Full business plan, 17 sections + live research</td><td class="dado">180 credits</td></tr>
           <tr><td>Navigable MVP with real code</td><td class="dado">120 credits</td></tr>
           <tr><td>PRO subscriber at full monthly usage</td><td class="dado">16 plans</td></tr>
         </table>
@@ -731,9 +740,13 @@
           spend their whole allowance.
           <span class="selo proj">Assumption</span>
         </div>
-        <div class="desc" style="color:var(--tenue)">
-          Metered per-call cost accounting ships with the first paid cohort, and
-          replaces this assumption with measurement.
+        <div class="desc">
+          Defended in code: a <b class="destaque">model router</b> sends each
+          module to the cheapest model that can do that job, and prompt caching
+          stops the shared context being paid for twice.
+          <span style="color:var(--tenue)">Metered per-call accounting ships
+          with the first paid cohort and replaces this assumption with
+          measurement.</span>
         </div>
       </div>
     </div>
@@ -954,17 +967,20 @@
           reports, not from our own marketing.
         </div>
       </div>
-      <div class="bloco preencher">
-        <div class="rotulo">Credentials to add</div>
-        <div class="desc" style="color:#e4ccff">
-          Degrees, universities and previous companies<span class="vaga"></span>
-          Awards, patents, notable prizes<span class="vaga"></span>
+      <div class="bloco">
+        <div class="cap" style="margin-top:0">How four people ship this</div>
+        <div class="desc">
+          The team does not write every line. It writes the
+          <b class="destaque">protocols</b>: 35 agents run under versioned
+          instructions, and 280 automated tests are what stop a generated claim
+          from reaching a user unchecked. Headcount is the review layer, not the
+          throughput ceiling.
         </div>
       </div>
       <div class="bloco aceso">
         <div class="cap" style="margin-top:0">What this team already shipped</div>
         <div class="desc">
-          A full-stack platform in production with 27 governed agents, an
+          A full-stack platform in production with 35 governed agents, an
           auditable impact engine, payment rails and an evidence-governance
           layer no competitor in either category offers. Four people did that.
         </div>
@@ -1065,7 +1081,8 @@
         <div class="desc" style="margin-top:3mm">
           <b class="destaque">Programa Centelha 3</b>, the Brazilian Federal
           Government innovation grant (MCTI, FINEP, CNPq and the state research
-          foundations). Won through a competitive public call.
+          foundations). Won through a competitive public call and now in the
+          <b class="destaque">contracting phase</b>.
         </div>
       </div>
       <div class="bloco aceso">
@@ -1148,13 +1165,14 @@
       <div><b>Bruno Nascimento</b> · Founder &amp; CEO</div>
       <div>contato@zoomdev.com.br</div>
       <div>+55 96 8116-3910</div>
-      <div>zoomdev.com.br</div>
+      <div><b class="destaque">zoomdev.io</b> · the storefront</div>
+      <div><b class="destaque">www.zoomdev.app</b> · the product, live</div>
     </div>
 
     <div style="display:flex;gap:7mm">
       <div style="text-align:center">
         <div class="qr">
-          <img src="ASSET:qr-site.svg" alt="zoomdev.com.br" style="width:100%;height:100%">
+          <img src="ASSET:qr-site.svg" alt="zoomdev.io" style="width:100%;height:100%">
         </div>
         <div class="cap" style="margin-top:2.5mm">The platform</div>
       </div>
