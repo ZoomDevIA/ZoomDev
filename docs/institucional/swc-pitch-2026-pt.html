@@ -246,11 +246,21 @@
   }
 
   /* ── Capa ─────────────────────────────────────────────────────────────── */
-  .capa { justify-content: center; padding-top: 20mm; }
-  .capa .lockup { display: flex; align-items: center; gap: 7mm; margin-bottom: 11mm; }
-  .capa .lockup .simbolo { width: 26mm; height: 26mm; object-fit: contain; }
-  .capa .lockup .risco { width: 1px; height: 20mm; background: linear-gradient(180deg, transparent, var(--linha), transparent); }
-  .capa .lockup .wordmark { height: 17mm; object-fit: contain; }
+  /* O índice das 11 lâminas obrigatórias é `position: absolute` no rodapé, e
+     por isso NÃO entra na conta do flex nem no conferidor de lâmina: ele não
+     gera altura de rolagem, apenas encobre o que estiver embaixo. Este
+     padding-bottom é o espaço que ele ocupa, reservado à mão, para o conteúdo
+     centralizado parar acima dele em vez de colidir calado. */
+  .capa { justify-content: center; padding-top: 18mm; padding-bottom: 44mm; }
+  /* LOCKUP EMPILHADO. Antes o símbolo e o logotipo ficavam lado a lado, com um
+     risco fino no meio. Não funcionava por duas razões somadas: o logotipo é
+     inclinado por desenho, e ao lado de um símbolo em pé a inclinação lia como
+     erro de alinhamento; e o risco, que existia para separar, separava demais,
+     deixando duas marcas soltas em vez de uma. Empilhado, o símbolo manda e a
+     palavra assenta embaixo dele, no mesmo eixo da manchete. */
+  .capa .lockup { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 10mm; }
+  .capa .lockup .simbolo { width: 36mm; height: 36mm; object-fit: contain; margin-left: -3mm; }
+  .capa .lockup .wordmark { height: 17mm; object-fit: contain; object-position: left center; margin-top: 1mm; }
   .capa h1 { font-size: 34pt; line-height: 1.08; font-weight: 700; letter-spacing: -.02em; max-width: 245mm; }
   .capa h1 em { font-style: normal; color: var(--ciano); }
   .capa .linha { width: 58mm; height: 2px; background: linear-gradient(90deg, var(--verde), var(--ciano)); margin: 8mm 0; }
@@ -314,9 +324,12 @@
 
   /* ── Fecho ────────────────────────────────────────────────────────────── */
   .fecho { justify-content: center; }
-  .fecho .lockup { display: flex; align-items: center; gap: 7mm; margin-bottom: 9mm; }
-  .fecho .lockup .simbolo { width: 22mm; height: 22mm; object-fit: contain; }
-  .fecho .lockup .wordmark { height: 15mm; object-fit: contain; }
+  /* Mesmo empilhamento da capa, em escala menor: o fecho é a lâmina que
+     alguém fotografa, e abrir empilhado para fechar lado a lado deixaria a
+     marca com duas versões dentro do mesmo documento. */
+  .fecho .lockup { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 8mm; }
+  .fecho .lockup .simbolo { width: 27mm; height: 27mm; object-fit: contain; margin-left: -2mm; }
+  .fecho .lockup .wordmark { height: 13mm; object-fit: contain; object-position: left center; margin-top: .5mm; }
   .fecho h2 { font-size: 24pt; line-height: 1.15; font-weight: 700; max-width: 220mm; }
   .fecho h2 em { font-style: normal; color: var(--verde); }
   .qr { width: 26mm; height: 26mm; }
@@ -334,7 +347,6 @@
 <section class="slide capa" data-n="01">
   <div class="lockup">
     <img class="simbolo" src="LOGO_AQUI" alt="ZoomDev">
-    <div class="risco"></div>
     <img class="wordmark" src="WORDMARK_AQUI" alt="ZoomDev · Idea to Exit">
   </div>
 
