@@ -29,6 +29,15 @@ function ler(nome) {
 const EN = ler('swc-pitch-2026.html');
 const PT = ler('swc-pitch-2026-pt.html');
 
+// O banco de respostas é o texto que de fato entra no formulário. Ele saiu de
+// sincronia com o deck uma vez, e ninguém percebeu: dizia 27 agentes e 98
+// testes muito depois de o deck já dizer outra coisa.
+const FORMULARIO = fs.readFileSync(path.join(DECKS, 'swc-formulario-respostas.md'), 'utf8');
+
+/** O que de fato vai colado num campo: a citação sem o "> ", em uma linha. */
+const citacao = (bloco) => bloco.trim().split('\n')
+  .filter(l => l.startsWith('> ')).map(l => l.slice(2).trimEnd()).join(' ').trim();
+
 const laminas = (t) => t.match(/<section class="slide/g)?.length ?? 0;
 const segundos = (t) => [...t.matchAll(/class="seg">(\d+)s/g)].reduce((s, m) => s + Number(m[1]), 0);
 
@@ -157,5 +166,63 @@ test('o deck está pronto para sair da gaveta', async (t) => {
   await t.test('o Centelha aparece na fase em que realmente está', () => {
     assert.match(EN, /contracting phase/, 'o inglês não diz que o Centelha está em contratação');
     assert.match(PT, /fase de contratação/, 'o português não diz que o Centelha está em contratação');
+  });
+});
+
+test('o banco de respostas do formulário acompanha o deck', async (t) => {
+  const { total } = resumoElenco();
+
+  await t.test('a contagem de agentes é a mesma do elenco e do deck', () => {
+    const achados = [...FORMULARIO.matchAll(/\b(\d\d)\s+(?:governed |AI )/g)].map(m => Number(m[1]));
+    assert.ok(achados.length >= 5, 'o formulário deixou de citar a contagem de agentes');
+    for (const n of achados) {
+      assert.equal(n, total, `o formulário diz ${n} agentes e o elenco tem ${total}`);
+    }
+  });
+
+  await t.test('a contagem de testes não contradiz o deck', () => {
+    const noDeck = EN.match(/\b(\d{2,4})\s+automated tests/)[1];
+    const achados = new Set([...FORMULARIO.matchAll(/\b(\d{2,4})\s+automated tests/g)].map(m => m[1]));
+    assert.equal(achados.size, 1, `o formulário cita ${[...achados].join(' e ')} testes em lugares diferentes`);
+    assert.equal([...achados][0], noDeck, 'o formulário e o deck discordam na contagem de testes');
+  });
+
+  await t.test('não voltou a linguagem que enfraquece', () => {
+    for (const [rx, porque] of [
+      [/Three moves, not four/, 'piada interna'],
+      [/Put plainly/, 'muleta que pede licença'],
+      [/not going to dress/, 'abre prometendo o que NÃO vai fazer'],
+      [/expect to be challenged/, 'convida o ataque'],
+      [/The real incumbent/, 'anula a tabela acima'],
+      [/fourteen-section/, 'o plano tem 17 seções'],
+    ]) {
+      assert.ok(!rx.test(FORMULARIO), `formulário: voltou "${rx.source}" — ${porque}`);
+    }
+  });
+
+  await t.test('cita os endereços que abrem, e não o que ainda não tem certificado', () => {
+    assert.match(FORMULARIO, /zoomdev\.io/, 'a vitrine não é citada');
+    assert.ok(!/\| Website \| https:\/\/zoomdev\.com\.br \|/.test(FORMULARIO),
+      'o cadastro voltou a apontar para o .com.br, que ainda não abre');
+  });
+
+  await t.test('cada resposta cabe no limite do campo que declara', () => {
+    // O texto foi reescrito; os contadores impressos ao lado precisam
+    // acompanhar, senão o fundador cola algo que o campo trunca no meio.
+    for (const [, rot, declarado, bloco] of
+         FORMULARIO.matchAll(/\*\*(Curto|Médio|Longo) \(([\d.]+) caracteres\)\*\*\n\n((?:>.*\n)+)/g)) {
+      const real = citacao(bloco).length;
+      assert.equal(Number(declarado.replace('.', '')), real,
+        `${rot}: declara ${declarado} caracteres e tem ${real}`);
+      if (rot === 'Curto') {
+        assert.ok(real <= 300, `${rot}: ${real} caracteres, acima do teto de 300 do campo curto`);
+      }
+    }
+    for (const [, declarado, bloco] of
+         FORMULARIO.matchAll(/Máximo 50 palavras\. \*\*(\d+) palavras:\*\*\n\n((?:>.*\n)+)/g)) {
+      const real = citacao(bloco).split(/\s+/).length;
+      assert.equal(Number(declarado), real, `declara ${declarado} palavras e tem ${real}`);
+      assert.ok(real <= 50, `resposta com ${real} palavras, acima do máximo de 50`);
+    }
   });
 });

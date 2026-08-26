@@ -70,7 +70,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > verify assets they did not originate. Nobody stands between the soil and the
 > registry.
 
-**Longo (1.014 caracteres)**
+**Longo (997 caracteres)**
 
 > The world is not short of land that could capture carbon. It is short of
 > proof that it did.
@@ -90,28 +90,26 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > Nobody stands between the soil and the registry, and that gap is where the
 > market stalls.
 >
-> Put plainly: a farmer with 50 hectares of degraded soil cannot enter a market
-> measured in billions, because proving what happened on that land costs more
-> than the land returns.
+> A farmer with 50 hectares of degraded soil cannot enter a market measured in
+> billions, because proving what happened on that land costs more than the land
+> returns.
 
 ### 2. Proposed Solution
 
 **Curto (281 caracteres)**
 
 > ZoomDev OS is one operating system that regenerates, originates and proves.
-> Coin Max, a Class A biostimulant, restores degraded soil. 27 governed AI
+> Coin Max, a Class A biostimulant, restores degraded soil. 35 governed AI
 > agents turn each area into an audit-ready biostartup. The Evidence Seal
 > grades every number, and the weakest link governs the claim.
 
-**Médio (747 caracteres)**
+**Médio (721 caracteres)**
 
-> Three moves, not four.
->
 > REGENERATE. Coin Max is a Class A organomineral foliar biostimulant. Its
 > response is inversely proportional to soil quality: the worse the ground, the
 > larger the gain. Regeneration technology, not marginal optimization.
 >
-> ORIGINATE. 27 governed AI agents turn an area into a biostartup: business
+> ORIGINATE. 35 governed AI agents turn an area into a biostartup: business
 > plan, MVP, compliance path, public-funding match and impact model, in days
 > instead of quarters.
 >
@@ -123,18 +121,18 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 
 ### 3. Product Details
 
-**Curto (284 caracteres)**
+**Curto (285 caracteres)**
 
-> Built, deployed and running in production: ideation to fourteen-section
+> Built, deployed and running in production: ideation to seventeen-section
 > business plan with live web research, navigable MVP with real code,
 > publishable site, Impact 360° engine, environmental liability calculator,
 > CarbonPay settlement, daily public-funding radar, DOCX and PDF export.
 
-**Médio (782 caracteres)**
+**Médio (880 caracteres)**
 
 > The platform is live in production today, not a prototype.
 >
-> Idea to company: ideation, classification, a fourteen-section business plan
+> Idea to company: ideation, classification, a seventeen-section business plan
 > written by five agents with live web research, a navigable MVP with real
 > code, a publishable site and DOCX/PDF export.
 >
@@ -149,8 +147,9 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > Public funding radar: daily sweep of public calls with automatic matching per
 > project.
 >
-> 27 agents under versioned protocols. 15 crops modelled. 98 automated tests
-> passing.
+> 35 agents under versioned protocols. 17 plan sections. 15 crops modelled.
+> 287 automated tests passing. Live and open right now at zoomdev.io, with the
+> product itself at www.zoomdev.app.
 
 ### 4. Business Model
 
@@ -161,7 +160,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > percent take on each verified transaction and 8 percent on origination, paid
 > only on tonnes that actually clear verification.
 
-**Médio (848 caracteres)**
+**Médio (844 caracteres)**
 
 > Software pays for itself from day one. Carbon is the compounding line: every
 > hectare we help originate keeps paying while the credit lives.
@@ -191,7 +190,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > hectares of degraded Brazilian pasture times 2.99 tCO2e per hectare per year
 > equals 83.8 Mt, worth USD 1.68 billion a year at USD 20 a tonne.
 
-**Médio (964 caracteres)**
+**Médio (962 caracteres)**
 
 > Two independent counts, both clearing one billion dollars.
 >
@@ -212,14 +211,14 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 
 ### 6. Competition
 
-**Curto (298 caracteres)**
+**Curto (299 caracteres)**
 
 > Two crowded categories with nobody in the gap. AI builders (Base44, Lovable,
 > Replit, Bolt) ship software without domain evidence. Registries and MRV
 > platforms (Verra, Gold Standard, Pachama, Sylvera, BeZero) verify what they
-> did not originate. The real incumbent is a consultant with a spreadsheet.
+> never originated. Most customers still use a consultant and a spreadsheet.
 
-**Médio (933 caracteres)**
+**Médio (890 caracteres)**
 
 > Two crowded categories, and nobody in the gap between them.
 >
@@ -230,8 +229,8 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > carbon with partial evidence governance. Agricultural input suppliers
 > regenerate soil and stop there.
 >
-> The real incumbent is none of them: it is a consultant with a spreadsheet,
-> and that is what most of our customers use today.
+> What most of our customers use today is none of them: a consultant and a
+> spreadsheet.
 >
 > Why a customer picks us: against a consultant we are faster and cheaper by an
 > order of magnitude. Against a registry, we arrive before the project exists.
@@ -249,7 +248,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > Amazon pilots in Amapá. Phase 2, Brazil, riding the SBCE regulated market.
 > Phase 3, any tropical geography with degraded soil.
 
-**Médio (1.001 caracteres)**
+**Médio (997 caracteres)**
 
 > Land one territory, then multiply inside it. A municipality is not one
 > customer. It is a hundred biostartups waiting for an instrument, and each one
@@ -279,34 +278,36 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > honesto sem ser fraco. Não substitua "pre-revenue" por número inventado: o
 > Q&A de dois minutos é onde isso quebra.
 
-**Curto (278 caracteres)**
+**Curto (275 caracteres)**
 
-> Pre-revenue and honest about it. The platform is live in production with 27
-> governed agents, an auditable Impact 360° engine, payment rails and 98
-> automated tests. Pipeline: [MUNICIPALITIES, COOPERATIVES, PRODUCERS IN
-> CONVERSATION]. [N] registered users and [N] active projects.
+> Pre-revenue by choice. The platform is live in production with 35 governed
+> agents, an auditable Impact 360° engine, payment rails and 281 automated
+> tests, open right now at zoomdev.io. Pipeline: [MUNICIPALITIES,
+> COOPERATIVES, PRODUCERS IN CONVERSATION]. [N] registered users.
 
-**Médio (1.088 caracteres)**
+**Médio (1.221 caracteres)**
 
-> We are pre-revenue, and we are not going to dress a projection as a result.
+> We are pre-revenue by choice: we refused to book a tonne we could not yet
+> verify. Everything below is a system fact you can open and inspect.
 >
 > Shipped and verifiable today: the platform is live in production, full stack
 > deployed and health-checked, with paid plans and instant-transfer settlement
 > wired in. The Evidence Seal is enforced in code, not in a policy document:
 > the weakest link caps every claim automatically. The Impact 360° engine
 > produces auditable output for 15 crops across three soil-response scenarios.
-> 27 agents run under versioned protocols, each with the boundary between
-> documented result and investigated mechanism written into it. 98 automated
-> tests cover session security, evidence rules and the impact engine.
+> 35 agents run under versioned protocols, each with the boundary between
+> documented result and investigated mechanism written into it. 281 automated
+> tests cover session security, evidence rules, custody-chain tamper detection
+> and the impact engine. Open right now: zoomdev.io is the storefront,
+> www.zoomdev.app is the product. Selected by Programa Centelha 3, now in the
+> contracting phase.
 >
 > Commercial pipeline: [NAMED MUNICIPALITIES, COOPERATIVES AND PRODUCERS IN
-> CONVERSATION]. [N] hectares under letter of intent. [N] registered users and
-> [N] active projects as of [DATE]. Public funding programmes applied to:
-> [LIST WITH STATUS].
+> CONVERSATION]. [N] hectares under letter of intent. [N] registered users as
+> of [DATE].
 >
-> CAC, LTV, retention, churn and NPS are not yet measurable at this stage. We
-> will publish them the quarter they become real, under the same evidence rules
-> we apply to carbon.
+> CAC, LTV, retention and NPS are not measurable pre-revenue. They go out the
+> quarter they become real, under the same evidence rules we apply to carbon.
 
 ### 9. Financials
 
@@ -317,7 +318,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > 2030 (about USD 15.6M). Carbon revenue starts only in 2027, after the first
 > cohort clears third-party verification.
 
-**Médio (1.037 caracteres)**
+**Médio (1.069 caracteres)**
 
 > Five years, built from the bottom up. Every line comes from a price that
 > already exists in the product and a conversion assumption stated next to it.
@@ -335,8 +336,9 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > a tonne, which is 3.3 percent of the 83.8 Mt Brazilian potential.
 >
 > Prices and credit costs are live product configuration. Hectare and tonne
-> figures are engine output. The conversion rates are the assumption, and that
-> is the line we expect to be challenged on.
+> figures are engine output. The conversion rates are the one assumption, and
+> they are printed beside every line so you can re-run them at your own
+> numbers.
 
 ### 10. Team
 
@@ -360,22 +362,28 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > Science partner: COT BioTechnology, developer of Coin Max. The agronomic
 > evidence we present comes from their signed technical reports.
 >
-> Degrees, previous companies, awards and patents: [TO ADD].
+> How four people ship this: the team does not write every line, it writes the
+> protocols. 35 agents run under versioned instructions, and 281 automated
+> tests are what stop a generated claim from reaching a user unchecked.
+> Headcount is the review layer, not the throughput ceiling.
 >
 > What this team has already shipped: a full-stack platform in production with
-> 27 governed agents, an auditable impact engine, payment rails and an
+> 35 governed agents, an auditable impact engine, payment rails and an
 > evidence-governance layer that no competitor in either category currently
-> offers. That is the execution evidence available today.
+> offers.
+>
+> Degrees, previous companies, awards and patents: [TO ADD].
 
 ### 11. Current Funding Status
 
 **Pronto para colar**
 
-> Stage: no equity round raised to date, and no shares issued. Raised to date:
-> Programa Centelha 3, the Brazilian Federal Government innovation grant (MCTI,
-> FINEP, CNPq and the state research foundations), won through a competitive
-> public call and fully non-dilutive. Raising now: USD 1 million. Estimated
-> runway: 12 months.
+> Stage: clean cap table. Everything built so far was funded without dilution,
+> with no equity round and no shares issued. Raised to date: Programa Centelha
+> 3, the Brazilian Federal Government innovation grant (MCTI, FINEP, CNPq and
+> the state research foundations), won through a competitive public call and
+> now in the contracting phase. Raising now: USD 1 million. Estimated runway:
+> 12 months.
 >
 > Use of funds, in order of leverage. First, instrumented MRV: sensors, control
 > plots and accredited third-party verification. This is what turns our
@@ -420,16 +428,16 @@ para medir canal.
 Limite de 250 caracteres. **É o que vai no formulário:**
 
 > ZoomDev OS turns degraded land into audit-ready biostartups. Coin Max
-> regenerates the soil, 27 AI agents originate the company, and the Evidence
+> regenerates the soil, 35 AI agents originate the company, and the Evidence
 > Seal grades every number, so a carbon claim never outruns the proof behind it.
 
 223 caracteres. Versão em português, para uso local (228 caracteres):
 
 > A ZoomDev OS transforma terra degradada em biostartups auditáveis. O Coin Max
-> regenera o solo, 27 agentes de IA originam a empresa, e o Selo de Evidência
+> regenera o solo, 35 agentes de IA originam a empresa, e o Selo de Evidência
 > classifica cada número: alegação de carbono nunca passa à frente da prova.
 
-Cita os 27 agentes e o Selo de Evidência porque é o que nenhum concorrente das
+Cita os 35 agentes e o Selo de Evidência porque é o que nenhum concorrente das
 duas categorias tem. Sobram cerca de 25 caracteres em cada, se for preciso
 encaixar cidade ou estado.
 
@@ -449,7 +457,8 @@ Lista de escolha única. Opções lidas na tela:
 
 O fundador captou pelo **Programa Centelha 3**, subvenção econômica não
 reembolsável do MCTI com FINEP, CNPq e as fundações estaduais de amparo à
-pesquisa. Não é rodada de equity: não houve emissão de quota nem diluição.
+pesquisa, já na fase de contratação. Não é rodada de equity: não houve emissão
+de quota nem diluição.
 
 Por que `Other` e não as outras:
 
@@ -461,7 +470,8 @@ Por que `Other` e não as outras:
 Se houver campo de texto ao lado:
 
 > Non-dilutive public grant: Programa Centelha 3 (MCTI / FINEP / CNPq,
-> Brazilian Federal Government). Competitive public call. No equity issued.
+> Brazilian Federal Government), competitive public call, now in the
+> contracting phase. No equity issued.
 
 Capital não diluidor obtido em edital competitivo do governo federal é
 validação de terceiro, e não só dinheiro. Pesa mais na lâmina de tração do que
@@ -491,7 +501,7 @@ Máximo 50 palavras. **48 palavras:**
 Máximo 50 palavras. **46 palavras:**
 
 > ZoomDev OS regenerates, originates and proves. Coin Max restores degraded
-> soil. 27 AI agents turn each area into an audit-ready biostartup. The Evidence
+> soil. 35 AI agents turn each area into an audit-ready biostartup. The Evidence
 > Seal grades every number. Customers pay because we deliver in days what
 > consultants deliver in quarters, and because the proof survives due diligence.
 
@@ -533,7 +543,7 @@ feita numa sessão só.
 | Company / Startup name | ZoomDev |
 | One-line description | Regeneration you can prove: degraded land becomes audit-ready biostartups |
 | Country / Region | Brazil · [CIDADE E ESTADO] |
-| Website | https://zoomdev.com.br |
+| Website | https://zoomdev.io (storefront) · https://www.zoomdev.app (product) |
 | Industry / Vertical | ClimateTech · AgTech · Artificial Intelligence · Carbon Markets |
 | Year founded | [ANO] |
 | Number of employees | 4 |
@@ -554,7 +564,7 @@ Vai ser pedido em algum campo, e o template da Pegasus insiste nisso.
 
 - **Tagline (27 caracteres):** Regeneration you can prove.
 - **Uma linha (119 caracteres):** ZoomDev OS turns degraded land into audit-ready biostartups. The proof is generated with the asset, not years after it.
-- **Elevator (274 caracteres):** ZoomDev OS turns degraded land into audit-ready biostartups. Coin Max regenerates the soil, 27 governed AI agents originate the company, and the Evidence Seal grades every number so a carbon claim never outruns the evidence behind it. Built, deployed, running in production.
+- **Elevator (274 caracteres):** ZoomDev OS turns degraded land into audit-ready biostartups. Coin Max regenerates the soil, 35 governed AI agents originate the company, and the Evidence Seal grades every number so a carbon claim never outruns the evidence behind it. Built, deployed, running in production.
 
 ---
 
