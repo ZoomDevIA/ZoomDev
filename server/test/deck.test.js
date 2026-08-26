@@ -128,6 +128,32 @@ test('o deck está pronto para sair da gaveta', async (t) => {
     }
   });
 
+  await t.test('não voltou linguagem que enfraquece o pitch', () => {
+    // Uma varredura feita à mão achou treze construções que tiravam força sem
+    // acrescentar informação, e elas caem em três famílias. Piada interna que
+    // não informa ("três movimentos, não quatro"). Muleta que pede licença
+    // pelo que veio antes ("em bom português:"). E negação ou desculpa gastando
+    // o maior tipo da lâmina ("Não 30%", "poderíamos escrever... nosso
+    // protocolo proíbe"). O conteúdo honesto ficou; o tom de quem se desculpa
+    // por ser honesto saiu. Este teste existe porque texto de deck é reescrito
+    // aos poucos, e esse tom volta sozinho.
+    const proibidas = [
+      [/Não quatro|Not four/, 'piada interna: o título já lista os três'],
+      [/Em bom português|Put plainly/, 'muleta que pede licença pelo parágrafo anterior'],
+      [/Não 30%|Not 30%/, 'negação ocupando o número em destaque do cartão'],
+      [/Poderíamos escrever|We could claim/, 'condicional que pede desculpa por ser honesto'],
+      [/Não vamos vestir|not going to dress/, 'abre prometendo o que NÃO vai fazer'],
+      [/esperamos ser questionad|expect to be challenged/, 'convida o ataque em vez de dar a régua'],
+      [/concorrente de verdade|the real incumbent/, 'confessa que a tabela acima é irrelevante'],
+      [/US\$ 7 a 120|US\$ 7 – 120/, 'intervalo de 17x lê como "não sabemos"'],
+    ];
+    for (const [nome, texto] of [['inglês', EN], ['português', PT]]) {
+      for (const [rx, porque] of proibidas) {
+        assert.ok(!rx.test(texto), `${nome}: voltou "${rx.source}" — ${porque}`);
+      }
+    }
+  });
+
   await t.test('o Centelha aparece na fase em que realmente está', () => {
     assert.match(EN, /contracting phase/, 'o inglês não diz que o Centelha está em contratação');
     assert.match(PT, /fase de contratação/, 'o português não diz que o Centelha está em contratação');
