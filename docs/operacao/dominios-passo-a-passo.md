@@ -44,118 +44,105 @@ Opcional, não bloqueia nada.
 
 ---
 
-## Passo 0 · Desligar a tradução automática
+## Os quatro valores, já colhidos e conferidos
 
-Na aba da Railway: botão direito → **"Mostrar sempre em inglês"**.
+Colhidos do painel em 2026-08-26 e conferidos contra o DNS publicado: os seis
+domínios têm **seis hashes distintos**, e cada domínio parado está publicado
+com o hash do vizinho. Diagnóstico confirmado, nada a adivinhar.
 
-Traduzida, a página reescreve o texto **antes** de você copiar:
-
-| A Railway escreve | O tradutor entrega |
-|---|---|
-| `_railway-verify` | `_verificação ferroviária` |
-
----
-
-## Passo 1 · Colher os quatro hashes na Railway
-
-Painel **Networking** → **`Show DNS records`** na linha de **cada** domínio
-parado. Você só precisa do **TXT** de cada diálogo. Ignore o CNAME e o A: os
-registros de rota já estão certos.
-
-```
-www.zoomdev.io      TXT -> railway-verify=________________________________
-zoomdev.app         TXT -> railway-verify=________________________________
-zoomdev.com.br      TXT -> railway-verify=________________________________
-www.zoomdev.com.br  TXT -> railway-verify=________________________________
-```
-
-> **Se o diálogo de `zoomdev.app` mostrar exatamente
-> `railway-verify=b676d76c76574d3553bcd36ef10d84be11fd9c21d3a4672f22a792c2e12eb3aa`**,
-> minha leitura está errada e o problema é outro. Pare e me avise antes de
-> mexer em qualquer coisa.
+| Domínio | Hash correto (do painel) | O que está publicado hoje |
+|---|---|---|
+| `www.zoomdev.io` | `ff4e2abd…cd4b` | o hash de `zoomdev.io` |
+| `zoomdev.app` | `7c8c7162…c8a8` | o hash de `www.zoomdev.app` |
+| `zoomdev.com.br` | `a715e231…7318` | nada em `_railway-verify` |
+| `www.zoomdev.com.br` | `0f41eccb…881f` | nada em `_railway-verify` |
 
 ---
 
-## Passo 2 · Hostinger, zona `zoomdev.io`
+## Passo 1 · Hostinger, zona `zoomdev.io`
 
 **Domínios → zoomdev.io → Gerenciar registros DNS**
 
-**Editar** esta linha (ou apagar e recriar):
+Achar a linha `TXT` de nome `_railway-verify.www` e **trocar o valor** por:
 
-| Tipo | Nome | Valor de hoje |
-|---|---|---|
-| TXT | `_railway-verify.www` | `railway-verify=eac1f7ca93eda46cc04b0c64f7aa80e8913b05196445c66aab6f69e38b5da552` |
+```
+railway-verify=ff4e2abd507d5d23051d5dfb6b6beafba593def14c1265e6f4f9adc75b48cd4b
+```
 
-Trocar o valor pelo **TXT do diálogo de `www.zoomdev.io`**. TTL `300`.
+TTL `300`. O valor velho ali é `railway-verify=eac1f7ca9…`, que é o hash do
+apex. É ele que está segurando o domínio.
 
-**Não mexer em nada mais nesta zona.** Estas três estão certas:
+**Não mexer no resto desta zona:**
 
 ```
 A      zoomdev.io           69.46.46.109
 CNAME  www                  ijy2h2ch.up.railway.app
-TXT    _railway-verify      railway-verify=eac1f7ca9…
+TXT    _railway-verify      railway-verify=eac1f7ca9…      <- este é o certo, fica
 ```
 
 ---
 
-## Passo 3 · Hostinger, zona `zoomdev.app`
+## Passo 2 · Hostinger, zona `zoomdev.app`
 
 **Domínios → zoomdev.app → Gerenciar registros DNS**
 
-**Editar** esta linha:
+Achar a linha `TXT` de nome `_railway-verify` e **trocar o valor** por:
 
-| Tipo | Nome | Valor de hoje |
-|---|---|---|
-| TXT | `_railway-verify` | `railway-verify=b676d76c76574d3553bcd36ef10d84be11fd9c21d3a4672f22a792c2e12eb3aa` |
+```
+railway-verify=7c8c71628d3059b631ca21fe214456dc63a7081d86d0b5705022a4d6eaf4c8a8
+```
 
-Trocar o valor pelo **TXT do diálogo de `zoomdev.app`**. TTL `300`.
+TTL `300`. O valor velho ali é `railway-verify=b676d76c7…`, que é o hash do www.
 
-**Não mexer em nada mais.** Estas três estão certas:
+**Não mexer no resto desta zona:**
 
 ```
 A      zoomdev.app          69.46.46.114
 CNAME  www                  5mckxtut.up.railway.app
-TXT    _railway-verify.www  railway-verify=b676d76c7…
+TXT    _railway-verify.www  railway-verify=b676d76c7…      <- este é o certo, fica
 ```
 
 ---
 
-## Passo 4 · Registro.br, zona `zoomdev.com.br`
+## Passo 3 · Registro.br, zona `zoomdev.com.br`
 
 **Meus domínios → zoomdev.com.br → Editar zona → modo avançado**
 
-> **Atenção ao formulário.** A coluna NOME mostra o nome completo, mas o campo
-> quer só o **rótulo**: ele acrescenta `.zoomdev.com.br` sozinho. Digitar o
-> nome completo cria `_railway-verify.zoomdev.com.br.zoomdev.com.br`. E `@`
-> é inválido como nome.
+> **O campo NOME quer só o rótulo.** Ele acrescenta `.zoomdev.com.br` sozinho.
+> Digitar o nome completo cria `_railway-verify.zoomdev.com.br.zoomdev.com.br`.
+> E `@` é inválido como nome.
 
 **Criar duas linhas:**
 
 | Nome | Tipo | Dados | TTL |
 |---|---|---|---|
-| `_railway-verify` | TXT | *TXT do diálogo de **zoomdev.com.br*** | `3600` |
-| `_railway-verify.www` | TXT | *TXT do diálogo de **www.zoomdev.com.br*** | `3600` |
+| `_railway-verify` | TXT | `railway-verify=a715e23178d0da3baa921cdc6b0f0c2dadd0aa6f08760154f9b47470fb647318` | `3600` |
+| `_railway-verify.www` | TXT | `railway-verify=0f41eccb80a0789ba3e183fb4e0c74ef118305beb2f9ca21227c922addb6881f` | `3600` |
+
+> O valor do apex é o mesmo `a715e231…` que hoje está solto na **raiz** da
+> zona. O valor sempre esteve certo; o nome é que estava errado, por
+> orientação minha. Depois de criar a linha nova, a da raiz pode sair.
 
 **Não apagar, sob nenhuma hipótese:**
 
 ```
-TXT  (raiz)   v=spf1 include:_spf.mail.hostinger.com ~all      <- o SPF do e-mail
-MX   (raiz)   5 mx1.hostinger.com                              <- o e-mail
-MX   (raiz)   10 mx2.hostinger.com                             <- o e-mail
-A    (raiz)   69.46.46.114
-CNAME www     g0ej7d8a.up.railway.app
+TXT   (raiz)   v=spf1 include:_spf.mail.hostinger.com ~all     <- o SPF do e-mail
+MX    (raiz)   5 mx1.hostinger.com                             <- o e-mail
+MX    (raiz)   10 mx2.hostinger.com                            <- o e-mail
+A     (raiz)   69.46.46.114
+CNAME www      g0ej7d8a.up.railway.app
 ```
 
-Apagar o SPF ou os MX derruba `contato@zoomdev.com.br`. Essa zona tem TXT de
-mais de um tipo na raiz; edite pelo valor, não pela posição.
+Essa zona tem TXT de mais de um tipo na raiz. **Edite pelo valor, não pela
+posição:** apagar o SPF ou um MX derruba `contato@zoomdev.com.br`.
 
 **E confirme a publicação da zona no fim.** O Registro.br publica em lote:
-enquanto você não clicar em confirmar, a edição fica pendente e nada do que
-você digitou existe no mundo. Foi isso que segurou a zona por dias.
+enquanto você não confirmar, a edição fica pendente e nada existe no mundo.
+Foi isso que segurou a zona por dias.
 
 ---
 
-## Passo 5 · Conferir
+## Passo 4 · Conferir
 
 Espere de 5 a 60 minutos e rode:
 
@@ -184,7 +171,7 @@ você espere. O certificado sai sozinho depois da validação, em minutos.
 | Continua "Waiting for DNS update" depois de 1 h com tudo verde no script | fila da Railway; aí sim é esperar |
 | O script diz AUSENTE e o Registro.br mostra a linha lá | a zona não foi publicada; volte e confirme |
 | O e-mail `contato@` parou | o SPF ou um MX foi apagado junto; recrie pelos valores acima |
-| O diálogo do apex e o do www mostram o mesmo hash | minha leitura está errada; me avise |
+| Um par continua "IGUAIS" no script depois de publicar | o valor colado não foi o da tabela; confira caractere a caractere |
 
 **Limite da Let's Encrypt: 5 certificados duplicados por semana.** Apagar e
 recriar o mesmo domínio na Railway várias vezes no mesmo dia queima a cota e
