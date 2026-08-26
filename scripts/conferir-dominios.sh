@@ -2,118 +2,165 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # CONFERÊNCIA DOS DOMÍNIOS ZOOMDEV
 #
-# Roda os testes na ordem em que eles importam e diz em que etapa a coisa
-# parou. A ordem não é decorativa: certificado só existe se o DNS chega na
-# Railway, e redirecionamento só é testável depois do certificado. Testar
-# fora de ordem produz diagnóstico errado.
+# Roda os quatro testes que importam, na ordem em que a Railway os avalia, e
+# diz em qual deles cada nome parou. Rode depois de cada alteração de DNS.
 #
-# LIMITE IMPORTANTE, descoberto na marra: dentro do ambiente de agente da
-# Anthropic todo TLS de saída é interceptado e REEMITIDO por um gateway. O
-# `openssl` de lá devolve sempre um certificado assinado por "Anthropic Egress
-# Gateway", com o nome que você pediu, mesmo que a Railway não tenha emitido
-# nada. Isso faz o teste de certificado dar verde e vermelho alternadamente,
-# sem relação com a realidade. Por isso a etapa 3 não mede: ela imprime o que
-# você precisa rodar na SUA máquina, onde o TLS é o de verdade.
+# A ORDEM NÃO É DECORATIVA. A Railway só emite certificado depois de duas
+# coisas: o nome apontar para a borda dela (CNAME ou apex achatado), E o TXT
+# de posse existir em `_railway-verify.<nome-completo>` com o hash daquele
+# domínio. Falhando qualquer uma, o painel fica em "Waiting for DNS update"
+# para sempre, sem dizer qual das duas falhou. É esse silêncio que este
+# script quebra.
+#
+# O HASH É POR DOMÍNIO, NÃO POR ZONA. Cada domínio adicionado na Railway
+# ganha um `_railway-verify` DIFERENTE, inclusive apex e www da mesma zona.
+# Copiar o hash do apex para o www não funciona: o registro existe, resolve,
+# aparece verde no painel do provedor de DNS, e mesmo assim a Railway nunca
+# valida. Foi assim que www.zoomdev.io e zoomdev.app ficaram parados.
+#
+# LIMITE DESTE AMBIENTE. Dentro do ambiente de agente da Anthropic todo TLS
+# de saída é interceptado e reemitido por um gateway, então `openssl` daqui
+# devolve sempre um certificado do gateway e o teste de certificado daria
+# verde e vermelho sem relação com a realidade. Por isso a etapa 4 mede pelo
+# CORPO da resposta, que o gateway não forja: ou o HTML da vitrine chega, ou
+# não chega.
 #
 # Uso:  bash scripts/conferir-dominios.sh
 # ═══════════════════════════════════════════════════════════════════════════
 set -uo pipefail
 
-APP_RAILWAY="zoomdev-os-production.up.railway.app"
-
-HOSTS=(
-  "zoomdev.io"
-  "www.zoomdev.io"
-  "zoomdev.app"
-  "www.zoomdev.app"
-  "zoomdev.com.br"
-  "www.zoomdev.com.br"
+# Os dois que servem conteúdo de verdade. Os outros quatro são apelidos que
+# só redirecionam, e por isso não seguram nem a inscrição nem uma demonstração.
+declare -A PAPEL=(
+  ["zoomdev.io"]="VITRINE, serve conteúdo"
+  ["www.zoomdev.app"]="APP, serve conteúdo"
+  ["www.zoomdev.io"]="apelido, redireciona para zoomdev.io"
+  ["zoomdev.app"]="apelido, redireciona para www.zoomdev.app"
+  ["zoomdev.com.br"]="apelido, redireciona para zoomdev.io"
+  ["www.zoomdev.com.br"]="apelido, redireciona para zoomdev.io"
 )
+HOSTS=(zoomdev.io www.zoomdev.app www.zoomdev.io zoomdev.app zoomdev.com.br www.zoomdev.com.br)
 
-# Registro de cada TLD, para ler a delegação na fonte em vez de num cache.
-declare -A RDAP=(
-  ["zoomdev.io"]="https://rdap.identitydigital.services/rdap/domain/zoomdev.io"
-  ["zoomdev.app"]="https://pubapi.registry.google/rdap/domain/zoomdev.app"
-)
+ok()   { printf "\033[32m%s\033[0m" "$1"; }
+mal()  { printf "\033[31m%s\033[0m" "$1"; }
+meio() { printf "\033[33m%s\033[0m" "$1"; }
 
-verde()    { printf "\033[32m%s\033[0m" "$1"; }
-vermelho() { printf "\033[31m%s\033[0m" "$1"; }
-amarelo()  { printf "\033[33m%s\033[0m" "$1"; }
-
-# ── 1. A delegação na fonte ────────────────────────────────────────────────
-# O resolvedor recursivo guarda a delegação antiga por horas depois de ela
-# mudar. Quem sabe a verdade é o registro do TLD, e é ele que respondemos
-# aqui: um "SUSPENSO" vindo do Google DNS pode ser só cache velho.
-echo "════════ 1. DELEGAÇÃO NO REGISTRO (fonte da verdade) ════════"
-for d in zoomdev.io zoomdev.app; do
-  printf "  %-16s " "$d"
-  curl -sS --max-time 20 "${RDAP[$d]}" 2>/dev/null | python3 -c "
-import sys,json
-try: d=json.load(sys.stdin)
-except Exception: print('(RDAP não respondeu)'); raise SystemExit
-st=[s.lower() for s in (d.get('status') or [])]
-ns=sorted(n.get('ldhName','') for n in d.get('nameservers',[]))
-ev={e['eventAction']:e['eventDate'] for e in d.get('events',[])}
-retido = any('hold' in s for s in st) or any('suspend' in n for n in ns)
-print(('SUSPENSO' if retido else 'livre'), '|', ','.join(ns) or '(sem NS)', '| mudou em', ev.get('last changed','?'))
+doh() { # doh <nome> <tipo>  -> uma linha com os dados, ou vazio
+  curl -sS --max-time 12 "https://dns.google/resolve?name=$1&type=$2" 2>/dev/null | python3 -c "
+import sys, json
+try: d = json.load(sys.stdin)
+except Exception: raise SystemExit
+print(' '.join(a['data'].strip('\"') for a in d.get('Answer', [])))
 "
-done
-printf "  %-16s " "zoomdev.com.br"
-echo "(Registro.br, sem RDAP público equivalente; ver etapa 2)"
+}
 
-# ── 2. Para onde cada nome aponta ──────────────────────────────────────────
-echo
-echo "════════ 2. DNS APONTANDO PARA A RAILWAY ════════"
+echo "═══════════════════════════════════════════════════════════════════════"
+echo " CONFERÊNCIA DOS DOMÍNIOS · $(date -u '+%Y-%m-%d %H:%M UTC')"
+echo "═══════════════════════════════════════════════════════════════════════"
+
+declare -a PENDENTES=()
+
 for h in "${HOSTS[@]}"; do
-  printf "  %-22s " "$h"
-  curl -sS --max-time 12 "https://dns.google/resolve?name=$h&type=A" 2>/dev/null | python3 -c "
-import sys,json
-try: d=json.load(sys.stdin)
-except Exception: print('(falhou)'); raise SystemExit
-alvos=[a['data'] for a in d.get('Answer',[])]
-print(' -> '.join(alvos) if alvos else '(nenhum registro)')
-"
-done
-echo
-echo "  Os TXT de posse que a Railway exige:"
-for h in zoomdev.io zoomdev.app; do
-  printf "  %-22s " "$h"
-  curl -sS --max-time 12 "https://dns.google/resolve?name=$h&type=TXT" 2>/dev/null | python3 -c "
-import sys,json
-ans=[a['data'] for a in json.load(sys.stdin).get('Answer',[]) if 'railway-verify' in a.get('data','')]
-print(ans[0][:56]+'…' if ans else '(nenhum railway-verify)')
-" 2>/dev/null || echo "(falhou)"
+  echo
+  echo "── $h  ·  ${PAPEL[$h]}"
+
+  # 1. O nome resolve para alguma coisa?
+  rota=$(doh "$h" A)
+  if [[ -z "$rota" ]]; then
+    printf "   1. rota      "; mal "NÃO RESOLVE"; echo "  (nenhum A nem CNAME)"
+    PENDENTES+=("$h: criar o registro de rota que a Railway pedir")
+    continue
+  fi
+  printf "   1. rota      "; ok "resolve"; echo "  $rota"
+
+  # 2. A borda da Railway reconhece este Host?
+  #    Nome conhecido devolve 301 com o cabeçalho x-railway. Nome desconhecido
+  #    na mesma borda devolve 403 com x-deny-reason: resolve_no_records.
+  cab=$(curl -sS -m 15 -o /dev/null -D - "http://$h/" 2>/dev/null | tr -d '\r')
+  if grep -qi '^x-railway' <<<"$cab"; then
+    printf "   2. borda     "; ok "a Railway reconhece o nome"; echo
+  else
+    printf "   2. borda     "; mal "a Railway NÃO reconhece"
+    echo "  $(grep -i '^x-deny-reason' <<<"$cab" || echo '(sem motivo)')"
+    PENDENTES+=("$h: a rota chega noutro lugar, conferir o alvo no painel")
+    continue
+  fi
+
+  # 3. O TXT de posse, no nome certo e com hash próprio.
+  txt=$(doh "_railway-verify.$h" TXT)
+  if [[ -z "$txt" ]]; then
+    printf "   3. posse     "; mal "TXT AUSENTE"
+    echo "  em _railway-verify.$h"
+    PENDENTES+=("$h: criar TXT em _railway-verify.$h com o hash DESTE domínio")
+  else
+    printf "   3. posse     "; ok "presente"; echo "  ${txt:0:38}…"
+  fi
+
+  # 4. O certificado, medido pelo corpo da resposta.
+  #    2 KB porque o <title> da vitrine vem depois de um bloco de <meta> e de
+  #    pré-carregamento de fonte: 400 bytes paravam antes dele e davam
+  #    "resposta inesperada" justamente nos dois domínios que funcionam.
+  corpo=$(curl -sS -m 20 "https://$h/" 2>&1 | head -c 2048)
+  if grep -q '<title>ZoomDev' <<<"$corpo"; then
+    printf "   4. TLS       "; ok "NO AR"; echo "  (o HTML da plataforma chega)"
+  elif grep -qi 'certificate subject name\|SSL' <<<"$corpo"; then
+    printf "   4. TLS       "; mal "sem certificado"; echo "  (a Railway ainda não emitiu)"
+  else
+    printf "   4. TLS       "; meio "resposta inesperada"; echo "  ${corpo:0:70}"
+  fi
 done
 
-# ── 3. O certificado, que só a sua máquina consegue medir ──────────────────
+# ── O hash repetido dentro da mesma zona ───────────────────────────────────
+# Este é o defeito que não aparece em lugar nenhum: o registro existe, resolve,
+# e o painel do provedor mostra bolinha verde. Só que é o hash do vizinho.
 echo
-echo "════════ 3. CERTIFICADO ════════"
-amarelo "  NÃO MEDÍVEL DAQUI"; echo " (o gateway de saída reemite todo TLS e falsearia o teste)"
-echo "  Rode estes comandos no SEU terminal. O que importa é a linha issuer:"
-echo "  emissor 'Let's Encrypt' ou 'Google Trust Services' = a Railway emitiu."
-echo "  emissor da Railway genérico, ou erro de nome, = ainda não emitiu."
-echo
-for h in "${HOSTS[@]}"; do
-  echo "    openssl s_client -connect $h:443 -servername $h </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer"
+echo "═══ HASHES REPETIDOS DENTRO DA MESMA ZONA ═══"
+echo "  A Railway dá um hash diferente para CADA domínio. Dois nomes da mesma"
+echo "  zona com o MESMO hash significa que um deles recebeu o do outro, e é"
+echo "  esse que nunca vai validar."
+for par in "zoomdev.io www.zoomdev.io" "zoomdev.app www.zoomdev.app" "zoomdev.com.br www.zoomdev.com.br"; do
+  set -- $par
+  a=$(doh "_railway-verify.$1" TXT); b=$(doh "_railway-verify.$2" TXT)
+  printf "  %-34s " "$1  vs  $2"
+  if [[ -z "$a" || -z "$b" ]]; then meio "um dos dois não existe"; echo
+  elif [[ "$a" == "$b" ]]; then mal "IGUAIS"; echo "  <- um dos dois está com o hash do outro"
+  else ok "diferentes"; echo "  (como a Railway espera)"
+  fi
 done
 
-# ── 4. O aplicativo, pelo endereço que a Railway gera ──────────────────────
+# ── O que fazer agora ──────────────────────────────────────────────────────
 echo
-echo "════════ 4. O APLICATIVO EM SI ════════"
-printf "  %-40s " "$APP_RAILWAY"
-curl -sS --max-time 15 "https://$APP_RAILWAY/api/health" 2>&1 | head -c 90
-echo
+echo "═══ PENDÊNCIAS ═══"
+if [[ ${#PENDENTES[@]} -eq 0 ]]; then
+  ok "  nenhuma"; echo
+else
+  printf '  · %s\n' "${PENDENTES[@]}"
+fi
 
-# ── 5. Os redirecionamentos, depois que o certificado sair ─────────────────
-echo
-echo "════════ 5. REDIRECIONAMENTOS (conferir depois do certificado) ════════"
-echo "  Rode no SEU terminal, um por linha, e compare com o esperado:"
-cat <<'ESPERADO'
-    curl -sI https://www.zoomdev.io/       | grep -i '^location'   # -> https://zoomdev.io/
-    curl -sI https://zoomdev.io/entrar     | grep -i '^location'   # -> https://www.zoomdev.app/entrar
-    curl -sI https://zoomdev.app/          | grep -i '^location'   # -> https://www.zoomdev.app/
-    curl -sI https://zoomdev.com.br/       | grep -i '^location'   # -> https://zoomdev.io/
-    curl -sI https://www.zoomdev.com.br/   | grep -i '^location'   # -> https://zoomdev.io/
-    curl -s  https://zoomdev.io/           | head -c 120           # a vitrine, não página de estacionamento
-    curl -s  https://www.zoomdev.app/api/health                    # {"ok":true,...}
-ESPERADO
+cat <<'FIM'
+
+═══ COMO PEGAR O VALOR CERTO NA RAILWAY ═══
+
+  Para CADA domínio parado, no painel Networking:
+    1. clique em "Show DNS records" NA LINHA DAQUELE domínio
+    2. o diálogo traz DOIS registros, e os dois são exclusivos daquele nome:
+         CNAME  <nome>              -> <algo>.up.railway.app
+         TXT    _railway-verify.<nome-completo>  -> railway-verify=<hash>
+    3. copie os dois. Não reaproveite o do apex no www, nem o contrário.
+
+  ARMADILHA DA TRADUÇÃO AUTOMÁTICA. Com a página traduzida para português, o
+  navegador reescreve o texto ANTES de você copiar: "_railway-verify" vira
+  "_verificação ferroviária". Desligue a tradução na aba da Railway antes de
+  copiar qualquer coisa.
+
+  NO REGISTRO.BR, modo avançado: a coluna NOME mostra o nome completo, mas o
+  formulário quer só o rótulo, porque ele acrescenta a zona sozinho. Para
+  _railway-verify.zoomdev.com.br digite `_railway-verify`. Para o www, digite
+  `_railway-verify.www`. E confirme a publicação da zona no fim: o Registro.br
+  publica em lote e a edição fica pendente até você confirmar.
+
+  APEX COM ENDEREÇO IP FIXO NÃO SERVE. A Railway roda a borda em IP rotativo
+  e valida pelo nome, não pelo número. Na Hostinger use CNAME no apex, que ela
+  achata sozinha. No Registro.br, se não houver CNAME de apex, use o valor que
+  o diálogo da Railway indicar para apex.
+FIM
