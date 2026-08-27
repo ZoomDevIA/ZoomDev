@@ -45,14 +45,32 @@ const angulo = (i, n, meio = 0) => ((i + meio) / n) * 2 * Math.PI - Math.PI / 2;
 const emCima = (a, r) => 50 + r * Math.cos(a);
 const naLateral = (a, r) => 50 + r * Math.sin(a);
 
+// MEIO PASSO DE GIRO, E O TOPO FICA VAGO.
+//
+// O ícone do topo nunca foi cortado pela borda da janela: medido, sobram de 65
+// a 78 px de folga em toda largura de tela. Quem cortava era o selo
+// "IDEIA -> EXIT", que fica no meio da tela logo abaixo do topo da elipse e
+// passava por cima do disco.
+//
+// Isso explica por que descer o eixo da órbita saía pior: o ícone descia
+// junto, direto sobre o selo. E encolher a elipse mexeria na escala que já
+// está aprovada.
+//
+// Girar meio passo resolve sem tocar em tamanho nem em posição da caixa. Com
+// nove módulos, meio passo são 20 graus: o topo exato deixa de ter ícone e os
+// dois vizinhos ficam a ~80 px de cada lado do centro, livres do selo, que tem
+// menos de 40 px para cada lado. Os pontinhos, que antes ficavam nos vãos,
+// assumem o lugar de origem e um deles cai atrás do selo, onde não aparece.
+const GIRO = 0.5;
+
 const NOS = ICONES.map(([id, el], i) => {
-  const a = angulo(i, ICONES.length);
+  const a = angulo(i, ICONES.length, GIRO);
   return { id, el, i, x: emCima(a, RX), y: naLateral(a, RY) };
 });
 
 // Um ponto no vão entre cada par de módulos, para o anel não ficar careca.
 const PONTOS = ICONES.map((_, i) => {
-  const a = angulo(i, ICONES.length, 0.5);
+  const a = angulo(i, ICONES.length, GIRO + 0.5);
   return { x: emCima(a, RX), y: naLateral(a, RY) };
 });
 

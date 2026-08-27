@@ -149,3 +149,47 @@ test('guarda de contraste', async (t) => {
     assert.equal(normalizar({ fundo: 'claro' }).fundo, 'claro');
   });
 });
+
+test('a órbita da Home deixa o topo livre para o selo IDEIA -> EXIT', async (t) => {
+  // O ícone do topo NUNCA foi cortado pela borda da janela: medido no navegador,
+  // sobram de 65 a 78 px de folga em toda largura de tela. Quem cortava era o
+  // selo "IDEIA -> EXIT", que fica no meio da tela logo abaixo do topo da elipse
+  // e passava por cima do disco de 64 px.
+  //
+  // Isso também explica por que descer o eixo da órbita saía pior, e por que a
+  // correção certa foi girar meio passo: o topo exato fica vago e o selo cabe
+  // no vão. Este teste refaz a conta do componente e falha se alguém voltar a
+  // pôr um módulo no topo.
+  const fonte = fs.readFileSync(
+    path.join(new URL('../../', import.meta.url).pathname, 'web/src/components/CenaHome.jsx'), 'utf8');
+
+  const num = (nome) => {
+    const m = fonte.match(new RegExp(`${nome}\\s*=\\s*([\\d.]+)`));
+    assert.ok(m, `não achei ${nome} no CenaHome.jsx`);
+    return Number(m[1]);
+  };
+
+  await t.test('o componente ainda declara giro, raio e a lista de ícones', () => {
+    assert.ok(num('GIRO') >= 0, 'a constante GIRO sumiu: o giro voltou a ser implícito');
+    assert.ok(num('RX') > 0 && num('RY') > 0);
+    assert.ok(/const ICONES = \[/.test(fonte), 'a lista de ícones mudou de forma');
+  });
+
+  await t.test('nenhum módulo cai perto do topo exato', () => {
+    const n = (fonte.match(/^\s{2}\['[a-z0-9]+',/gm) || []).length;
+    assert.ok(n >= 6, `contei ${n} ícones, o que não parece a lista inteira`);
+    const giro = num('GIRO');
+    // Distância angular de cada módulo até as 12 horas, em graus.
+    const ate12 = [];
+    for (let i = 0; i < n; i++) {
+      const g = (((i + giro) / n) * 360) % 360;
+      ate12.push(Math.min(g, 360 - g));
+    }
+    const maisPerto = Math.min(...ate12);
+    // Meio passo de nove módulos são 20 graus. O selo ocupa menos de 40 px para
+    // cada lado do centro, e 15 graus já garantem o vão com folga.
+    assert.ok(maisPerto >= 15,
+      `o módulo mais próximo do topo está a ${maisPerto.toFixed(1)} graus; ` +
+      'abaixo de 15 ele encosta no selo "IDEIA -> EXIT"');
+  });
+});

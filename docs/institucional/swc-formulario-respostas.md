@@ -148,7 +148,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > project.
 >
 > 35 agents under versioned protocols. 17 plan sections. 15 crops modelled.
-> 287 automated tests passing. Live and open right now at zoomdev.io, with the
+> 290 automated tests passing. Live and open right now at zoomdev.io, with the
 > product itself at www.zoomdev.app.
 
 ### 4. Business Model
