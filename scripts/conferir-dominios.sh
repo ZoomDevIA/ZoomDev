@@ -39,6 +39,16 @@ declare -A PAPEL=(
   ["zoomdev.com.br"]="apelido, redireciona para zoomdev.io"
   ["www.zoomdev.com.br"]="apelido, redireciona para zoomdev.io"
 )
+
+# Para onde cada apelido DEVE redirecionar. Vazio = serve conteúdo próprio.
+# Sem este mapa a etapa 4 chamava de "resposta inesperada" justamente o
+# comportamento correto de um redirecionador, que nunca devolve a plataforma.
+declare -A DESTINO=(
+  ["www.zoomdev.io"]="https://zoomdev.io/"
+  ["zoomdev.app"]="https://www.zoomdev.app/"
+  ["zoomdev.com.br"]="https://zoomdev.io/"
+  ["www.zoomdev.com.br"]="https://zoomdev.io/"
+)
 HOSTS=(zoomdev.io www.zoomdev.app www.zoomdev.io zoomdev.app zoomdev.com.br www.zoomdev.com.br)
 
 ok()   { printf "\033[32m%s\033[0m" "$1"; }
@@ -96,15 +106,25 @@ for h in "${HOSTS[@]}"; do
     printf "   3. posse     "; ok "presente"; echo "  ${txt:0:38}…"
   fi
 
-  # 4. O certificado, medido pelo corpo da resposta.
-  #    2 KB porque o <title> da vitrine vem depois de um bloco de <meta> e de
-  #    pré-carregamento de fonte: 400 bytes paravam antes dele e davam
-  #    "resposta inesperada" justamente nos dois domínios que funcionam.
+  # 4. O certificado, medido pelo comportamento esperado de cada papel.
+  #    Quem serve conteúdo tem que devolver o HTML da plataforma. Quem é
+  #    apelido tem que devolver 301 para o destino DELE: exigir a plataforma
+  #    de um redirecionador é exigir o que ele nunca vai fazer.
+  #    2 KB de corpo porque o <title> vem depois do bloco de <meta> e do
+  #    pré-carregamento de fonte.
+  esperado="${DESTINO[$h]:-}"
   corpo=$(curl -sS -m 20 "https://$h/" 2>&1 | head -c 2048)
-  if grep -q '<title>ZoomDev' <<<"$corpo"; then
-    printf "   4. TLS       "; ok "NO AR"; echo "  (o HTML da plataforma chega)"
-  elif grep -qi 'certificate subject name\|SSL' <<<"$corpo"; then
+  local_destino=$(curl -sS -m 20 -o /dev/null -w '%{redirect_url}' "https://$h/" 2>/dev/null)
+  if grep -qi 'certificate subject name\|SSL certificate problem\|SSL:' <<<"$corpo"; then
     printf "   4. TLS       "; mal "sem certificado"; echo "  (a Railway ainda não emitiu)"
+  elif [[ -n "$esperado" ]]; then
+    if [[ "$local_destino" == "$esperado" ]]; then
+      printf "   4. TLS       "; ok "NO AR"; echo "  301 -> $local_destino"
+    else
+      printf "   4. TLS       "; meio "destino errado"; echo "  vai para '${local_destino:-nenhum}', devia ir para '$esperado'"
+    fi
+  elif grep -q '<title>ZoomDev' <<<"$corpo"; then
+    printf "   4. TLS       "; ok "NO AR"; echo "  (o HTML da plataforma chega)"
   else
     printf "   4. TLS       "; meio "resposta inesperada"; echo "  ${corpo:0:70}"
   fi

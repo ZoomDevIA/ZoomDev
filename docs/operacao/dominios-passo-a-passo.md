@@ -1,187 +1,116 @@
-# Domínios ZoomDev · passo a passo de copiar e colar
+# Domínios ZoomDev · resolvido
 
-Estado lido **direto dos servidores autoritativos** (Hostinger `solar.dns-parking.com`
-e Registro.br `e.sec.dns.br`) em 2026-08-26. Confira com
-`bash scripts/conferir-dominios.sh`.
-
-**No ar:** `zoomdev.io` (vitrine) e `www.zoomdev.app` (app).
-**Parados:** `www.zoomdev.io`, `zoomdev.app`, `zoomdev.com.br`, `www.zoomdev.com.br`.
-
-> **Duas correções ao que este documento dizia antes.** A leitura autoritativa
-> derrubou as duas.
->
-> 1. **Endereço IP fixo no apex está certo.** Eu disse para trocar por CNAME.
->    Errado: `zoomdev.io` está no ar HOJE com um `A 69.46.46.109` literal, sem
->    achatamento nenhum. A Railway entrega um registro A para domínio de raiz
->    justamente porque CNAME na raiz é proibido pela norma do DNS. **Não mexa
->    nos registros A.**
-> 2. **Não é preciso mover a zona `.com.br` para a Hostinger.** Aquilo saía da
->    premissa errada acima. Como o A no apex funciona, o Registro.br dá conta
->    de tudo. **Não troque os nameservers.**
->
-> O trabalho inteiro é **quatro registros TXT**. Nada mais.
-
----
-
-## O que está errado, exatamente
-
-A Railway dá um `_railway-verify` **diferente para cada domínio**, apex e www
-inclusive. Em cada zona, um hash foi lido do painel e colado nos dois nomes.
-Resultado: em cada zona, exatamente um domínio validou, e é o dono do hash.
-
-| Zona | Nome | Valor hoje | Veredito |
-|---|---|---|---|
-| `.io` | `_railway-verify` | `eac1f7ca9…` | correto, é o do apex |
-| `.io` | `_railway-verify.www` | `eac1f7ca9…` | **errado**, é o hash do apex |
-| `.app` | `_railway-verify` | `b676d76c7…` | **errado**, é o hash do www |
-| `.app` | `_railway-verify.www` | `b676d76c7…` | correto, é o do www |
-| `.com.br` | `_railway-verify` | ausente | **criar** |
-| `.com.br` | `_railway-verify.www` | ausente | **criar** |
-
-Há ainda um TXT `railway-verify=…` solto na **raiz** de cada uma das três zonas.
-Ele é resto de uma tentativa antiga, a Railway não procura ali, e pode sair.
-Opcional, não bloqueia nada.
-
----
-
-## Os quatro valores, já colhidos e conferidos
-
-Colhidos do painel em 2026-08-26 e conferidos contra o DNS publicado: os seis
-domínios têm **seis hashes distintos**, e cada domínio parado está publicado
-com o hash do vizinho. Diagnóstico confirmado, nada a adivinhar.
-
-| Domínio | Hash correto (do painel) | O que está publicado hoje |
-|---|---|---|
-| `www.zoomdev.io` | `ff4e2abd…cd4b` | o hash de `zoomdev.io` |
-| `zoomdev.app` | `7c8c7162…c8a8` | o hash de `www.zoomdev.app` |
-| `zoomdev.com.br` | `a715e231…7318` | nada em `_railway-verify` |
-| `www.zoomdev.com.br` | `0f41eccb…881f` | nada em `_railway-verify` |
-
----
-
-## Passo 1 · Hostinger, zona `zoomdev.io`
-
-**Domínios → zoomdev.io → Gerenciar registros DNS**
-
-Achar a linha `TXT` de nome `_railway-verify.www` e **trocar o valor** por:
-
-```
-railway-verify=ff4e2abd507d5d23051d5dfb6b6beafba593def14c1265e6f4f9adc75b48cd4b
-```
-
-TTL `300`. O valor velho ali é `railway-verify=eac1f7ca9…`, que é o hash do
-apex. É ele que está segurando o domínio.
-
-**Não mexer no resto desta zona:**
-
-```
-A      zoomdev.io           69.46.46.109
-CNAME  www                  ijy2h2ch.up.railway.app
-TXT    _railway-verify      railway-verify=eac1f7ca9…      <- este é o certo, fica
-```
-
----
-
-## Passo 2 · Hostinger, zona `zoomdev.app`
-
-**Domínios → zoomdev.app → Gerenciar registros DNS**
-
-Achar a linha `TXT` de nome `_railway-verify` e **trocar o valor** por:
-
-```
-railway-verify=7c8c71628d3059b631ca21fe214456dc63a7081d86d0b5705022a4d6eaf4c8a8
-```
-
-TTL `300`. O valor velho ali é `railway-verify=b676d76c7…`, que é o hash do www.
-
-**Não mexer no resto desta zona:**
-
-```
-A      zoomdev.app          69.46.46.114
-CNAME  www                  5mckxtut.up.railway.app
-TXT    _railway-verify.www  railway-verify=b676d76c7…      <- este é o certo, fica
-```
-
----
-
-## Passo 3 · Registro.br, zona `zoomdev.com.br`
-
-**Meus domínios → zoomdev.com.br → Editar zona → modo avançado**
-
-> **O campo NOME quer só o rótulo.** Ele acrescenta `.zoomdev.com.br` sozinho.
-> Digitar o nome completo cria `_railway-verify.zoomdev.com.br.zoomdev.com.br`.
-> E `@` é inválido como nome.
-
-**Criar duas linhas:**
-
-| Nome | Tipo | Dados | TTL |
-|---|---|---|---|
-| `_railway-verify` | TXT | `railway-verify=a715e23178d0da3baa921cdc6b0f0c2dadd0aa6f08760154f9b47470fb647318` | `3600` |
-| `_railway-verify.www` | TXT | `railway-verify=0f41eccb80a0789ba3e183fb4e0c74ef118305beb2f9ca21227c922addb6881f` | `3600` |
-
-> O valor do apex é o mesmo `a715e231…` que hoje está solto na **raiz** da
-> zona. O valor sempre esteve certo; o nome é que estava errado, por
-> orientação minha. Depois de criar a linha nova, a da raiz pode sair.
-
-**Não apagar, sob nenhuma hipótese:**
-
-```
-TXT   (raiz)   v=spf1 include:_spf.mail.hostinger.com ~all     <- o SPF do e-mail
-MX    (raiz)   5 mx1.hostinger.com                             <- o e-mail
-MX    (raiz)   10 mx2.hostinger.com                            <- o e-mail
-A     (raiz)   69.46.46.114
-CNAME www      g0ej7d8a.up.railway.app
-```
-
-Essa zona tem TXT de mais de um tipo na raiz. **Edite pelo valor, não pela
-posição:** apagar o SPF ou um MX derruba `contato@zoomdev.com.br`.
-
-**E confirme a publicação da zona no fim.** O Registro.br publica em lote:
-enquanto você não confirmar, a edição fica pendente e nada existe no mundo.
-Foi isso que segurou a zona por dias.
-
----
-
-## Passo 4 · Conferir
-
-Espere de 5 a 60 minutos e rode:
+**Os seis estão no ar desde 2026-08-27.** Este documento virou registro do que
+aconteceu. Para conferir o estado a qualquer momento:
 
 ```
 bash scripts/conferir-dominios.sh
 ```
 
-Quando estiver certo, a seção final vira:
+| Endereço | Papel | Comportamento |
+|---|---|---|
+| `zoomdev.io` | vitrine | serve a plataforma |
+| `www.zoomdev.app` | app | serve a plataforma |
+| `www.zoomdev.io` | apelido | 301 para `zoomdev.io` |
+| `zoomdev.app` | apelido | 301 para `www.zoomdev.app` |
+| `zoomdev.com.br` | apelido | 301 para `zoomdev.io` |
+| `www.zoomdev.com.br` | apelido | 301 para `zoomdev.io` |
 
-```
-═══ HASHES REPETIDOS DENTRO DA MESMA ZONA ═══
-  zoomdev.io  vs  www.zoomdev.io          diferentes  (como a Railway espera)
-  zoomdev.app  vs  www.zoomdev.app        diferentes  (como a Railway espera)
-  zoomdev.com.br  vs  www.zoomdev.com.br  diferentes  (como a Railway espera)
-```
-
-Enquanto disser **IGUAIS**, aquele par não valida, não importa quanto tempo
-você espere. O certificado sai sozinho depois da validação, em minutos.
-
----
-
-## Se der errado
-
-| Sintoma | O que é |
-|---|---|
-| Continua "Waiting for DNS update" depois de 1 h com tudo verde no script | fila da Railway; aí sim é esperar |
-| O script diz AUSENTE e o Registro.br mostra a linha lá | a zona não foi publicada; volte e confirme |
-| O e-mail `contato@` parou | o SPF ou um MX foi apagado junto; recrie pelos valores acima |
-| Um par continua "IGUAIS" no script depois de publicar | o valor colado não foi o da tabela; confira caractere a caractere |
-
-**Limite da Let's Encrypt: 5 certificados duplicados por semana.** Apagar e
-recriar o mesmo domínio na Railway várias vezes no mesmo dia queima a cota e
-trava tudo por sete dias. Mexa uma vez e espere.
+E a regra da vitrine: `zoomdev.io/entrar` vai para `www.zoomdev.app/entrar`,
+porque sessão e origem registrada no Google moram num endereço só.
 
 ---
 
-## Depois que os seis estiverem verdes
+## As duas causas, que eram a mesma
 
-Uma fragilidade que **não bloqueia nada hoje** e vale anotar: os três apex
-usam endereço IP fixo, e a borda da Railway roda em IP que pode mudar. Se um
-dia os apex caírem sozinhos sem ninguém ter mexido, é isso: basta reler o
-diálogo e atualizar o A. Não é motivo para mexer agora.
+Quatro domínios ficaram parados por mais de um dia. Havia duas causas, e as
+duas eram **um valor lido uma vez por zona e colado nos dois domínios da
+zona**, em camadas diferentes.
+
+### Camada 1 · o hash de posse
+
+A Railway dá um `_railway-verify` **diferente para cada domínio**, apex e www
+inclusive. Em cada zona, um hash foi lido do painel e colado nos dois nomes.
+Resultado: em cada zona exatamente um domínio validou, e era o dono do hash.
+
+O sintoma enganava: o registro existia, resolvia, e o painel do provedor de DNS
+mostrava bolinha verde. Só que era o hash do vizinho.
+
+### Camada 2 · o alvo de rota
+
+Mesmo erro, agora no CNAME. Cada domínio recebe um alvo
+`<id>.up.railway.app` exclusivo, e cada alvo tem **IP próprio**:
+
+```
+ijy2h2ch -> 69.46.46.109      oe2p294j -> 69.46.46.119
+5mckxtut -> 69.46.46.114      hpav2muv -> 69.46.46.120
+g0ej7d8a -> 69.46.46.68       mgpczs5o -> 69.46.46.45
+```
+
+Seis IPs distintos: apontar dois domínios para o mesmo alvo nunca ia validar.
+
+### O que faltava depois de corrigir os dois
+
+Nada no DNS. A API da Railway confirmava `DNS_RECORD_STATUS_PROPAGATED` nos
+seis, e mesmo assim quatro seguiam parados por horas.
+
+O motivo: como o DNS foi corrigido **depois** de a Railway já ter começado a
+validar, o trabalho ficou preso em `CERTIFICATE_STATUS_TYPE_VALIDATING_OWNERSHIP`.
+Nesse estado ela não tenta de novo sozinha, o painel não tem botão, e o
+endpoint de nova tentativa recusa porque só age sobre trabalho que FALHOU.
+
+A saída foi a mutation `customDomainIssueCertificate`, e os quatro subiram.
+Procedimento em `railway-destravar-certificado.md`.
+
+---
+
+## O que ficou provado no caminho
+
+**A migração da zona `.com.br` não é necessária.** O `zoomdev.com.br` está no
+ar pelo Registro.br, com certificado válido, sem ALIAS e sem trocar
+nameservers. A Railway aceita o apex ali do mesmo jeito que aceita o do `.io`
+na Hostinger. O estudo da migração fica em `migrar-zona-combr.md` como
+registro, e com ele some o risco ao e-mail da empresa.
+
+**Não é caso de CAA, DNSSEC, limite de plano nem porta.** Todos medidos e
+descartados. As três zonas não têm CAA; só a `.com.br` tem DNSSEC e ele
+valida; o plano Pro permite 20 domínios e há 7; os seis usam a mesma porta que
+os dois que já funcionavam.
+
+---
+
+## Os valores, para referência
+
+| Domínio | Alvo de rota | Hash de posse termina em |
+|---|---|---|
+| `zoomdev.io` | `ijy2h2ch.up.railway.app` | `5da552` |
+| `www.zoomdev.io` | `oe2p294j.up.railway.app` | `b48cd4b` |
+| `zoomdev.app` | `hpav2muv.up.railway.app` | `af4c8a8` |
+| `www.zoomdev.app` | `5mckxtut.up.railway.app` | `2eb3aa` |
+| `zoomdev.com.br` | `g0ej7d8a.up.railway.app` | `647318` |
+| `www.zoomdev.com.br` | `mgpczs5o.up.railway.app` | `b6881f` |
+
+Nomes dos servidores de cada zona, que **variam** e não devem ser deduzidos de
+uma zona irmã:
+
+```
+zoomdev.io       solar.dns-parking.com    lunar.dns-parking.com
+zoomdev.app      cosmos.dns-parking.com   nova.dns-parking.com
+zoomdev.com.br   e.sec.dns.br             f.sec.dns.br
+```
+
+---
+
+## Se um cair no futuro
+
+1. Rode `bash scripts/conferir-dominios.sh` e veja em qual das quatro etapas
+   ele parou.
+2. Se parar na etapa 3 ou 4 com o DNS certo, é o trabalho encravado: siga o
+   `railway-destravar-certificado.md`.
+3. **Nunca apague e readicione o domínio no painel.** Isso gera alvo e hash
+   novos, invalida o DNS que está certo, e consome a cota da Let's Encrypt, que
+   é de 5 certificados duplicados por semana.
+
+Uma fragilidade conhecida e sem urgência: os três apex resolvem para IP fixo, e
+a borda da Railway pode mudar de IP. Se um apex cair sozinho sem ninguém ter
+mexido, é isso, e a correção é reler o alvo no painel.

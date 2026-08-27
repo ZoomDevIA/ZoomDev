@@ -1,30 +1,42 @@
 # Mover a zona `zoomdev.com.br` do Registro.br para a Hostinger
 
-> **NÃO EXECUTE ISTO AINDA.** Está aqui documentado, não autorizado. Leia a
-> seção "Por que está congelado" antes de qualquer coisa.
+> **NÃO É NECESSÁRIO.** Em 2026-08-27 o `zoomdev.com.br` subiu pelo próprio
+> Registro.br, com certificado válido, sem ALIAS e sem trocar nameservers. Este
+> documento fica como registro da pesquisa, não como plano a executar.
 
 Levantamento de 2026-08-27, com medição nos servidores autoritativos e leitura
 da documentação oficial dos dois provedores.
 
 ---
 
-## Por que está congelado
+## Por que a migração morreu
 
-O objetivo da migração é conseguir `CNAME @ -> g0ej7d8a.up.railway.app` para o
-apex, que o Registro.br não consegue criar.
+A premissa era que o apex do `.com.br` precisava de `CNAME @`, que o
+Registro.br não cria, e que por isso a única saída seria levar a zona inteira
+para um provedor que achata apex.
 
-Só que `www.zoomdev.com.br` **já está** com o CNAME correto para o alvo dele
-(`mgpczs5o.up.railway.app`), com o TXT de posse certo, publicado e confirmado
-nos dois autoritativos. E a Railway **não emitiu certificado**. O mesmo vale
-para `www.zoomdev.io` e `zoomdev.app`, corrigidos e parados há mais de três
-horas.
+A premissa estava errada em dois pontos, e os dois foram medidos.
 
-Ou seja: a validação da Railway está travada por motivo que não é DNS. Migrar
-a zona levaria o apex para a mesma fila, arriscando o e-mail da empresa por um
-ganho que provavelmente não vem.
+**Primeiro:** a Railway não exigiu CNAME no apex. O `requiredValue` que a
+própria API devolveu para o `zoomdev.com.br` é atendível dentro do Registro.br,
+sem ALIAS e sem achatamento. O que estava errado no DNS era outra coisa: o
+alvo de rota e o hash `_railway-verify` tinham sido lidos uma vez por zona e
+colados nos dois domínios daquela zona. Cada domínio tem os seus.
 
-**Só execute se o chamado na Railway confirmar que o problema era DNS e que o
-apex por CNAME resolveria.**
+**Segundo:** depois de o DNS ficar certo, os quatro domínios continuaram
+parados por horas, e isso não era DNS nenhum. A API mostrou
+`DNS_RECORD_STATUS_PROPAGATED` com `CERTIFICATE_STATUS_TYPE_VALIDATING_OWNERSHIP`:
+o trabalho de emissão tinha travado porque o DNS foi corrigido **depois** de a
+validação começar. Quatro `customDomainIssueCertificate` destravaram, e os seis
+domínios subiram em menos de dois minutos. O procedimento está em
+`railway-destravar-certificado.md`.
+
+Resultado: em 2026-08-27 o `zoomdev.com.br` e o `www.zoomdev.com.br` respondem
+com certificado válido, pelos nameservers do Registro.br, com o DNSSEC intacto
+e o e-mail da empresa em nenhum momento em risco.
+
+**Não execute este documento.** Ele fica pelo que a pesquisa derrubou abaixo,
+que continua verdade e vale para qualquer migração de zona futura.
 
 ---
 
@@ -82,6 +94,10 @@ servidores que não conhecem a zona derruba o domínio inteiro.
 ---
 
 ## O inventário, confirmado por caminhada NSEC
+
+Fotografia da zona durante a pesquisa, antes da correção. Serve para mostrar o
+método, não para consultar valor atual: o estado válido de hoje está em
+`dominios-passo-a-passo.md`.
 
 A zona é assinada, e uma zona assinada revela os próprios nomes. A caminhada
 NSEC confirma que existem **exatamente 8 nomes** e nada escondido:
@@ -195,15 +211,13 @@ Repita o teste 24 horas depois.
 
 ---
 
-## A alternativa honesta
+## A alternativa que se considerou, e que não foi preciso usar
 
-Abrir mão do apex e apagar a linha `zoomdev.com.br` do painel da Railway.
+O plano B era abrir mão do apex e apagar a linha `zoomdev.com.br` do painel da
+Railway: quem digitasse sem o `www` não chegaria a lugar nenhum, e em troca o
+e-mail da empresa nunca entraria em risco.
 
-O que se perde: quem digitar `zoomdev.com.br` sem o `www` não chega a lugar
-nenhum. É isso.
-
-O que se ganha: o e-mail da empresa nunca entra em risco, e some uma zona de
-manutenção.
-
-O pitch já cita `zoomdev.io` e `www.zoomdev.app`, e nenhum material aponta
-para o apex do `.com.br`. Ele não sustenta nada hoje.
+Não foi preciso. O apex subiu pelo Registro.br mesmo. Fica registrado porque a
+troca continua válida como raciocínio: **apex de domínio que não sustenta
+material nenhum não vale uma janela de indisponibilidade de e-mail.** O pitch
+cita `zoomdev.io` e `www.zoomdev.app`; o `.com.br` é apelido de entrada.
