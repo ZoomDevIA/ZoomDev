@@ -38,6 +38,14 @@ const FORMULARIO = fs.readFileSync(path.join(DECKS, 'swc-formulario-respostas.md
 const citacao = (bloco) => bloco.trim().split('\n')
   .filter(l => l.startsWith('> ')).map(l => l.slice(2).trimEnd()).join(' ').trim();
 
+// A citação quebra linha no meio da frase, e a quebra escondia contradição de
+// verdade: três blocos diziam "281 automated\n> tests" enquanto um quarto dizia
+// 290, e a conferência passava porque o "> " partia a expressão ao meio. Quem
+// cola no formulário cola a frase inteira, então é a frase inteira que tem de
+// ser conferida. Emendar só a continuação preserva a linha em branco entre
+// parágrafos, que é "\n>" sem espaço.
+const FORMULARIO_CORRIDO = FORMULARIO.replace(/\n> /g, ' ');
+
 const laminas = (t) => t.match(/<section class="slide/g)?.length ?? 0;
 const segundos = (t) => [...t.matchAll(/class="seg">(\d+)s/g)].reduce((s, m) => s + Number(m[1]), 0);
 
@@ -173,7 +181,7 @@ test('o banco de respostas do formulário acompanha o deck', async (t) => {
   const { total } = resumoElenco();
 
   await t.test('a contagem de agentes é a mesma do elenco e do deck', () => {
-    const achados = [...FORMULARIO.matchAll(/\b(\d\d)\s+(?:governed |AI )/g)].map(m => Number(m[1]));
+    const achados = [...FORMULARIO_CORRIDO.matchAll(/\b(\d\d)\s+(?:governed |AI )/g)].map(m => Number(m[1]));
     assert.ok(achados.length >= 5, 'o formulário deixou de citar a contagem de agentes');
     for (const n of achados) {
       assert.equal(n, total, `o formulário diz ${n} agentes e o elenco tem ${total}`);
@@ -182,7 +190,7 @@ test('o banco de respostas do formulário acompanha o deck', async (t) => {
 
   await t.test('a contagem de testes não contradiz o deck', () => {
     const noDeck = EN.match(/\b(\d{2,4})\s+automated tests/)[1];
-    const achados = new Set([...FORMULARIO.matchAll(/\b(\d{2,4})\s+automated tests/g)].map(m => m[1]));
+    const achados = new Set([...FORMULARIO_CORRIDO.matchAll(/\b(\d{2,4})\s+automated tests/g)].map(m => m[1]));
     assert.equal(achados.size, 1, `o formulário cita ${[...achados].join(' e ')} testes em lugares diferentes`);
     assert.equal([...achados][0], noDeck, 'o formulário e o deck discordam na contagem de testes');
   });
@@ -196,7 +204,7 @@ test('o banco de respostas do formulário acompanha o deck', async (t) => {
       [/The real incumbent/, 'anula a tabela acima'],
       [/fourteen-section/, 'o plano tem 17 seções'],
     ]) {
-      assert.ok(!rx.test(FORMULARIO), `formulário: voltou "${rx.source}" — ${porque}`);
+      assert.ok(!rx.test(FORMULARIO_CORRIDO), `formulário: voltou "${rx.source}" — ${porque}`);
     }
   });
 
@@ -223,6 +231,66 @@ test('o banco de respostas do formulário acompanha o deck', async (t) => {
       const real = citacao(bloco).split(/\s+/).length;
       assert.equal(Number(declarado), real, `declara ${declarado} palavras e tem ${real}`);
       assert.ok(real <= 50, `resposta com ${real} palavras, acima do máximo de 50`);
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// O CARGO APARECE EM SEIS LUGARES, EM TRÊS ARQUIVOS
+//
+// Trocar quem é CEO parece uma linha e são seis: o cartão do time e o rodapé
+// de contato, em inglês e em português, mais o texto da resposta 10 e a
+// tabela de cadastro do formulário. Já aconteceu de o formulário ficar meses
+// atrás do deck sem ninguém notar, porque nada quebrava. Aqui quebra.
+// ═══════════════════════════════════════════════════════════════════════════
+test('o time diz a mesma coisa nos três arquivos', async (t) => {
+  const ARQUIVOS = [['inglês', EN], ['português', PT], ['formulário', FORMULARIO_CORRIDO]];
+
+  // O rótulo vem ANTES do nome no cartão do deck, e DEPOIS do nome no rodapé
+  // de contato e no formulário. Os três formatos valem como assinatura.
+  const quemAssinaComo = (texto, cargo) => new Set([
+    ...[...texto.matchAll(new RegExp(`>${cargo}</div>\\s*<h3[^>]*>([^<]+)<`, 'g'))].map(m => m[1].trim()),
+    ...[...texto.matchAll(new RegExp(`<b>([^<]+)</b>\\s*·\\s*${cargo}<`, 'g'))].map(m => m[1].trim()),
+    ...[...texto.matchAll(new RegExp(`([A-ZÁ-Ú][a-zà-ú]+ [A-ZÁ-Ú][a-zà-ú]+), ${cargo}\\.`, 'g'))].map(m => m[1].trim()),
+  ]);
+
+  await t.test('cada arquivo aponta um CEO, e é sempre a mesma pessoa', () => {
+    const porArquivo = ARQUIVOS.map(([nome, texto]) => [nome, quemAssinaComo(texto, 'CEO')]);
+    for (const [nome, quem] of porArquivo) {
+      assert.equal(quem.size, 1,
+        `${nome}: ${quem.size === 0 ? 'ninguém assina como CEO' : `${[...quem].join(' e ')} assinam como CEO`}`);
+    }
+    const todos = new Set(porArquivo.flatMap(([, quem]) => [...quem]));
+    assert.equal(todos.size, 1, `os arquivos discordam de quem é o CEO: ${[...todos].join(' e ')}`);
+  });
+
+  await t.test('ninguém acumula CEO com outro cargo por edição pela metade', () => {
+    const [ceo] = quemAssinaComo(EN, 'CEO');
+    for (const [nome, texto] of ARQUIVOS) {
+      for (const outro of ['CTO', 'Founder', 'Fundador']) {
+        const quem = quemAssinaComo(texto, outro);
+        assert.ok(!quem.has(ceo), `${nome}: ${ceo} aparece como CEO e como ${outro}`);
+      }
+    }
+  });
+
+  await t.test('as quatro pessoas do time continuam nos dois decks', () => {
+    // Reordenar cartão é operação de recortar e colar, e recortar perde gente.
+    for (const [nome, texto] of [['inglês', EN], ['português', PT]]) {
+      for (const pessoa of ['Aldo Siqueira', 'Bruno Nascimento', 'Poliana Gomes', 'Leandro Andrade']) {
+        assert.ok(texto.includes(pessoa), `${nome}: ${pessoa} sumiu do deck`);
+      }
+    }
+  });
+
+  await t.test('o rodapé de contato nomeia o CEO', () => {
+    // É o cartão de visita da última lâmina: quem investir liga para quem
+    // estiver ali. Se o cargo mudou no time e não mudou aqui, liga para o
+    // nome errado.
+    const [ceo] = quemAssinaComo(EN, 'CEO');
+    for (const [nome, texto] of [['inglês', EN], ['português', PT]]) {
+      const contato = texto.match(/<div class="contato">([\s\S]*?)<\/div>\s*<\/div>/)?.[1] ?? '';
+      assert.ok(contato.includes(ceo), `${nome}: o rodapé de contato não nomeia ${ceo}`);
     }
   });
 });

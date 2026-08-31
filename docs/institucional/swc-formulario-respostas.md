@@ -281,7 +281,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 **Curto (275 caracteres)**
 
 > Pre-revenue by choice. The platform is live in production with 35 governed
-> agents, an auditable Impact 360° engine, payment rails and 281 automated
+> agents, an auditable Impact 360° engine, payment rails and 290 automated
 > tests, open right now at zoomdev.io. Pipeline: [MUNICIPALITIES,
 > COOPERATIVES, PRODUCERS IN CONVERSATION]. [N] registered users.
 
@@ -296,7 +296,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > the weakest link caps every claim automatically. The Impact 360° engine
 > produces auditable output for 15 crops across three soil-response scenarios.
 > 35 agents run under versioned protocols, each with the boundary between
-> documented result and investigated mechanism written into it. 281 automated
+> documented result and investigated mechanism written into it. 290 automated
 > tests cover session security, evidence rules, custody-chain tamper detection
 > and the impact engine. Open right now: zoomdev.io is the storefront,
 > www.zoomdev.app is the product. Selected by Programa Centelha 3, now in the
@@ -347,11 +347,11 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 
 **Modelo**
 
-> Bruno Nascimento, Founder and CEO. Sets the thesis, owns the evidence
-> doctrine and the go-to-market in the Amazon.
->
-> Aldo Siqueira, CTO. Owns the agent architecture, the impact engine and the
+> Aldo Siqueira, CEO. Owns the agent architecture, the impact engine and the
 > platform in production.
+>
+> Bruno Nascimento, Founder. Sets the thesis, owns the evidence doctrine and
+> the go-to-market in the Amazon.
 >
 > Poliana Gomes, UX and UI Design. Makes carbon governance usable by a family
 > farmer, not only by an analyst.
@@ -363,7 +363,7 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 > evidence we present comes from their signed technical reports.
 >
 > How four people ship this: the team does not write every line, it writes the
-> protocols. 35 agents run under versioned instructions, and 281 automated
+> protocols. 35 agents run under versioned instructions, and 290 automated
 > tests are what stop a generated claim from reaching a user unchecked.
 > Headcount is the review layer, not the throughput ceiling.
 >
