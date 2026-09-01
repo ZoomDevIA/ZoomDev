@@ -347,11 +347,11 @@ Cada um em três tamanhos. Use o que couber no limite de caracteres do campo.
 
 **Modelo**
 
-> Aldo Siqueira, CEO. Owns the agent architecture, the impact engine and the
-> platform in production.
+> Aldo Siqueira, Founder and CEO. Owns the agent architecture, the impact
+> engine and the platform in production.
 >
-> Bruno Nascimento, Founder. Sets the thesis, owns the evidence doctrine and
-> the go-to-market in the Amazon.
+> Bruno Nascimento, Co-founder. Sets the thesis, owns the evidence doctrine
+> and the go-to-market in the Amazon.
 >
 > Poliana Gomes, UX and UI Design. Makes carbon governance usable by a family
 > farmer, not only by an analyst.
@@ -547,7 +547,7 @@ feita numa sessão só.
 | Industry / Vertical | ClimateTech · AgTech · Artificial Intelligence · Carbon Markets |
 | Year founded | [ANO] |
 | Number of employees | 4 |
-| Founder full name | Bruno Nascimento |
+| Founder full name | Aldo Siqueira |
 | Founder email | contato@zoomdev.com.br |
 | Founder LinkedIn | [PERFIL] |
 | Company LinkedIn | [PERFIL] |

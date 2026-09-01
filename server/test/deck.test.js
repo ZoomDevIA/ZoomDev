@@ -235,27 +235,64 @@ test('o banco de respostas do formulário acompanha o deck', async (t) => {
   });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// O CARGO APARECE EM SEIS LUGARES, EM TRÊS ARQUIVOS
-//
-// Trocar quem é CEO parece uma linha e são seis: o cartão do time e o rodapé
-// de contato, em inglês e em português, mais o texto da resposta 10 e a
-// tabela de cadastro do formulário. Já aconteceu de o formulário ficar meses
-// atrás do deck sem ninguém notar, porque nada quebrava. Aqui quebra.
-// ═══════════════════════════════════════════════════════════════════════════
-test('o time diz a mesma coisa nos três arquivos', async (t) => {
-  const ARQUIVOS = [['inglês', EN], ['português', PT], ['formulário', FORMULARIO_CORRIDO]];
 
-  // O rótulo vem ANTES do nome no cartão do deck, e DEPOIS do nome no rodapé
-  // de contato e no formulário. Os três formatos valem como assinatura.
-  const quemAssinaComo = (texto, cargo) => new Set([
-    ...[...texto.matchAll(new RegExp(`>${cargo}</div>\\s*<h3[^>]*>([^<]+)<`, 'g'))].map(m => m[1].trim()),
-    ...[...texto.matchAll(new RegExp(`<b>([^<]+)</b>\\s*·\\s*${cargo}<`, 'g'))].map(m => m[1].trim()),
-    ...[...texto.matchAll(new RegExp(`([A-ZÁ-Ú][a-zà-ú]+ [A-ZÁ-Ú][a-zà-ú]+), ${cargo}\\.`, 'g'))].map(m => m[1].trim()),
-  ]);
+// ═══════════════════════════════════════════════════════════════════════════
+// O CARGO APARECE EM SETE LUGARES, EM TRÊS ARQUIVOS
+//
+// Trocar quem é CEO parece uma linha e são sete: o cartão do time e o rodapé
+// de contato, em inglês e em português, mais o texto da resposta 10 e a linha
+// "Founder full name" da tabela de cadastro. Já aconteceu de o formulário
+// ficar meses atrás do deck sem ninguém notar, porque nada quebrava.
+//
+// A LEITURA É POR PAR RÓTULO-NOME, não por rótulo exato. A primeira versão
+// deste teste procurava ">CEO</div>" e teria passado batido quando o cargo
+// virou "Founder & CEO": título composto é o caso normal numa startup, não a
+// exceção. Aqui o rótulo é capturado inteiro e a pergunta é se ele CONTÉM o
+// cargo.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Os pares rótulo-nome do deck: cartão da lâmina de time e rodapé de contato. */
+function cargosNoDeck(texto) {
+  const pares = [];
+  const time = texto.match(/<section class="slide[^"]*" data-n="11">([\s\S]*?)<\/section>/)?.[1] ?? '';
+  // No cartão o rótulo vem antes do nome; no rodapé, depois.
+  for (const [, rotulo, nome] of time.matchAll(/<div class="cap"[^>]*>([^<]+)<\/div>\s*<h3[^>]*>([^<]+)</g)) {
+    pares.push([rotulo.trim(), nome.trim()]);
+  }
+  const contato = texto.match(/<div class="contato">([\s\S]*?)<\/div>\s*<\/div>/)?.[1] ?? '';
+  for (const [, nome, rotulo] of contato.matchAll(/<b>([^<]+)<\/b>\s*·\s*([^<]+)<\/div>/g)) {
+    pares.push([rotulo.trim(), nome.trim()]);
+  }
+  return pares;
+}
+
+/** Os pares do formulário: "Nome Sobrenome, Cargo." no começo de cada parágrafo.
+ *
+ *  Ancorado no vocabulário de cargos, e não no "> " da citação, porque emendar
+ *  as continuações também come o "> " do primeiro parágrafo do bloco: o Aldo
+ *  ficava invisível e o teste dizia que ninguém assinava como CEO. Exigir um
+ *  cargo conhecido é mais estreito do que exigir a marca da citação, e não
+ *  captura qualquer "Nome Sobrenome," que apareça no meio de uma frase. */
+function cargosNoFormulario(texto) {
+  const CARGOS = 'Founder|Fundador|Co-founder|Cofundador|CEO|CTO';
+  return [...texto.matchAll(
+    new RegExp(`([A-ZÁ-Ú][a-zà-ú]+ [A-ZÁ-Ú][a-zà-ú]+), ((?:${CARGOS})[^.]{0,24})\\.`, 'g'))]
+    .map(m => [m[2].trim(), m[1].trim()]);
+}
+
+test('o time diz a mesma coisa nos três arquivos', async (t) => {
+  const ARQUIVOS = [
+    ['inglês', cargosNoDeck(EN)],
+    ['português', cargosNoDeck(PT)],
+    ['formulário', cargosNoFormulario(FORMULARIO_CORRIDO)],
+  ];
+  // "&amp;" no HTML e "and" no formulário são a mesma conjunção, então a
+  // pergunta é se o rótulo CONTÉM o cargo, não se é igual a ele.
+  const carrega = (pares, cargo) =>
+    new Set(pares.filter(([rot]) => new RegExp(`(?<![\\w-])${cargo}\\b`).test(rot)).map(([, nome]) => nome));
 
   await t.test('cada arquivo aponta um CEO, e é sempre a mesma pessoa', () => {
-    const porArquivo = ARQUIVOS.map(([nome, texto]) => [nome, quemAssinaComo(texto, 'CEO')]);
+    const porArquivo = ARQUIVOS.map(([nome, pares]) => [nome, carrega(pares, 'CEO')]);
     for (const [nome, quem] of porArquivo) {
       assert.equal(quem.size, 1,
         `${nome}: ${quem.size === 0 ? 'ninguém assina como CEO' : `${[...quem].join(' e ')} assinam como CEO`}`);
@@ -264,14 +301,46 @@ test('o time diz a mesma coisa nos três arquivos', async (t) => {
     assert.equal(todos.size, 1, `os arquivos discordam de quem é o CEO: ${[...todos].join(' e ')}`);
   });
 
-  await t.test('ninguém acumula CEO com outro cargo por edição pela metade', () => {
-    const [ceo] = quemAssinaComo(EN, 'CEO');
-    for (const [nome, texto] of ARQUIVOS) {
-      for (const outro of ['CTO', 'Founder', 'Fundador']) {
-        const quem = quemAssinaComo(texto, outro);
-        assert.ok(!quem.has(ceo), `${nome}: ${ceo} aparece como CEO e como ${outro}`);
+  await t.test('quem funda e quem cofunda não se confundem', () => {
+    // "Cofundador" contém "fundador" e "Co-founder" contém "founder". O que
+    // separa os dois é a caixa: a forma composta minusculiza o segundo
+    // elemento, e a busca é sensível a maiúscula. A negativa de hífen antes
+    // segura o caso de alguém escrever "Co-Founder".
+    for (const [nome, pares] of ARQUIVOS) {
+      const fundadores = new Set([
+        ...carrega(pares, 'Founder'), ...carrega(pares, 'Fundador'),
+      ]);
+      const cofundadores = new Set([
+        ...carrega(pares, 'Co-founder'), ...carrega(pares, 'Cofundador'),
+      ]);
+      assert.equal(fundadores.size, 1, `${nome}: ${[...fundadores].join(' e ') || 'ninguém'} assina como fundador`);
+      for (const quem of cofundadores) {
+        assert.ok(!fundadores.has(quem), `${nome}: ${quem} aparece como fundador e como cofundador`);
       }
     }
+  });
+
+  await t.test('o rodapé de contato repete o cartão do time', () => {
+    // É o cartão de visita da última lâmina: quem investir liga para quem
+    // estiver ali. Cargo que mudou no time e não mudou aqui é nome errado.
+    for (const [nome, texto] of [['inglês', EN], ['português', PT]]) {
+      const pares = cargosNoDeck(texto);
+      const noTime = new Map(pares.slice(0, 4).map(([rot, quem]) => [quem, rot]));
+      const noRodape = pares.slice(4);
+      assert.ok(noRodape.length >= 2, `${nome}: o rodapé de contato deixou de nomear as pessoas`);
+      for (const [rot, quem] of noRodape) {
+        assert.equal(rot, noTime.get(quem),
+          `${nome}: ${quem} é "${noTime.get(quem)}" no time e "${rot}" no rodapé`);
+      }
+    }
+  });
+
+  await t.test('a linha de cadastro do formulário nomeia o fundador', () => {
+    // O campo "Founder full name" é por onde a organização entra em contato.
+    // Ficou apontando para a pessoa errada uma vez, e ninguém viu.
+    const [fundador] = new Set([...carrega(cargosNoDeck(EN), 'Founder')]);
+    const linha = FORMULARIO.match(/\| Founder full name \| ([^|]+) \|/)?.[1]?.trim();
+    assert.equal(linha, fundador, `o cadastro diz "${linha}" e o deck diz "${fundador}"`);
   });
 
   await t.test('as quatro pessoas do time continuam nos dois decks', () => {
@@ -283,14 +352,12 @@ test('o time diz a mesma coisa nos três arquivos', async (t) => {
     }
   });
 
-  await t.test('o rodapé de contato nomeia o CEO', () => {
-    // É o cartão de visita da última lâmina: quem investir liga para quem
-    // estiver ali. Se o cargo mudou no time e não mudou aqui, liga para o
-    // nome errado.
-    const [ceo] = quemAssinaComo(EN, 'CEO');
-    for (const [nome, texto] of [['inglês', EN], ['português', PT]]) {
-      const contato = texto.match(/<div class="contato">([\s\S]*?)<\/div>\s*<\/div>/)?.[1] ?? '';
-      assert.ok(contato.includes(ceo), `${nome}: o rodapé de contato não nomeia ${ceo}`);
-    }
+  await t.test('os dois decks trazem o mesmo telefone, e um só', () => {
+    // Telefone de contato desatualizado é o defeito mais caro de um deck: o
+    // investidor liga, não atende, e não há segunda tentativa.
+    const numeros = (t) => new Set([...t.matchAll(/\+55[\s\d-]{10,}/g)].map(m => m[0].trim()));
+    const en = numeros(EN), pt = numeros(PT);
+    assert.equal(en.size, 1, `inglês: o deck traz ${en.size} telefones (${[...en].join(' e ')})`);
+    assert.deepEqual([...en], [...pt], 'inglês e português trazem telefones diferentes');
   });
 });
