@@ -5,12 +5,13 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "dev": "node --watch src/index.js",
-    "start": "node src/index.js",
+    "dev": "node --env-file-if-exists=.env --watch src/index.js",
+    "start": "node --env-file-if-exists=.env src/index.js",
     "test": "node --test \"test/*.test.js\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
+    "@supabase/supabase-js": "^2.100.1",
     "cors": "^2.8.5",
     "docx": "^9.0.0",
     "express": "^4.21.0",

@@ -185,9 +185,9 @@ app.get('/api/planos', (_req, res) => res.json(config.plans));
 // infinita e viram porta de força bruta e de criação de contas em massa.
 app.post('/api/auth/register',
   limitar({ max: 5, janelaSeg: 3600, mensagem: 'Muitas contas criadas deste endereço. Tente mais tarde.' }),
-  (req, res, next) => {
+  async (req, res, next) => {
     try {
-      const r = register(req.body || {}, rotularAparelho(req.headers['user-agent']));
+      const r = await register(req.body || {}, rotularAparelho(req.headers['user-agent']));
       // Aceite dos termos gravado com a versão vigente no momento do cadastro.
       registrarAceiteTermos(store.users[r.user.id]);
       res.json({ ...r, user: { ...r.user, termosAceitos: store.users[r.user.id].termosAceitos } });
@@ -213,7 +213,7 @@ app.post('/api/auth/google',
   async (req, res, next) => {
     try {
       const identidade = await verificarCredencialGoogle(req.body?.credential);
-      const r = loginComGoogle(identidade, rotularAparelho(req.headers['user-agent']));
+      const r = await loginComGoogle(identidade, rotularAparelho(req.headers['user-agent']));
       // Conta recém-criada pelo Google aceita os termos no mesmo ato, como no
       // cadastro por senha: a versão vigente fica registrada com data.
       if (!store.users[r.user.id].termosAceitos) registrarAceiteTermos(store.users[r.user.id]);

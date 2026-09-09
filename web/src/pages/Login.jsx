@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, setToken } from '../lib/api.js';
+import { supabase, supabaseAtivo } from '../lib/supabase.js';
 import { CHAVE_RASCUNHO } from '../lib/dominio.js';
 import { useUser } from '../App.jsx';
 import BrandLockup from '../components/BrandLockup.jsx';
@@ -29,6 +30,7 @@ export default function Login() {
   const [tab, setTab] = useState(
     params.get('modo') === 'cadastro' || veioDaIdeacao ? 'criar' : 'entrar');
   const [form, setForm] = useState({ email: '', password: '', nome: '' });
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState(null);
@@ -50,6 +52,7 @@ export default function Login() {
   const googleBotao = useRef(null);
 
   useEffect(() => {
+    if (supabaseAtivo) return undefined;
     let vivo = true;
     api.googleConfig().then(({ ativo, clientId }) => {
       if (!vivo || !ativo || !clientId) return;
@@ -108,14 +111,54 @@ export default function Login() {
     setErro(null);
     setEnviando(true);
     try {
-      const r = tab === 'entrar' ? await api.login(form) : await api.register(form);
-      setToken(r.token);
+      if (supabaseAtivo) {
+        const email = form.email.trim().toLowerCase();
+        const resultado = tab === 'entrar'
+          ? await supabase.auth.signInWithPassword({ email, password: form.password })
+          : await supabase.auth.signUp({
+            email,
+            password: form.password,
+            options: {
+              data: { nome: form.nome.trim() },
+              emailRedirectTo: `${window.location.origin}/entrar`,
+            },
+          });
+        if (resultado.error) {
+          // Usuários existentes seguem entrando pelo login legado até serem
+          // vinculados ao Supabase; uma tentativa normal não os desconecta.
+          if (tab === 'entrar') {
+            const legado = await api.login(form);
+            setToken(legado.token);
+            await refreshUser();
+            return;
+          }
+          throw resultado.error;
+        }
+        if (!resultado.data.session) {
+          setAviso('Conta criada. Confirme o e-mail enviado pelo Supabase para entrar.');
+          return;
+        }
+        setToken(resultado.data.session.access_token);
+      } else {
+        const r = tab === 'entrar' ? await api.login(form) : await api.register(form);
+        setToken(r.token);
+      }
       await refreshUser();
     } catch (err) {
       setErro(err.message);
     } finally {
       setEnviando(false);
     }
+  };
+
+  const entrarComOAuth = async (provider) => {
+    if (!supabaseAtivo) return emBreve(provider === 'github' ? 'GitHub' : 'Google');
+    setErro(null); setEnviando(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/entrar` },
+    });
+    if (error) { setErro(error.message); setEnviando(false); }
   };
 
   return (
@@ -195,7 +238,17 @@ export default function Login() {
             </div>
             <div>
               <label className="text-xs text-white/60 block mb-1.5">Senha</label>
-              <input type="password" required minLength={8} className="zd-input w-full rounded-lg px-3 py-2.5 text-sm" placeholder="••••••••" value={form.password} onChange={set('password')} />
+              <div className="relative">
+                <input type={mostrarSenha ? 'text' : 'password'} required minLength={8}
+                  className="zd-input w-full rounded-lg px-3 py-2.5 pr-11 text-sm" placeholder="••••••••"
+                  value={form.password} onChange={set('password')} />
+                <button type="button" onClick={() => setMostrarSenha(visivel => !visivel)}
+                  className="absolute inset-y-0 right-0 px-3 text-white/50 hover:text-[#00ff64] transition-colors"
+                  aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                  title={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
+                  <Icon nome={mostrarSenha ? 'olhoFechado' : 'olho'} tam={18} />
+                </button>
+              </div>
             </div>
             {tab === 'entrar' && (
               <div className="flex items-center justify-between text-xs">
@@ -228,12 +281,13 @@ export default function Login() {
           {/* O contêiner do botão do Google existe sempre; o script oficial
               desenha o botão dentro dele quando o recurso está configurado. */}
           <div ref={googleBotao} className={googleAtivo ? 'flex justify-center mb-2' : 'hidden'} />
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {[
-              ...(googleAtivo ? [] : [['Google', 'G']]),
-              ['GitHub', '⌥'], ['Microsoft', '⊞'], ['Apple', ''], ['Biometria', '👆'],
-            ].map(([nome, ic]) => (
-              <button key={nome} type="button" onClick={() => emBreve(nome)}
+              ...(googleAtivo ? [] : [['Google', 'G', 'google']]),
+              ['GitHub', '⌥', 'github'],
+            ].map(([nome, ic, provider]) => (
+              <button key={nome} type="button" disabled={enviando}
+                onClick={() => provider ? entrarComOAuth(provider) : emBreve(nome)}
                 className="rounded-lg border border-white/12 bg-white/[.04] hover:bg-white/[.08] transition-colors py-2 text-xs text-white/70 flex items-center justify-center gap-1.5">
                 <span>{ic}</span> {nome}
               </button>

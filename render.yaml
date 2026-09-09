@@ -29,6 +29,14 @@ services:
       # Os dados ficam em disco persistente
       - key: ZOOMDEV_DATA_DIR
         value: /var/data
+      # Persistência primária e Auth. Defina os valores no painel do Render.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # Domínio público usado por CORS, redirecionamentos e links de e-mail.
+      - key: ZOOMDEV_URL
+        sync: false
     disk:
       name: zoomdev-dados
       mountPath: /var/data

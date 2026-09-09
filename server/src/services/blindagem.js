@@ -120,7 +120,7 @@ const POLITICA = [
   "font-src 'self'",                         // as fontes agora são da própria origem
   // arcgisonline: os tiles de satélite do Mapa Vivo chegam por fetch do
   // MapLibre, e connect-src fechado os bloquearia; é só este host de imagem.
-  "connect-src 'self' https://accounts.google.com/gsi/ https://server.arcgisonline.com",
+  `connect-src 'self' https://accounts.google.com/gsi/ https://server.arcgisonline.com${process.env.SUPABASE_URL ? ` ${String(process.env.SUPABASE_URL).replace(/\/$/, '')}` : ''}`,
   "media-src 'self' blob:",
   "frame-src 'self' https://accounts.google.com/gsi/",  // a prévia do MVP e o iframe do botão do Google
   "worker-src 'self' blob:",

@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 // Configuração central do servidor ZoomDev OS
 export const config = {
   port: Number(process.env.PORT || 4000),
@@ -26,7 +28,12 @@ export const config = {
   hasApiKey: Boolean(process.env.ANTHROPIC_API_KEY),
   // Administrador do ecossistema: e-mail explícito via env; sem env, o primeiro usuário registrado
   adminEmail: (process.env.ZOOMDEV_ADMIN_EMAIL || '').trim().toLowerCase() || null,
-  dataDir: process.env.ZOOMDEV_DATA_DIR || new URL('../data/', import.meta.url).pathname,
+  dataDir: process.env.ZOOMDEV_DATA_DIR || fileURLToPath(new URL('../data/', import.meta.url)),
+  supabase: {
+    url: (process.env.SUPABASE_URL || '').trim().replace(/\/$/, ''),
+    serviceRoleKey: (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim(),
+    get configurado() { return Boolean(this.url && this.serviceRoleKey); },
+  },
   // ── Economia de créditos ("seiva") ──────────────────────────────────────
   // Recalibrada com a chegada do Studio. O plano ZoomDev deixou de ser cinco
   // chamadas de texto e passou a ser uma pesquisa real na internet mais cinco

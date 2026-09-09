@@ -1,6 +1,7 @@
 import React, { createContext, lazy, Suspense, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { api, getToken, setToken } from './lib/api.js';
+import { supabase, pareceJwt } from './lib/supabase.js';
 import { aplicar as aplicarTema, gravarLocal as gravarTema } from './lib/tema.js';
 import Layout from './components/Layout.jsx';
 import Logo from './components/Logo.jsx';
@@ -83,6 +84,29 @@ export default function App() {
 
   useEffect(() => {
     if (getToken()) refreshUser();
+  }, [refreshUser]);
+
+  // Mantém o JWT que a API recebe alinhado à sessão renovada pelo Supabase.
+  // Tokens legados não são apagados quando ainda não existe sessão Supabase.
+  useEffect(() => {
+    if (!supabase) return undefined;
+    let ativo = true;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!ativo || !session?.access_token) return;
+      setToken(session.access_token);
+      refreshUser();
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evento, session) => {
+      if (session?.access_token) {
+        setToken(session.access_token);
+        refreshUser();
+      } else if (pareceJwt(getToken())) {
+        setToken(null);
+        setUser(null);
+        setCarregando(false);
+      }
+    });
+    return () => { ativo = false; subscription.unsubscribe(); };
   }, [refreshUser]);
 
   // O tema guardado na conta vence o do navegador: entrar num computador novo

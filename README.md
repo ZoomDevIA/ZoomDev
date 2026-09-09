@@ -57,6 +57,9 @@ npm run dev          # API na 4000 + web na 5173 (abra a 5173)
 | `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | Cobrança de assinatura | Fluxo simulado |
 | `PIX_CHAVE`, `PIX_NOME`, `PIX_CIDADE` | PIX em produção | BR Code válido, confirmação manual |
 | `ZOOMDEV_DATA_DIR` | Onde os dados ficam | `server/data/` |
+| SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY | Postgres de produção | Persistência JSON durante a migração |
+
+Consulte [docs/supabase.md](docs/supabase.md) para configurar o Supabase.
 
 ### Publicando online
 

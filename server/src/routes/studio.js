@@ -28,9 +28,10 @@ import { extrair, ehAudio, LIMITE_BYTES } from '../services/extracao.js';
 import { modoTranscricao } from '../services/transcricao.js';
 import { awardXP, FASES, FASE_LABEL, NIVEL_STARTUP, missoesValidacaoPadrao } from '../services/gamification.js';
 import { limitar } from '../services/limite.js';
-import { lerConteudo, gravarConteudo, arquivosMvp } from '../services/conteudo.js';
+import { lerConteudo, gravarConteudo, arquivosMvp, sincronizarConteudoDoSupabase } from '../services/conteudo.js';
 import { jaEmAndamento } from '../services/retomada.js';
 import { paraCliente } from '../services/erros.js';
+import { buscarProjetoSupabase } from '../services/supabase.js';
 
 export const studioRouter = Router();
 
@@ -39,6 +40,18 @@ export const studioRouter = Router();
 // no `index.js`, montado antes do parser global; esta linha fica como rede de
 // segurança para quem montar este roteador em outro lugar.
 studioRouter.use(express.json({ limit: '12mb' }));
+
+// Rotas do Studio leem primeiro o Postgres e aquecem o cache local. As três
+// rotas sem projeto no caminho passam direto.
+studioRouter.use('/:id', async (req, _res, next) => {
+  if (['anexo', 'pre-leitura', 'local'].includes(req.params.id)) return next();
+  try {
+    const remoto = await buscarProjetoSupabase(req.params.id, req.user.id);
+    if (remoto) store.projects[remoto.id] = remoto;
+    await sincronizarConteudoDoSupabase(req.params.id);
+    next();
+  } catch (e) { next(e); }
+});
 
 const upload = multer({
   storage: multer.memoryStorage(),

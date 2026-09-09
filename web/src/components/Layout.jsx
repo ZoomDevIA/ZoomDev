@@ -394,7 +394,7 @@ export default function Layout({ children }) {
 
   return (
     <FocoContext.Provider value={contextoFoco}>
-    <div className="min-h-screen zd-bg zd-circuit-bg hud-grade hud-scan flex" data-foco={foco ? 'sim' : 'nao'}>
+    <div className="min-h-screen md:h-screen md:overflow-hidden zd-bg zd-circuit-bg hud-grade hud-scan flex" data-foco={foco ? 'sim' : 'nao'}>
       {/* Barra fixa: tablet e desktop */}
       <aside className={`zd-sidebar shrink-0 hidden md:flex flex-col relative z-10 transition-[width] duration-300 ${
         recolhido ? 'w-[68px]' : 'w-60'}`}>
@@ -424,7 +424,7 @@ export default function Layout({ children }) {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-w-0 relative z-10">
+      <div className="flex-1 flex flex-col min-w-0 md:min-h-0 relative z-10">
         {/* No modo foco o cabeçalho sobe e some. A faixa fina que sobra o traz
             de volta ao encostar o mouse, e no toque ela é o alvo do dedo. */}
         {foco && !topoAberto && (
@@ -529,7 +529,7 @@ export default function Layout({ children }) {
 
         {/* A chave por caminho reinicia a animação a cada rota: sem ela o
             React reaproveita o nó e a tela nova aparece seca. */}
-        <main className={`flex-1 overflow-x-hidden ${
+        <main className={`flex-1 overflow-x-hidden md:min-h-0 md:overflow-y-auto ${
           foco ? 'p-2 md:p-3' : 'p-3 sm:p-4 md:p-6 lg:p-8'}`}>
           <div key={pathname} className="zd-entra h-full">{children}</div>
         </main>

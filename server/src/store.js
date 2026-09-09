@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
+import { espelharUsuariosProjetos } from './services/supabase.js';
 
 const DB_FILE = path.join(config.dataDir, 'db.json');
 
@@ -37,6 +38,8 @@ function gravarAgora() {
   try {
     fs.mkdirSync(config.dataDir, { recursive: true });
     fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    // JSON segue como backup; o Postgres recebe a mesma versão sem atrasar a resposta.
+    espelharUsuariosProjetos(db).catch(e => console.error('supabase: espelho pendente', e.message));
     return true;
   } catch (e) {
     console.error('store: falha ao salvar', e.message);

@@ -14,6 +14,7 @@ import { pagamentosConfig } from '../services/pagamentos.js';
 import { CATALOGO } from '../services/elenco.js';
 import { origensPermitidas } from '../services/blindagem.js';
 import { isAdmin, quemPede } from '../auth.js';
+import { testarSupabase } from '../services/supabase.js';
 
 export const diagnosticoRouter = Router();
 
@@ -127,6 +128,7 @@ diagnosticoRouter.get('/status', async (req, res) => {
   const detalhado = isAdmin(quemPede(req));
   const chaveIA = process.env.ANTHROPIC_API_KEY || '';
   const testeIA = req.query.testar === 'ia' ? await testarChave() : null;
+  const supabase = await testarSupabase();
   const disco = verificarDisco();
   const usuarios = Object.values(store.users);
   const adminDefinido = config.adminEmail;
@@ -170,6 +172,8 @@ diagnosticoRouter.get('/status', async (req, res) => {
           ? `Volume montado em ${disco.caminho} · banco com ${(disco.bytes / 1024).toFixed(1)} KB`
           : `Gravável em ${disco.caminho} · banco com ${(disco.bytes / 1024).toFixed(1)} KB. Se não houver volume montado aqui, os dados somem a cada deploy.`,
     !disco.gravavel);
+
+  add('supabase', 'Supabase (Postgres)', supabase.ok, supabase.mensagem);
 
   // ── Administrador ──
   add('admin', 'Administrador',

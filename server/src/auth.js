@@ -4,6 +4,7 @@ import { store, save, id } from './store.js';
 import { config } from './config.js';
 import { newUserGamification } from './services/gamification.js';
 import { PAPEIS, capacidadesDe, pode as podeCap } from './services/permissoes.js';
+import { criarUsuarioSupabaseAuth, identidadeSupabase } from './services/supabase.js';
 
 function hash(password, salt = crypto.randomBytes(16).toString('hex')) {
   const h = crypto.scryptSync(password, salt, 64).toString('hex');
@@ -22,7 +23,7 @@ function verify(password, stored) {
 export function hashSenha(senha) { return hash(senha); }
 export function conferirSenha(senha, hashArmazenado) { return verify(String(senha || ''), hashArmazenado); }
 
-export function register({ email, password, nome }, aparelho) {
+export async function register({ email, password, nome }, aparelho) {
   email = String(email || '').trim().toLowerCase();
   if (!email.includes('@') || String(password || '').length < 8) {
     throw Object.assign(new Error('E-mail inválido ou senha com menos de 8 caracteres.'), { status: 400 });
@@ -31,10 +32,12 @@ export function register({ email, password, nome }, aparelho) {
     throw Object.assign(new Error('Já existe uma conta com este e-mail.'), { status: 409 });
   }
   const userId = id('usr');
+  const supabaseAuthId = await criarUsuarioSupabaseAuth({ email, password, nome });
   store.users[userId] = {
     id: userId,
     email,
     nome: nome || email.split('@')[0],
+    supabaseAuthId,
     passwordHash: hash(password),
     // Sem papel gravado: quem se cadastra sozinho é fundador, salvo a regra de
     // bootstrap (primeiro usuário / ZOOMDEV_ADMIN_EMAIL) resolvida em papelDe().
@@ -89,7 +92,7 @@ export function criarUsuario({ email, nome, senha, papel }) {
  * quem entra pelo Google só entra pelo Google, até definir uma senha pela
  * recuperação, que continua valendo porque o e-mail é o mesmo.
  */
-export function loginComGoogle({ email, nome, sub }, aparelho) {
+export async function loginComGoogle({ email, nome, sub }, aparelho) {
   let user = Object.values(store.users).find(u => u.email === email);
   if (user) {
     if (user.ativo === false) {
@@ -99,10 +102,12 @@ export function loginComGoogle({ email, nome, sub }, aparelho) {
     return createSession(user.id, aparelho);
   }
   const userId = id('usr');
+  const supabaseAuthId = await criarUsuarioSupabaseAuth({ email, nome, provedor: 'google' });
   store.users[userId] = {
     id: userId,
     email,
     nome: nome || email.split('@')[0],
+    supabaseAuthId,
     passwordHash: null,
     loginExterno: 'google',
     googleSub: sub,
@@ -334,11 +339,47 @@ export function pode(user, capacidade) {
   return podeCap({ ...user, papel: papelDe(user) }, capacidade);
 }
 
-export function authMiddleware(req, res, next) {
+export async function authMiddleware(req, res, next) {
   const token = (req.headers.authorization || '').replace(/^Bearer /, '');
   const session = store.sessions[token];
   if (!session || !store.users[session.userId]) {
-    return res.status(401).json({ error: 'Não autenticado.' });
+    try {
+      const identidade = await identidadeSupabase(token);
+      if (!identidade) return res.status(401).json({ error: 'Não autenticado.' });
+
+      let usuario = Object.values(store.users).find(u => u.supabaseAuthId === identidade.id);
+      // Conta legada adota o Supabase apenas depois de a identidade ser
+      // confirmada pelo Supabase para o mesmo e-mail.
+      if (!usuario) usuario = Object.values(store.users)
+        .find(u => u.email === String(identidade.email).toLowerCase());
+      if (!usuario) {
+        const userId = id('usr');
+        usuario = {
+          id: userId,
+          email: String(identidade.email).toLowerCase(),
+          nome: identidade.user_metadata?.nome || identidade.user_metadata?.full_name || String(identidade.email).split('@')[0],
+          supabaseAuthId: identidade.id,
+          passwordHash: null,
+          papel: null,
+          ativo: true,
+          plano: 'free',
+          creditos: config.credits.initial,
+          criadoEm: new Date().toISOString(),
+          gamification: newUserGamification(),
+        };
+        store.users[userId] = usuario;
+      } else if (usuario.supabaseAuthId !== identidade.id) {
+        usuario.supabaseAuthId = identidade.id;
+      }
+      if (usuario.ativo === false) return res.status(403).json({ error: 'Conta desativada.' });
+      save();
+      req.user = usuario;
+      req.sessionToken = null;
+      req.authTipo = 'supabase';
+      return next();
+    } catch (e) {
+      return next(e);
+    }
   }
 
   const agora = Date.now();
@@ -364,6 +405,7 @@ export function authMiddleware(req, res, next) {
   }
   req.user = user;
   req.sessionToken = token;
+  req.authTipo = 'legado';
   next();
 }
 

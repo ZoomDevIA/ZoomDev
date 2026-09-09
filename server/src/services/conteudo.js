@@ -29,6 +29,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from '../config.js';
 import { store, save } from '../store.js';
+import { espelharConteudoProjeto, lerConteudoProjetoSupabase } from './supabase.js';
 
 /**
  * Os campos que saem do índice. `mvpArquivos` é achatado de propósito: guardar
@@ -116,7 +117,26 @@ export function gravarConteudo(projetoId, alteracoes) {
     proj.anexosCount = (novo.anexos || []).length;
   }
 
+  // Durante a transição, o arquivo local segue sendo a fonte segura de
+  // recuperação. O espelho no Supabase é assíncrono para nunca impedir o
+  // trabalho no Studio caso a rede esteja indisponível.
+  espelharConteudoProjeto(chave, novo)
+    .catch(e => console.error('supabase: conteúdo pendente', e.message));
+
   return novo;
+}
+
+/**
+ * Traz o conteúdo persistido no Postgres antes do Studio montar a resposta.
+ * O arquivo continua como cópia de recuperação caso a rede falhe.
+ */
+export async function sincronizarConteudoDoSupabase(projetoId) {
+  const chave = sanear(projetoId);
+  const remoto = await lerConteudoProjetoSupabase(chave);
+  if (!remoto) return lerConteudo(chave);
+  cache.set(chave, remoto);
+  try { fs.writeFileSync(arquivoDe(chave), JSON.stringify(remoto)); } catch { /* o cache remoto já atende esta requisição */ }
+  return remoto;
 }
 
 export function apagarConteudo(projetoId) {

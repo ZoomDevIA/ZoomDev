@@ -17,16 +17,35 @@ import { publicarSite, despublicarSite, sugerirSlug, urlPublica, leadsDe, PREFIX
 import { exigir } from '../auth.js';
 import { jaEmAndamento } from '../services/retomada.js';
 import { paraCliente } from '../services/erros.js';
+import { buscarProjetoSupabase, listarProjetosSupabase } from '../services/supabase.js';
 import JSZip from 'jszip';
 
 export const projectsRouter = Router();
 
-function meusProjetos(userId) {
-  return Object.values(store.projects).filter(p => p.userId === userId);
+async function meusProjetos(userId) {
+  const locais = Object.values(store.projects).filter(p => p.userId === userId);
+  const remotos = await listarProjetosSupabase(userId);
+  if (remotos === null) return locais;
+  // Enquanto uma escrita recém-feita ainda viaja para o banco, ela não some
+  // da tela: o cache local é usado somente para esse pequeno intervalo.
+  const idsRemotos = new Set(remotos.map(p => p.id));
+  for (const projeto of remotos) store.projects[projeto.id] = projeto;
+  return [...remotos, ...locais.filter(p => !idsRemotos.has(p.id))];
 }
 
-projectsRouter.get('/', (req, res) => {
-  res.json(meusProjetos(req.user.id).sort((a, b) => b.criadoEm.localeCompare(a.criadoEm)));
+projectsRouter.use('/:id', async (req, _res, next) => {
+  try {
+    const remoto = await buscarProjetoSupabase(req.params.id, req.user.id);
+    if (remoto) store.projects[remoto.id] = remoto;
+    next();
+  } catch (e) { next(e); }
+});
+
+projectsRouter.get('/', async (req, res, next) => {
+  try {
+    const projetos = await meusProjetos(req.user.id);
+    res.json(projetos.sort((a, b) => String(b.criadoEm).localeCompare(String(a.criadoEm))));
+  } catch (e) { next(e); }
 });
 
 projectsRouter.get('/:id', (req, res) => {
