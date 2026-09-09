@@ -100,12 +100,45 @@ export async function espelharUsuariosProjetos({ users = {}, projects = {} }) {
       headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(linhas),
     });
-    if (!resposta.ok) throw new Error(`Supabase ${tabela}: HTTP ${resposta.status}`);
+    if (!resposta.ok) {
+      throw Object.assign(new Error(`Supabase ${tabela}: HTTP ${resposta.status}`), {
+        status: resposta.status,
+        tabela,
+      });
+    }
     return linhas.length;
   };
   const usuarios = Object.values(users).filter(u => u?.id && u?.email).map(u => paraUsuario(u, agora));
   const projetos = Object.values(projects).filter(p => p?.id && p?.userId && users[p.userId]).map(p => paraProjeto(p, agora));
-  return { usuarios: await upsert('zoomdev_users', usuarios), projetos: await upsert('zoomdev_projects', projetos) };
+
+  let usuariosEspelhados;
+  try {
+    usuariosEspelhados = await upsert('zoomdev_users', usuarios);
+  } catch (erro) {
+    // Um perfil legado pode ter recebido, antes desta migração, o UUID Auth
+    // de outro perfil. O unique de auth_user_id recusa a troca direta e o
+    // Postgres devolve 409. Soltamos APENAS os UUIDs que vamos reatribuir e
+    // repetimos o upsert: nenhum usuário, projeto ou identidade Auth é apagado.
+    const authIds = [...new Set(usuarios.map(u => u.auth_user_id).filter(Boolean))];
+    if (erro.status !== 409 || !authIds.length) throw erro;
+
+    const filtro = encodeURIComponent(`in.(${authIds.join(',')})`);
+    const limpar = await supabaseFetch(`/zoomdev_users?auth_user_id=${filtro}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ auth_user_id: null, atualizado_em: agora }),
+    });
+    if (!limpar.ok) {
+      throw Object.assign(new Error(`Supabase zoomdev_users: não foi possível reconciliar vínculos Auth (HTTP ${limpar.status})`), {
+        status: limpar.status,
+        tabela: 'zoomdev_users',
+      });
+    }
+    console.warn(`supabase: reconciliando ${authIds.length} vínculo(s) Auth antes do espelho de usuários`);
+    usuariosEspelhados = await upsert('zoomdev_users', usuarios);
+  }
+
+  return { usuarios: usuariosEspelhados, projetos: await upsert('zoomdev_projects', projetos) };
 }
 /** Cria a identidade no Supabase Auth para contas novas; a sessão legada continua ativa durante a transição. */
 export async function criarUsuarioSupabaseAuth({ email, password, nome, provedor = 'senha' }) {
