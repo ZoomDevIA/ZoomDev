@@ -150,9 +150,24 @@ export default function Studio() {
             setMensagens(m => [...m, { id: `sys${Date.now()}`, papel: 'marco', texto: 'Plano de negócios pronto' }]);
           }
         },
-        erro: (d) => setErro(d.error || 'A geração falhou.'),
+        erro: (d) => {
+          // Diagnóstico para quem está com o DevTools aberto. O backend
+          // gera `ref` e registra o mesmo identificador no Railway; não
+          // enviamos prompt, token ou detalhes internos para o navegador.
+          console.error('[ZoomDev] Falha ao gerar plano', {
+            codigo: d.code || 'ERRO_DESCONHECIDO',
+            referencia: d.ref || 'sem-referencia',
+            mensagem: d.error || 'A geração falhou.',
+            estornado: d.estornado || 0,
+            projeto: id,
+          });
+          setErro(`${d.error || 'A geração falhou.'}${d.ref ? ` Código: ${d.ref}.` : ''}`);
+        },
       });
     } catch (e) {
+      console.error('[ZoomDev] Falha na conexão da geração', {
+        mensagem: e?.message || 'Erro desconhecido', projeto: id,
+      });
       setErro(e.message);
     } finally { setGerando(false); setProgresso(null); }
   }, [id, gerando, carregar, ctx]);

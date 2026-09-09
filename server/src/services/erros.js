@@ -24,6 +24,22 @@ export function referencia() {
 }
 
 /**
+ * Forma curta e segura de registrar erros de integrações. Nunca inclui o
+ * objeto inteiro retornado por SDKs, pois ele pode carregar headers, tokens
+ * ou o corpo original da requisição.
+ */
+export function detalheSeguro(e) {
+  return {
+    nome: e?.name || 'Error',
+    mensagem: String(e?.message || 'Erro sem mensagem').slice(0, 500),
+    codigo: e?.code || e?.error?.code || null,
+    status: e?.status || e?.statusCode || e?.error?.status || null,
+    tipo: e?.type || e?.error?.type || null,
+    requestId: e?.request_id || e?.requestId || e?.headers?.['request-id'] || null,
+  };
+}
+
+/**
  * O que pode sair para o cliente.
  * 4xx e os 5xx marcados `publico: true` (os "não configurado", escritos de
  * propósito para quem opera) saem inteiros. O resto vira frase neutra, com
@@ -31,10 +47,12 @@ export function referencia() {
  */
 export function paraCliente(e, contexto = 'erro') {
   const status = e?.status || 500;
-  if (status < 500 || e?.publico) {
-    return { error: e?.message || 'Requisição inválida.', code: e?.code, status };
-  }
   const ref = referencia();
-  console.error(`[${contexto} ${ref}]`, e);
+  // O mesmo código aparece no console do navegador e nos logs do Railway.
+  // Assim a investigação não depende de expor mensagens internas na tela.
+  console.error(`[${contexto} ${ref}]`, detalheSeguro(e));
+  if (status < 500 || e?.publico) {
+    return { error: e?.message || 'Requisição inválida.', code: e?.code, ref, status };
+  }
   return { error: GENERICA, code: e?.code || 'ERRO_INTERNO', ref, status };
 }
