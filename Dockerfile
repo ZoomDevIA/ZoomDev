@@ -13,6 +13,12 @@ RUN npm ci --no-audit --no-fund
 
 # Código e build do frontend
 COPY . .
+# O Vite incorpora apenas variáveis VITE_* durante o build. No Railway,
+# cadastre estas duas como Build Variables (são públicas; nunca use service role).
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_PUBLISHABLE_KEY
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY
 RUN npm run build
 
 ENV NODE_ENV=production
