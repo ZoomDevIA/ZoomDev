@@ -222,7 +222,17 @@ export async function identidadeSupabase(accessToken) {
       Accept: 'application/json',
     },
   });
-  if (!resposta.ok) return null;
+  if (!resposta.ok) {
+    // Do not translate a server-side Supabase credential problem into a 401.
+    // A 401 makes the browser erase a perfectly valid user session. The
+    // operator needs a clear Railway/Supabase configuration signal instead.
+    console.error(`Supabase Auth validation failed: HTTP ${resposta.status}`);
+    throw Object.assign(new Error('O servidor nao conseguiu validar a sessao no Supabase. Verifique SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY na Railway.'), {
+      status: 503,
+      code: 'SUPABASE_AUTH_VALIDACAO_FALHOU',
+      publico: true,
+    });
+  }
   const usuario = await resposta.json();
   return usuario?.id && usuario?.email ? usuario : null;
 }
