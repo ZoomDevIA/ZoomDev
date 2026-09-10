@@ -345,7 +345,11 @@ export async function authMiddleware(req, res, next) {
   if (!session || !store.users[session.userId]) {
     try {
       const identidade = await identidadeSupabase(token);
-      if (!identidade) return res.status(401).json({ error: 'Não autenticado.' });
+      if (!identidade) {
+        // The frontend can renew the Supabase session once before treating this
+        // as a real sign-out, instead of confusing it with a Studio failure.
+        return res.status(401).json({ error: 'Sua sessao do Supabase nao foi aceita. Atualize a pagina e entre novamente se persistir.', code: 'TOKEN_SUPABASE_INVALIDO' });
+      }
 
       let usuario = Object.values(store.users).find(u => u.supabaseAuthId === identidade.id);
       // Conta legada adota o Supabase apenas depois de a identidade ser

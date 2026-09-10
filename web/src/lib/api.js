@@ -1,3 +1,5 @@
+import { pareceJwt, supabase } from './supabase.js';
+
 // Cliente da API ZoomDev OS
 let token = localStorage.getItem('zd_token') || null;
 
@@ -31,7 +33,25 @@ export function setPainelToken(t) {
 
 export function getPainelToken() { return painelToken; }
 
-async function req(path, opts = {}) {
+async function renovarTokenSupabase(tokenAnterior) {
+  // Supabase access tokens are short-lived. Try the browser-held refresh token
+  // before deciding that a 401 means the user must sign in again.
+  if (!supabase || !pareceJwt(tokenAnterior)) return false;
+  try {
+    const { data, error } = await supabase.auth.refreshSession();
+    const novoToken = data?.session?.access_token;
+    if (error || !novoToken) return false;
+    setToken(novoToken);
+    return true;
+  } catch (erro) {
+    console.warn('[ZoomDev] Falha ao renovar a sessao Supabase.', {
+      mensagem: erro?.message || 'Erro desconhecido',
+    });
+    return false;
+  }
+}
+
+async function req(path, opts = {}, podeRenovar = true) {
   const res = await fetch(`/api${path}`, {
     ...opts,
     headers: {
@@ -43,10 +63,22 @@ async function req(path, opts = {}) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    // A Studio message must never sign the user out just because an access
+    // token expired between two requests. Renew once, then replay once.
+    if (res.status === 401 && token && podeRenovar && await renovarTokenSupabase(token)) {
+      return req(path, opts, false);
+    }
     if (res.status === 401 && token) sessaoCaiu(data);
     const err = new Error(data.error || `Erro ${res.status}`);
     err.status = res.status;
     err.code = data.code;
+    if (res.status === 401) {
+      console.error('[ZoomDev] API recusou a sessao apos renovar o token.', {
+        rota: path,
+        codigo: data.code || 'NAO_AUTENTICADO',
+        mensagem: data.error || 'Nao autenticado.',
+      });
+    }
     throw err;
   }
   return data;
