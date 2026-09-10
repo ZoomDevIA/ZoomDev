@@ -31,7 +31,7 @@ import { limitar } from '../services/limite.js';
 import { lerConteudo, gravarConteudo, arquivosMvp, sincronizarConteudoDoSupabase } from '../services/conteudo.js';
 import { jaEmAndamento } from '../services/retomada.js';
 import { paraCliente } from '../services/erros.js';
-import { buscarProjetoSupabase } from '../services/supabase.js';
+import { buscarProjetoSupabase, guardarAnexoProjeto, apagarAnexoProjeto, baixarAnexoProjeto } from '../services/supabase.js';
 
 export const studioRouter = Router();
 
@@ -83,7 +83,7 @@ function cobrar(user, quanto, oQue) {
 // ANEXOS
 // ═══════════════════════════════════════════════════════════════════════════
 
-studioRouter.post('/anexo',
+studioRouter.post('/:id/anexo',
   limitar({ max: 40, janelaSeg: 600, mensagem: 'Muitos anexos em pouco tempo. Aguarde alguns minutos.' }),
   upload.single('arquivo'),
   async (req, res, next) => {
@@ -93,6 +93,8 @@ studioRouter.post('/anexo',
     // como áudio virava uma fábrica de seiva.
     let cobrado = 0;
     try {
+      const proj = meuProjeto(req, res);
+      if (!proj) return;
       if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo recebido.' });
 
       // Mesma regra de quem roteia o arquivo (tipo declarado OU extensão):
@@ -111,9 +113,17 @@ studioRouter.post('/anexo',
         buffer: req.file.buffer,
       });
 
-      // A imagem volta em base64 para o cliente decidir o que fazer; o texto
-      // é o que interessa para o resto do sistema. O binário morre aqui.
-      res.json(r);
+      const guardado = await guardarAnexoProjeto(proj.id, req.file);
+      // O arquivo e seu texto entram no projeto na hora do upload. Assim uma
+      // falha posterior da conversa/IA não faz o fundador perder o anexo.
+      const anexo = {
+        id: guardado.id, nome: req.file.originalname, tipo: r.tipo, mime: req.file.mimetype || '',
+        bytes: req.file.size, storagePath: guardado.caminho, texto: String(r.texto || '').slice(0, 40_000),
+        resumo: r.resumo || '', paginas: r.paginas, duracao: r.duracao, em: new Date().toISOString(),
+      };
+      const atuais = lerConteudo(proj.id).anexos || [];
+      gravarConteudo(proj.id, { anexos: [...atuais, anexo].slice(-12) });
+      res.json({ ...r, arquivoId: guardado.id, storagePath: guardado.caminho, bytes: req.file.size, armazenado: true });
     } catch (e) {
       // Falhou depois de cobrar? Devolve. Falha da plataforma (5xx) e falha do
       // serviço de transcrição (401 da chave revogada, 402 sem crédito, 429,
@@ -125,6 +135,33 @@ studioRouter.post('/anexo',
       next(e);
     }
   });
+
+studioRouter.delete('/:id/anexo/:arquivoId', async (req, res, next) => {
+  try {
+    const proj = meuProjeto(req, res);
+    if (!proj) return;
+    const anexo = (lerConteudo(proj.id).anexos || []).find(a => a.id === req.params.arquivoId);
+    if (!anexo?.storagePath) return res.status(404).json({ error: 'Anexo não encontrado.' });
+    await apagarAnexoProjeto(anexo.storagePath);
+    gravarConteudo(proj.id, { anexos: (lerConteudo(proj.id).anexos || []).filter(a => a.id !== anexo.id) });
+    res.status(204).end();
+  } catch (e) { next(e); }
+});
+
+studioRouter.get('/:id/anexo/:arquivoId/download', async (req, res, next) => {
+  try {
+    const proj = meuProjeto(req, res);
+    if (!proj) return;
+    const anexo = (lerConteudo(proj.id).anexos || []).find(a => a.id === req.params.arquivoId);
+    if (!anexo?.storagePath) return res.status(404).json({ error: 'Arquivo indisponível.' });
+    const arquivo = await baixarAnexoProjeto(anexo.storagePath);
+    if (!arquivo.ok) return res.status(404).json({ error: 'Arquivo indisponível.' });
+    const bytes = Buffer.from(await arquivo.arrayBuffer());
+    res.set({ 'Content-Type': anexo.mime || 'application/octet-stream', 'Content-Length': bytes.length,
+      'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(anexo.nome || 'anexo')}` });
+    res.send(bytes);
+  } catch (e) { next(e); }
+});
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PRÉ-LEITURA — o que o sistema entende enquanto a pessoa digita
@@ -401,12 +438,14 @@ studioRouter.post('/:id/conversa',
       // Anexo enviado agora entra no contexto e fica guardado no projeto: o
       // fundador não deve precisar reenviar o mesmo edital toda semana.
       const novos = anexos.filter(a => a?.extraido || a?.texto).map(a => ({
-        nome: a.nome, tipo: a.tipo, texto: String(a.extraido || a.texto).slice(0, 40_000),
+        id: a.arquivoId || a.id, nome: a.nome, tipo: a.tipo, mime: a.mime || '', bytes: Number(a.bytes) || 0,
+        storagePath: a.storagePath || null, texto: String(a.extraido || a.texto).slice(0, 40_000),
         em: new Date().toISOString(),
       }));
       const conteudo = lerConteudo(proj.id);
-      if (novos.length) {
-        gravarConteudo(proj.id, { anexos: [...(conteudo.anexos || []), ...novos].slice(-12) });
+      const aindaNaoGuardados = novos.filter(n => !n.id || !(conteudo.anexos || []).some(a => a.id === n.id));
+      if (aindaNaoGuardados.length) {
+        gravarConteudo(proj.id, { anexos: [...(conteudo.anexos || []), ...aindaNaoGuardados].slice(-12) });
       }
 
       const r = await structured({

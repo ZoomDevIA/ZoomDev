@@ -63,9 +63,10 @@ export default function CaixaContexto({ projeto, onEnviar, ocupado = false }) {
     // Extração no servidor: o que importa é o texto, não o arquivo
     for (const n of novos) {
       try {
-        const r = await api.extrairAnexo(n.arquivo);
+        const r = await api.extrairAnexo(projeto.id, n.arquivo);
         setAnexos(a => a.map(x => (x.id === n.id
-          ? { ...x, estado: 'pronto', extraido: r.texto, resumo: r.resumo, paginas: r.paginas, duracao: r.duracao }
+          ? { ...x, estado: 'pronto', extraido: r.texto, resumo: r.resumo, paginas: r.paginas, duracao: r.duracao,
+            arquivoId: r.arquivoId, storagePath: r.storagePath, mime: n.arquivo.type || '' }
           : x)));
       } catch (e) {
         setAnexos(a => a.map(x => (x.id === n.id ? { ...x, estado: 'erro', erro: e.message } : x)));

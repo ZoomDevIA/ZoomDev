@@ -1,6 +1,8 @@
 import { config } from '../config.js';
+import crypto from 'node:crypto';
 
 const CACHE_MS = 60_000;
+export const BUCKET_ANEXOS = 'zoomdev-anexos';
 let ultimoTeste = null;
 
 export function supabaseConfigurado() { return config.supabase.configurado; }
@@ -11,6 +13,47 @@ export async function supabaseFetch(caminho, opcoes = {}) {
     ...opcoes,
     headers: { apikey: config.supabase.serviceRoleKey, Authorization: `Bearer ${config.supabase.serviceRoleKey}`, Accept: 'application/json', ...opcoes.headers },
   });
+}
+
+function caminhoStorage(path) {
+  return String(path).split('/').map(encodeURIComponent).join('/');
+}
+
+async function storageFetch(caminho, opcoes = {}) {
+  if (!supabaseConfigurado()) throw Object.assign(new Error('Supabase não configurado.'), { code: 'SUPABASE_NAO_CONFIGURADO' });
+  return fetch(`${config.supabase.url}/storage/v1${caminho}`, {
+    ...opcoes,
+    headers: { apikey: config.supabase.serviceRoleKey, Authorization: `Bearer ${config.supabase.serviceRoleKey}`, ...opcoes.headers },
+  });
+}
+
+function nomeSeguro(nome = 'arquivo') {
+  const limpo = String(nome).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 120);
+  return limpo || 'arquivo';
+}
+
+/** Guarda o binário em bucket privado; a rota ainda valida o dono do projeto. */
+export async function guardarAnexoProjeto(projetoId, arquivo) {
+  const id = crypto.randomUUID();
+  const caminho = `${projetoId}/${id}-${nomeSeguro(arquivo.originalname)}`;
+  const resposta = await storageFetch(`/object/${BUCKET_ANEXOS}/${caminhoStorage(caminho)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': arquivo.mimetype || 'application/octet-stream', 'x-upsert': 'false' },
+    body: arquivo.buffer,
+  });
+  if (!resposta.ok) throw Object.assign(new Error(`Não foi possível guardar o anexo (Storage HTTP ${resposta.status}).`), { status: 503, code: 'STORAGE_UPLOAD_FALHOU' });
+  return { id, caminho };
+}
+
+export async function apagarAnexoProjeto(caminho) {
+  if (!caminho) return;
+  const resposta = await storageFetch(`/object/${BUCKET_ANEXOS}/${caminhoStorage(caminho)}`, { method: 'DELETE' });
+  if (!resposta.ok && resposta.status !== 404) throw Object.assign(new Error(`Não foi possível remover o anexo (Storage HTTP ${resposta.status}).`), { status: 503 });
+}
+
+export async function baixarAnexoProjeto(caminho) {
+  return storageFetch(`/object/${BUCKET_ANEXOS}/${caminhoStorage(caminho)}`);
 }
 
 export async function testarSupabase() {

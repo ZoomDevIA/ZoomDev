@@ -216,10 +216,10 @@ export const api = {
 // ── Anexos do Studio ───────────────────────────────────────────────────────
 // Sobe o arquivo bruto e recebe de volta só o texto: o que o sistema precisa
 // é o conteúdo, não guardar o PDF de ninguém. Nada do arquivo fica no disco.
-export async function extrairAnexo(arquivo, signal) {
+export async function extrairAnexo(projId, arquivo, signal) {
   const forma = new FormData();
   forma.append('arquivo', arquivo, arquivo.name);
-  const res = await fetch('/api/studio/anexo', {
+  const res = await fetch(`/api/studio/${projId}/anexo`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: forma,
