@@ -15,6 +15,7 @@ import { CATALOGO } from '../services/elenco.js';
 import { origensPermitidas } from '../services/blindagem.js';
 import { isAdmin, quemPede } from '../auth.js';
 import { testarSupabase } from '../services/supabase.js';
+import { clienteClaude } from '../agents/claude.js';
 
 export const diagnosticoRouter = Router();
 
@@ -42,8 +43,7 @@ async function testarChave() {
     resultado = { ok: false, situacao: 'sem_chave', mensagem: 'ANTHROPIC_API_KEY não está definida neste processo.' };
   } else {
     try {
-      const { default: Anthropic } = await import('@anthropic-ai/sdk');
-      const r = await new Anthropic().messages.create({
+      const r = await (await clienteClaude()).messages.create({
         model: config.model,
         max_tokens: 4,
         messages: [{ role: 'user', content: 'ok' }],

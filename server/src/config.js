@@ -26,6 +26,8 @@ export const config = {
   },
   // Sem ANTHROPIC_API_KEY o servidor roda em modo demo (planos de exemplo determinísticos)
   hasApiKey: Boolean(process.env.ANTHROPIC_API_KEY),
+  // Needed only when an organization key requires an explicit workspace.
+  anthropicWorkspaceId: (process.env.ANTHROPIC_WORKSPACE_ID || '').trim(),
   // Administrador do ecossistema: e-mail explícito via env; sem env, o primeiro usuário registrado
   adminEmail: (process.env.ZOOMDEV_ADMIN_EMAIL || '').trim().toLowerCase() || null,
   dataDir: process.env.ZOOMDEV_DATA_DIR || fileURLToPath(new URL('../data/', import.meta.url)),

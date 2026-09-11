@@ -7,10 +7,14 @@ import { config } from '../config.js';
 import { modeloDoPapel } from '../services/modelosIA.js';
 
 let _client = null;
-async function client() {
+export async function clienteClaude() {
   if (!_client) {
     const { default: Anthropic } = await import('@anthropic-ai/sdk');
-    _client = new Anthropic();
+    _client = new Anthropic({
+      ...(config.anthropicWorkspaceId
+        ? { defaultHeaders: { 'anthropic-workspace-id': config.anthropicWorkspaceId } }
+        : {}),
+    });
   }
   return _client;
 }
@@ -53,7 +57,7 @@ export async function structured({ system, user, schema, effort = 'high', maxTok
   if (!config.hasApiKey) {
     throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }
-  const anthropic = await client();
+  const anthropic = await clienteClaude();
   const extra = porTier(modelo, effort);
   const stream = anthropic.beta.messages.stream({
     model: modelo,
@@ -88,7 +92,7 @@ export async function conversar({ system, messages, effort = 'medium', maxTokens
   if (!config.hasApiKey) {
     throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }
-  const anthropic = await client();
+  const anthropic = await clienteClaude();
   const stream = anthropic.beta.messages.stream({
     model: modelo,
     max_tokens: maxTokens,
@@ -115,7 +119,7 @@ export async function conversarComInternet({ system, messages, effort = 'high', 
   if (!config.hasApiKey) {
     throw Object.assign(new Error('Sem ANTHROPIC_API_KEY: use o modo demo.'), { code: 'NO_API_KEY' });
   }
-  const anthropic = await client();
+  const anthropic = await clienteClaude();
   let msgs = [...messages];
   let response = null;
   for (let i = 0; i < 4; i++) {
