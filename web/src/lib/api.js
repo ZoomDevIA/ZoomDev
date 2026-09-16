@@ -117,6 +117,7 @@ export const api = {
   verificarCadeia: (loteId) => req(`/evidencias/${encodeURIComponent(loteId)}/verificar`),
   registrarEvidencia: (body) => req('/evidencias', { method: 'POST', body: JSON.stringify(body) }),
   projeto: (id) => req(`/projects/${id}`),
+  excluirProjeto: (id) => req(`/projects/${id}`, { method: 'DELETE' }),
   ideacao: (body) => req('/projects/ideacao', { method: 'POST', body: JSON.stringify(body) }),
   concluirMissao: (projId, missaoId) => req(`/projects/${projId}/missoes/${missaoId}/concluir`, { method: 'POST' }),
   avancarFase: (projId) => req(`/projects/${projId}/avancar-fase`, { method: 'POST' }),

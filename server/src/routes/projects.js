@@ -12,12 +12,12 @@ import { construirMvp, PECAS, ETAPA_DESIGN } from '../agents/mvpBuilder.js';
 import { ANDAIMES } from '../agents/mvpAndaime.js';
 import { publicar, projetarProjeto } from '../services/vitrine.js';
 import { emitirPrevia } from '../services/previa.js';
-import { hidratar, gravarConteudo, arquivosMvp, apagarConteudo } from '../services/conteudo.js';
+import { hidratar, gravarConteudo, arquivosMvp, apagarConteudo, lerConteudo } from '../services/conteudo.js';
 import { publicarSite, despublicarSite, sugerirSlug, urlPublica, leadsDe, PREFIXO } from '../services/publicacao.js';
 import { exigir } from '../auth.js';
 import { jaEmAndamento } from '../services/retomada.js';
 import { paraCliente } from '../services/erros.js';
-import { buscarProjetoSupabase, listarProjetosSupabase } from '../services/supabase.js';
+import { apagarAnexoProjeto, apagarProjetoSupabase, buscarProjetoSupabase, listarProjetosSupabase } from '../services/supabase.js';
 import JSZip from 'jszip';
 
 export const projectsRouter = Router();
@@ -54,6 +54,26 @@ projectsRouter.get('/:id', (req, res) => {
   // A ficha e o Studio precisam do documento; a LISTA acima não, e por isso
   // ela continua servindo só o índice.
   res.json(hidratar(proj));
+});
+
+projectsRouter.delete('/:id', async (req, res, next) => {
+  const proj = store.projects[req.params.id];
+  if (!proj || proj.userId !== req.user.id) return res.status(404).json({ error: 'Projeto nao encontrado.' });
+  if (proj.geracao?.status === 'executando' || proj.mvp?.status === 'construindo') {
+    return res.status(409).json({ error: 'Aguarde a tarefa em andamento terminar antes de excluir este projeto.' });
+  }
+  try {
+    const conteudo = lerConteudo(proj.id);
+    for (const anexo of conteudo.anexos || []) {
+      if (anexo?.storagePath) await apagarAnexoProjeto(anexo.storagePath);
+    }
+    await apagarProjetoSupabase(proj.id, req.user.id);
+    apagarConteudo(proj.id);
+    if (proj.site?.slug) delete store.sites[proj.site.slug];
+    delete store.projects[proj.id];
+    save();
+    res.json({ excluido: true, id: proj.id });
+  } catch (e) { next(e); }
 });
 
 // Ideação: recebe a descrição + tipo (startup | biostartup | auto)

@@ -123,6 +123,19 @@ export async function buscarProjetoSupabase(projectId, userId) {
   return linhas?.[0] ? projetoDaLinha(linhas[0]) : null;
 }
 
+/** Remove somente o projeto do titular. O banco remove o conteudo em cascata. */
+export async function apagarProjetoSupabase(projectId, userId) {
+  if (!supabaseConfigurado()) return { ignorado: true };
+  const resposta = await supabaseFetch(`/zoomdev_projects?id=eq.${encodeURIComponent(projectId)}&user_id=eq.${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
+  });
+  if (!resposta.ok) {
+    throw Object.assign(new Error(`Supabase projeto: HTTP ${resposta.status}`), { status: 503, code: 'SUPABASE_PROJETO_EXCLUIR_FALHOU' });
+  }
+  return { ok: true };
+}
+
 export async function lerConteudoProjetoSupabase(projectId) {
   if (!supabaseConfigurado()) return null;
   const resposta = await supabaseFetch(`/zoomdev_project_content?project_id=eq.${encodeURIComponent(projectId)}&select=dados&limit=1`);
