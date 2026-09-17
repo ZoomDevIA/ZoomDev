@@ -26,6 +26,7 @@ const ABAS = [
   // aberta seria pedir permissão para se proteger.
   { id: 'acesso', label: 'Acesso', icone: 'escudo', cap: null },
   { id: 'vitrine', label: 'Vitrine', icone: 'vitrine', cap: 'comunidade.curar' },
+  { id: 'seiva', label: 'Seiva', icone: 'moeda', cap: 'financeiro.ler' },
   { id: 'papeis', label: 'Níveis de acesso', icone: 'chave', cap: 'usuarios.ler' },
   { id: 'auditoria', label: 'Auditoria', icone: 'lista', cap: 'sistema.configurar' },
 ];
@@ -113,6 +114,7 @@ export default function Painel() {
       {abaAtual === 'acesso' && <Acesso user={user} />}
       {abaAtual === 'usuarios' && <Usuarios contexto={contexto} />}
       {abaAtual === 'vitrine' && <Vitrine />}
+      {abaAtual === 'seiva' && <GestaoSeiva />}
       {abaAtual === 'papeis' && <Papeis contexto={contexto} />}
       {abaAtual === 'auditoria' && <Auditoria />}
     </div>
@@ -417,6 +419,106 @@ function LinhaUsuario({ u, podeGerenciar, euId, atribuiveis, agir }) {
   );
 }
 
+// ── Seiva: consulta financeira e ajustes rastreáveis ───────────────────────
+function GestaoSeiva() {
+  const [dados, setDados] = useState(null);
+  const [usuarioId, setUsuarioId] = useState('');
+  const [detalhe, setDetalhe] = useState(null);
+  const [quantidade, setQuantidade] = useState('');
+  const [motivo, setMotivo] = useState('');
+  const [erro, setErro] = useState(null);
+  const [salvando, setSalvando] = useState(false);
+
+  const carregar = useCallback(async () => {
+    try { setDados(await api.painelSeiva()); } catch (e) { setErro(e.message); }
+  }, []);
+  useEffect(() => { carregar(); }, [carregar]);
+
+  const abrirExtrato = async (id) => {
+    setErro(null); setUsuarioId(id);
+    try { setDetalhe(await api.painelSeiva(id)); } catch (e) { setErro(e.message); }
+  };
+
+  const ajustar = async (e) => {
+    e.preventDefault();
+    setErro(null); setSalvando(true);
+    try {
+      const r = await api.painelAjustarSeiva({ usuarioId, quantidade: Number(quantidade), motivo });
+      setDetalhe(atual => atual ? { ...atual, saldo: r.saldo, movimentos: [r.movimento, ...(atual.movimentos || [])] } : atual);
+      setQuantidade(''); setMotivo('');
+      await carregar();
+    } catch (err) { setErro(err.message); }
+    finally { setSalvando(false); }
+  };
+
+  if (!dados) return <Carga erro={erro} oQue="os saldos de Seiva" aoTentar={carregar} />;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 flex-wrap">
+        <Estatistica valor={dados.seivaCirculante} rotulo="Seiva em circulação" cor="#00ff64" />
+        <Estatistica valor={dados.usuarios.length} rotulo="contas com saldo" cor="#00e5ff" />
+      </div>
+      {erro && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{erro}</div>}
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        <Bloco tamanho="p" className="p-4">
+          <div className="font-heading font-bold text-sm mb-3">Saldos por usuário</div>
+          <div className="space-y-1.5 max-h-[430px] overflow-y-auto">
+            {dados.usuarios.map(u => (
+              <button type="button" key={u.id} onClick={() => abrirExtrato(u.id)}
+                className={'w-full text-left flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ' + (usuarioId === u.id ? 'bg-[#00ff6412]' : 'hover:bg-white/[.04]')}>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold truncate">{u.nome}</div>
+                  <div className="text-[10px] text-white/40 truncate">{u.email} · {u.plano}</div>
+                </div>
+                <span className="hud-tec text-[#00ff64]">{u.creditos} 🌿</span>
+              </button>
+            ))}
+          </div>
+        </Bloco>
+
+        <div className="space-y-4">
+          {!detalhe ? (
+            <Bloco tamanho="p" className="p-8 text-center text-sm text-white/45">Escolha uma pessoa para ver o extrato ou realizar um ajuste.</Bloco>
+          ) : (
+            <>
+              <Bloco tamanho="p" className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div><div className="font-heading font-bold">{detalhe.usuario.nome}</div><div className="text-[11px] text-white/45">{detalhe.usuario.email}</div></div>
+                  <Etiqueta cor="#00ff64">{detalhe.saldo} 🌿</Etiqueta>
+                </div>
+                <form onSubmit={ajustar} className="mt-4 pt-4 border-t border-white/8 space-y-3">
+                  <div className="text-xs text-white/55">Ajuste manual auditável. Use valor positivo para crédito e negativo para débito.</div>
+                  <div className="flex gap-2">
+                    <Campo required type="number" step="1" value={quantidade} onChange={e => setQuantidade(e.target.value)}
+                      className="w-32 px-3 py-2 text-sm" placeholder="+100" />
+                    <Campo required minLength={5} maxLength={280} value={motivo} onChange={e => setMotivo(e.target.value)}
+                      className="min-w-0 flex-1 px-3 py-2 text-sm" placeholder="Motivo obrigatório" />
+                  </div>
+                  <Botao type="submit" disabled={salvando || !quantidade || motivo.trim().length < 5} className="px-4 py-2 text-sm">
+                    {salvando ? 'Registrando…' : 'Registrar ajuste'}
+                  </Botao>
+                </form>
+              </Bloco>
+              <Bloco tamanho="p" className="overflow-hidden">
+                <div className="px-4 py-3 font-heading font-bold text-sm border-b border-white/8">Extrato</div>
+                {(detalhe.movimentos || []).length === 0 ? <div className="px-4 py-5 text-sm text-white/45">Sem movimentações registradas ainda.</div> :
+                  detalhe.movimentos.map(m => (
+                    <div key={m.id} className="px-4 py-3 border-b border-white/6 last:border-0 flex gap-3">
+                      <span className={m.quantidade > 0 ? 'text-[#00ff64] font-bold' : 'text-red-300 font-bold'}>{m.quantidade > 0 ? '+' : ''}{m.quantidade}</span>
+                      <div className="min-w-0 flex-1"><div className="text-xs text-white/80">{m.descricao}</div><div className="text-[10px] text-white/35">{new Date(m.em).toLocaleString('pt-BR')} · saldo {m.saldoApos}</div></div>
+                    </div>
+                  ))}
+              </Bloco>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Níveis de acesso (documentação viva da matriz de permissões) ───────────
 function Papeis({ contexto }) {
   return (
@@ -509,6 +611,7 @@ const ICONE_ACAO = {
   'painel.entrada': '🔓', 'painel.saida': '🔒', 'painel.senha_incorreta': '⚠️',
   'painel.acesso_negado': '⛔', 'usuario.criado': '➕', 'usuario.alterado': '✏️',
   'usuario.desativado': '🚫', 'vitrine.destaque': '★', 'vitrine.ocultacao': '👁️',
+  'seiva.ajuste': '🌿',
 };
 
 // O teto que o servidor guarda na trilha (ver sessaoPainel.js). Pedir menos

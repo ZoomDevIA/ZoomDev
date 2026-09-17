@@ -17,6 +17,7 @@ import { publicarSite, despublicarSite, sugerirSlug, urlPublica, leadsDe, PREFIX
 import { exigir } from '../auth.js';
 import { jaEmAndamento } from '../services/retomada.js';
 import { paraCliente } from '../services/erros.js';
+import { movimentarSeiva } from '../services/seiva.js';
 import { apagarAnexoProjeto, apagarProjetoSupabase, buscarProjetoSupabase, listarProjetosSupabase } from '../services/supabase.js';
 import JSZip from 'jszip';
 
@@ -162,7 +163,7 @@ projectsRouter.get('/:id/gerar-plano', async (req, res) => {
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
   // Cobrança com estorno automático se a geração falhar no QA (diferencial anti-Base44/Lovable)
-  req.user.creditos -= custo;
+  movimentarSeiva({ user: req.user, quantidade: -custo, tipo: 'geracao_plano', descricao: `Geração do plano: ${proj.nome}`, projetoId: proj.id });
   proj.geracao = { status: 'executando', iniciadaEm: new Date().toISOString(), agentes: {} };
   save();
   send('inicio', { custo, agentes: AGENTES.map(a => ({ id: a.id, nome: a.nome, emoji: a.emoji, papel: a.papel })) });
@@ -199,7 +200,7 @@ projectsRouter.get('/:id/gerar-plano', async (req, res) => {
     });
   } catch (e) {
     // ESTORNO: falha da IA não queima seiva do usuário
-    req.user.creditos += custo;
+    movimentarSeiva({ user: req.user, quantidade: custo, tipo: 'estorno_plano', descricao: `Estorno da geração do plano: ${proj.nome}`, projetoId: proj.id });
     proj.geracao.status = 'erro';
     proj.geracao.erro = e.message;
     save();
@@ -260,7 +261,7 @@ projectsRouter.post('/:id/missoes/:missaoId/concluir', (req, res) => {
 
   missao.concluida = true;
   missao.concluidaEm = new Date().toISOString();
-  req.user.creditos += config.credits.missionReward;
+  movimentarSeiva({ user: req.user, quantidade: config.credits.missionReward, tipo: 'recompensa_missao', descricao: `Missão concluída: ${missao.titulo}`, projetoId: proj.id });
   const gam = awardXP(req.user, 'missao_concluida', { projeto: proj.id, missao: missao.id });
 
   // Todas as principais concluídas → desbloqueia avanço para MVP
@@ -357,7 +358,7 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
-  req.user.creditos -= custo;
+  movimentarSeiva({ user: req.user, quantidade: -custo, tipo: 'construcao_mvp', descricao: `Construção do MVP: ${proj.nome}`, projetoId: proj.id });
   proj.mvp = { status: 'construindo', iniciadoEm: new Date().toISOString(), pecas: {} };
   save();
   // A direção de UX/UI aparece como primeira etapa: o fundador precisa ver
@@ -384,7 +385,7 @@ projectsRouter.get('/:id/mvp/construir', async (req, res) => {
     });
   } catch (e) {
     // Estorno: falha na construção não queima seiva
-    req.user.creditos += custo;
+    movimentarSeiva({ user: req.user, quantidade: custo, tipo: 'estorno_mvp', descricao: `Estorno da construção do MVP: ${proj.nome}`, projetoId: proj.id });
     proj.mvp = { status: 'erro', erro: e.message };
     save();
     const { status: _s, ...publico } = paraCliente(e, 'mvp');

@@ -169,6 +169,7 @@ export const api = {
   pagamentosPacotes: () => req('/pagamentos/pacotes'),
   pagamentosPlanos: () => req('/pagamentos/planos'),
   transacoes: () => req('/pagamentos/transacoes'),
+  extratoSeiva: (limite = 100) => req(`/pagamentos/extrato?limite=${limite}`),
   assinar: (planoId) => req('/pagamentos/assinar', { method: 'POST', body: JSON.stringify({ planoId }) }),
   comprarSeiva: (pacoteId) => req('/pagamentos/seiva', { method: 'POST', body: JSON.stringify({ pacoteId }) }),
   pixCarbono: (pedidoId) => req(`/pagamentos/carbono/${pedidoId}`, { method: 'POST' }),
@@ -220,6 +221,8 @@ export const api = {
   painelDestacar: (id, destacar) => req(`/painel/vitrine/${id}/destaque`, { method: 'POST', body: JSON.stringify({ destacar }) }),
   painelOcultar: (id, ocultar) => req(`/painel/vitrine/${id}/ocultar`, { method: 'POST', body: JSON.stringify({ ocultar }) }),
   painelAuditoria: (limite = 100) => req(`/painel/auditoria?limite=${limite}`),
+  painelSeiva: (usuarioId, limite = 100) => req(`/painel/seiva${usuarioId ? `?usuarioId=${encodeURIComponent(usuarioId)}&limite=${limite}` : ''}`),
+  painelAjustarSeiva: (body) => req('/painel/seiva/ajustes', { method: 'POST', body: JSON.stringify(body) }),
 
   // ── Conta: senha, perfil e direitos do titular (LGPD) ────────────────────
   pedirRecuperacao: (email) => req('/auth/recuperar', { method: 'POST', body: JSON.stringify({ email }) }),

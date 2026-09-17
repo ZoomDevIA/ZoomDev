@@ -11,6 +11,7 @@
 import crypto from 'node:crypto';
 import { store, save, id } from '../store.js';
 import { config } from '../config.js';
+import { movimentarSeiva } from './seiva.js';
 
 export const pagamentosConfig = {
   stripeAtivo: Boolean(process.env.STRIPE_SECRET_KEY),
@@ -210,10 +211,10 @@ export function confirmarTransacao(txId, { origem = 'manual' } = {}) {
 
   if (t.tipo === 'assinatura') {
     user.plano = t.planoId;
-    user.creditos += t.creditos || 0;
+    if (t.creditos > 0) movimentarSeiva({ user, quantidade: t.creditos, tipo: 'assinatura_credito', descricao: `Seiva do plano ${t.planoId}`, transacaoId: t.id, origem });
     user.assinatura = { plano: t.planoId, desde: t.pagoEm, transacaoId: t.id };
   } else if (t.tipo === 'credito') {
-    user.creditos += t.meta?.creditos || 0;
+    if (t.meta?.creditos > 0) movimentarSeiva({ user, quantidade: t.meta.creditos, tipo: 'compra_seiva', descricao: t.descricao, transacaoId: t.id, origem });
   } else if (t.tipo === 'carbono') {
     const pedido = store.carbonOrders[t.meta?.pedidoId];
     if (pedido) {

@@ -10,6 +10,7 @@ import {
 } from '../services/pagamentos.js';
 import { awardXP } from '../services/gamification.js';
 import { isAdmin } from '../auth.js';
+import { extratoSeiva } from '../services/seiva.js';
 
 export const pagamentosRouter = Router();
 
@@ -18,6 +19,11 @@ pagamentosRouter.get('/status', (_req, res) => res.json(statusPagamentos()));
 
 // Histórico do usuário
 pagamentosRouter.get('/transacoes', (req, res) => res.json(transacoesDoUsuario(req.user.id)));
+
+// Extrato do titular: saldo, créditos, débitos e estornos sem expor dados de terceiros.
+pagamentosRouter.get('/extrato', (req, res) => {
+  res.json({ saldo: req.user.creditos, movimentos: extratoSeiva(req.user.id, req.query.limite) });
+});
 
 pagamentosRouter.get('/transacoes/:id', (req, res) => {
   const t = transacoes()[req.params.id];

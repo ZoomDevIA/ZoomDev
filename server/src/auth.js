@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { store, save, id } from './store.js';
 import { config } from './config.js';
 import { newUserGamification } from './services/gamification.js';
+import { movimentarSeiva } from './services/seiva.js';
 import { PAPEIS, capacidadesDe, pode as podeCap } from './services/permissoes.js';
 import { criarUsuarioSupabaseAuth, identidadeSupabase } from './services/supabase.js';
 
@@ -44,10 +45,11 @@ export async function register({ email, password, nome }, aparelho) {
     papel: null,
     ativo: true,
     plano: 'free',
-    creditos: config.credits.initial,
+    creditos: 0,
     criadoEm: new Date().toISOString(),
     gamification: newUserGamification(),
   };
+  movimentarSeiva({ user: store.users[userId], quantidade: config.credits.initial, tipo: 'boas_vindas', descricao: 'Seiva de boas-vindas da conta', origem: 'cadastro' });
   save();
   return createSession(userId, aparelho);
 }
@@ -71,10 +73,11 @@ export function criarUsuario({ email, nome, senha, papel }) {
     papel,
     ativo: true,
     plano: 'free',
-    creditos: config.credits.initial,
+    creditos: 0,
     criadoEm: new Date().toISOString(),
     gamification: newUserGamification(),
   };
+  movimentarSeiva({ user: store.users[userId], quantidade: config.credits.initial, tipo: 'boas_vindas', descricao: 'Seiva inicial concedida ao criar acesso', origem: 'painel_admin' });
   save();
   return publicUser(store.users[userId]);
 }
@@ -114,10 +117,11 @@ export async function loginComGoogle({ email, nome, sub }, aparelho) {
     papel: null,
     ativo: true,
     plano: 'free',
-    creditos: config.credits.initial,
+    creditos: 0,
     criadoEm: new Date().toISOString(),
     gamification: newUserGamification(),
   };
+  movimentarSeiva({ user: store.users[userId], quantidade: config.credits.initial, tipo: 'boas_vindas', descricao: 'Seiva de boas-vindas da conta', origem: 'cadastro_google' });
   save();
   return createSession(userId, aparelho);
 }
@@ -367,11 +371,12 @@ export async function authMiddleware(req, res, next) {
           papel: null,
           ativo: true,
           plano: 'free',
-          creditos: config.credits.initial,
+          creditos: 0,
           criadoEm: new Date().toISOString(),
           gamification: newUserGamification(),
         };
         store.users[userId] = usuario;
+        movimentarSeiva({ user: usuario, quantidade: config.credits.initial, tipo: 'boas_vindas', descricao: 'Seiva de boas-vindas da conta', origem: 'supabase_auth' });
       } else if (usuario.supabaseAuthId !== identidade.id) {
         usuario.supabaseAuthId = identidade.id;
       }

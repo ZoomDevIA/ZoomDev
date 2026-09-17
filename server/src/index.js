@@ -25,6 +25,7 @@ import { painelRouter } from './routes/painel.js';
 import { contaRouter } from './routes/conta.js';
 import { destravarNaPartida } from './services/recuperacaoSenha.js';
 import { varrerInterrompidos } from './services/retomada.js';
+import { registrarSaldosLegados } from './services/seiva.js';
 import { studioRouter } from './routes/studio.js';
 import { pedirRedefinicao, redefinir } from './services/recuperacaoSenha.js';
 import { limitar } from './services/limite.js';
@@ -353,6 +354,9 @@ export const servidor = app.listen(config.port, async () => {
   // Destravamento de emergência: só faz alguma coisa se ZOOMDEV_RECUPERAR
   // estiver definida. Imprime um link de uso único no log e nada mais.
   await destravarNaPartida().catch(e => console.error('ZOOMDEV_RECUPERAR falhou:', e.message));
+  // Migra saldos que ja existiam antes do extrato, sem muda-los. Esta etapa
+  // acontece antes dos possiveis estornos de tarefas interrompidas.
+  if (registrarSaldosLegados()) save();
   // Nenhum trabalho longo sobrevive ao processo que o iniciou: o que ficou
   // pendurado numa queda anterior é encerrado e a seiva volta para quem pagou.
   varrerInterrompidos();

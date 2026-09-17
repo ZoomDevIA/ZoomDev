@@ -73,6 +73,7 @@ export default function Planos() {
   const [pacotes, setPacotes] = useState([]);
   const [status, setStatus] = useState(null);
   const [transacoes, setTransacoes] = useState([]);
+  const [extrato, setExtrato] = useState([]);
   const [pix, setPix] = useState(null);
   const [carregando, setCarregando] = useState(null);
   const [confirmando, setConfirmando] = useState(false);
@@ -84,6 +85,7 @@ export default function Planos() {
     api.pagamentosPacotes().then(setPacotes).catch(() => {});
     api.pagamentosStatus().then(setStatus).catch(() => {});
     api.transacoes().then(setTransacoes).catch(() => {});
+    api.extratoSeiva().then(r => setExtrato(r.movimentos || [])).catch(() => {});
   };
   useEffect(() => { carregar(); }, []);
 
@@ -142,6 +144,27 @@ export default function Planos() {
           <div className="font-heading text-xl font-bold mt-0.5 uppercase">{user.plano}</div>
         </div>
       </div>
+
+      <section>
+        <h2 className="font-heading text-lg font-bold mb-1">Extrato de Seiva</h2>
+        <p className="text-xs text-white/45 mb-3">Cada consumo, crédito e estorno fica registrado com o saldo após a movimentação.</p>
+        <div className="zd-card rounded-xl overflow-hidden">
+          {extrato.length === 0 ? (
+            <div className="px-4 py-5 text-sm text-white/45">Ainda não há movimentações registradas nesta conta.</div>
+          ) : extrato.map(m => (
+            <div key={m.id} className="flex items-center gap-3 px-4 py-3 border-b border-white/6 last:border-0">
+              <span className={m.quantidade > 0 ? 'text-[#00ff64] font-bold' : 'text-red-300 font-bold'}>
+                {m.quantidade > 0 ? '+' : ''}{m.quantidade}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm">{m.descricao}</div>
+                <div className="text-[10px] text-white/40">{new Date(m.em).toLocaleString('pt-BR')} · {m.tipo.replaceAll('_', ' ')}</div>
+              </div>
+              <div className="text-xs text-white/60">saldo {m.saldoApos}</div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <section>
         <h2 className="font-heading text-lg font-bold mb-3">Assinatura mensal</h2>

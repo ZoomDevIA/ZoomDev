@@ -25,6 +25,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { store, save } from '../store.js';
 import { config } from '../config.js';
+import { movimentarSeiva } from './seiva.js';
 import { publicar } from './barramento.js';
 
 /** Depois disto, um trabalho "em andamento" é considerado resto de queda. */
@@ -80,7 +81,10 @@ function encerrar(proj, tipo, motivo) {
 
   const user = store.users[proj.userId];
   const custo = t.custo();
-  if (user && custo > 0) user.creditos += custo;
+  if (user && custo > 0) movimentarSeiva({
+    user, quantidade: custo, tipo: 'estorno_interrompido',
+    descricao: `Estorno: ${t.nome} foi interrompida`, projetoId: proj.id, origem: 'recuperacao',
+  });
 
   proj[t.campo] = {
     status: 'interrompido',

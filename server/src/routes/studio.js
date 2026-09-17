@@ -31,6 +31,7 @@ import { limitar } from '../services/limite.js';
 import { lerConteudo, gravarConteudo, arquivosMvp, sincronizarConteudoDoSupabase } from '../services/conteudo.js';
 import { jaEmAndamento } from '../services/retomada.js';
 import { paraCliente } from '../services/erros.js';
+import { movimentarSeiva } from '../services/seiva.js';
 import { buscarProjetoSupabase, guardarAnexoProjeto, apagarAnexoProjeto, baixarAnexoProjeto } from '../services/supabase.js';
 
 export const studioRouter = Router();
@@ -68,7 +69,7 @@ function meuProjeto(req, res) {
   return proj;
 }
 
-function cobrar(user, quanto, oQue) {
+function cobrar(user, quanto, oQue, projetoId = null) {
   if (quanto <= 0) return;
   if (user.creditos < quanto) {
     throw Object.assign(
@@ -76,7 +77,7 @@ function cobrar(user, quanto, oQue) {
       { status: 402 },
     );
   }
-  user.creditos -= quanto;
+  movimentarSeiva({ user, quantidade: -quanto, tipo: 'consumo_studio', descricao: oQue, projetoId });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -102,7 +103,7 @@ studioRouter.post('/:id/anexo',
       const vaiTranscrever = ehAudio(req.file.originalname, req.file.mimetype)
         && modoTranscricao() === 'deepgram';
       if (vaiTranscrever && config.credits.transcricao > 0) {
-        cobrar(req.user, config.credits.transcricao, 'a transcrição de áudio');
+        cobrar(req.user, config.credits.transcricao, 'Transcrição de áudio anexado', proj.id);
         cobrado = config.credits.transcricao;
         save();
       }
@@ -129,7 +130,7 @@ studioRouter.post('/:id/anexo',
       // serviço de transcrição (401 da chave revogada, 402 sem crédito, 429,
       // 422 áudio ilegível) são todas nossas: o fundador não paga por nenhuma.
       if (cobrado > 0) {
-        req.user.creditos += cobrado;
+        movimentarSeiva({ user: req.user, quantidade: cobrado, tipo: 'estorno_transcricao', descricao: 'Estorno por falha ao transcrever anexo', projetoId: req.params.id });
         save();
       }
       next(e);
@@ -278,7 +279,7 @@ studioRouter.get('/:id/documento/gerar', async (req, res) => {
   const enviar = (evento, dados) => res.write(`event: ${evento}\ndata: ${JSON.stringify(dados)}\n\n`);
 
   // Cobra na entrada e estorna se falhar: o fundador não paga por erro nosso.
-  req.user.creditos -= custo;
+  movimentarSeiva({ user: req.user, quantidade: -custo, tipo: 'geracao_plano', descricao: `Geração do plano: ${proj.nome}`, projetoId: proj.id });
   proj.geracao = { status: 'executando', metodologia: 'zoomdev-1', iniciadaEm: new Date().toISOString() };
   save();
 
@@ -308,7 +309,7 @@ studioRouter.get('/:id/documento/gerar', async (req, res) => {
     let estornoParcial = 0;
     if (faltando.length) {
       estornoParcial = Math.round((custo * faltando.length) / TOTAL_BLOCOS_PLANO);
-      req.user.creditos += estornoParcial;
+      movimentarSeiva({ user: req.user, quantidade: estornoParcial, tipo: 'estorno_plano_parcial', descricao: `Estorno parcial do plano: ${proj.nome}`, projetoId: proj.id });
     }
 
     // O plano e o documento vão para o arquivo de conteúdo do projeto; o
@@ -351,7 +352,7 @@ studioRouter.get('/:id/documento/gerar', async (req, res) => {
     save();
     enviar('fim', { gamificacao, creditos: req.user.creditos, estornoParcial });
   } catch (e) {
-    req.user.creditos += custo;
+    movimentarSeiva({ user: req.user, quantidade: custo, tipo: 'estorno_plano', descricao: `Estorno por falha na geração: ${proj.nome}`, projetoId: proj.id });
     // O texto interno fica no registro do projeto (que só o dono e o admin
     // leem) e no log; o que viaja pelo fluxo de eventos passa pela régua.
     proj.geracao = { status: 'erro', erro: e.message };
@@ -431,7 +432,7 @@ studioRouter.post('/:id/conversa',
 
       const podeEditar = fase === 'ideacao' && typeof documento === 'string' && documento.length > 40;
       const custo = podeEditar ? config.credits.documentoRevisao : config.credits.studioTurno;
-      cobrar(req.user, custo, podeEditar ? 'uma revisão do documento' : 'uma rodada no console');
+      cobrar(req.user, custo, podeEditar ? 'Revisão do documento no Studio' : 'Rodada de conversa no Studio', proj.id);
       cobrado = custo;
       save();
 
@@ -501,7 +502,7 @@ studioRouter.post('/:id/conversa',
       // fundador pagava por uma resposta que nunca existiu. É o oposto da
       // política das rotas longas, e não havia razão para a diferença.
       if (cobrado > 0) {
-        req.user.creditos += cobrado;
+        movimentarSeiva({ user: req.user, quantidade: cobrado, tipo: 'estorno_studio', descricao: 'Estorno por falha no Studio', projetoId: proj.id });
         save();
       }
       next(e);

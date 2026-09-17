@@ -22,6 +22,7 @@ import {
   elevar, encerrar, estadoSessao, exigirElevacao, listarAuditoria, registrarAuditoria,
 } from '../services/sessaoPainel.js';
 import { listarParaCuradoria, alternarDestaque, alternarOculto } from '../services/vitrine.js';
+import { ajustarSeivaAdministrativo, extratoSeiva } from '../services/seiva.js';
 
 export const painelRouter = Router();
 
@@ -152,6 +153,35 @@ painelRouter.delete('/usuarios/:id', exigir('usuarios.gerenciar'), (req, res) =>
 });
 
 // ── Curadoria da vitrine ───────────────────────────────────────────────────
+painelRouter.get('/seiva', exigir('financeiro.ler'), (req, res) => {
+  const usuarioId = String(req.query.usuarioId || '');
+  if (usuarioId) {
+    const usuario = store.users[usuarioId];
+    if (!usuario) return res.status(404).json({ error: 'Usuário não encontrado.' });
+    return res.json({ usuario: usuarioParaPainel(usuario), saldo: usuario.creditos, movimentos: extratoSeiva(usuario.id, req.query.limite) });
+  }
+  const usuarios = Object.values(store.users)
+    .map(u => ({ ...usuarioParaPainel(u), creditos: u.creditos || 0 }))
+    .sort((a, b) => b.creditos - a.creditos || a.nome.localeCompare(b.nome));
+  res.json({ usuarios, seivaCirculante: usuarios.reduce((total, u) => total + u.creditos, 0) });
+});
+
+painelRouter.post('/seiva/ajustes', exigir('financeiro.ler'), (req, res, next) => {
+  try {
+    const usuario = store.users[req.body?.usuarioId];
+    if (!usuario) return res.status(404).json({ error: 'Usuário não encontrado.' });
+    const movimento = ajustarSeivaAdministrativo({
+      user: usuario, quantidade: req.body?.quantidade, motivo: req.body?.motivo, admin: req.user,
+    });
+    save();
+    req.auditar('seiva.ajuste', {
+      alvo: usuario.id,
+      detalhe: usuario.email + ': ' + (movimento.quantidade > 0 ? '+' : '') + movimento.quantidade + ' Seiva — ' + movimento.descricao,
+    });
+    res.json({ movimento, saldo: usuario.creditos, usuario: usuarioParaPainel(usuario) });
+  } catch (e) { next(e); }
+});
+
 painelRouter.get('/vitrine', exigir('comunidade.curar'), (_req, res) => {
   res.json(listarParaCuradoria());
 });

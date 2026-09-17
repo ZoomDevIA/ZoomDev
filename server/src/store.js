@@ -11,6 +11,7 @@ const empty = () => ({
   pic: null, picAgentes: null, nudges: {}, reports: {},
   radar: null, pulso: null, planosCompensacao: {},
   elenco: null, conselhos: {}, transacoes: {},
+  seivaExtrato: [],
   sessoesPainel: {}, auditoria: [], vitrine: null, recuperacoes: {},
   sites: {},
   eventos: [], evidencias: {},
@@ -99,6 +100,9 @@ export const store = {
   // Transações de pagamento (Stripe e PIX)
   get transacoes() { return db.transacoes; },
   set transacoes(v) { db.transacoes = v; },
+  // Extrato append-only de créditos, débitos e estornos de Seiva.
+  get seivaExtrato() { return db.seivaExtrato; },
+  set seivaExtrato(v) { db.seivaExtrato = v; },
   // Sessões elevadas do painel de administração (token curto por acesso)
   get sessoesPainel() { return db.sessoesPainel; },
   // Trilha de auditoria das ações administrativas (500 mais recentes)
