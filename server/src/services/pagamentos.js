@@ -26,6 +26,12 @@ export const pagamentosConfig = {
   demoLiberado: process.env.ZOOMDEV_PAGAMENTO_DEMO === '1',
 };
 
+const PRECO_STRIPE = {
+  pro: process.env.STRIPE_PRICE_PRO || '',
+  business: process.env.STRIPE_PRICE_BUSINESS || '',
+};
+const EVENTOS_STRIPE_MAX = 5_000;
+
 let stripeClient = null;
 async function stripe() {
   if (!pagamentosConfig.stripeAtivo) return null;
@@ -34,6 +40,56 @@ async function stripe() {
     stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
   }
   return stripeClient;
+}
+
+const dataStripe = (segundos) => segundos ? new Date(Number(segundos) * 1000).toISOString() : null;
+
+function planoPorPrecoStripe(priceId) {
+  return Object.entries(PRECO_STRIPE).find(([, idPreco]) => idPreco === priceId)?.[0] || null;
+}
+
+function encontrarUsuarioStripe({ customerId, subscriptionId, userId } = {}) {
+  if (userId && store.users[userId]) return store.users[userId];
+  return Object.values(store.users).find(user =>
+    (customerId && user.assinatura?.stripeCustomerId === customerId)
+    || (subscriptionId && user.assinatura?.stripeSubscriptionId === subscriptionId),
+  ) || null;
+}
+
+function atualizarAssinaturaStripe(user, subscription, extras = {}) {
+  if (!user || !subscription) return null;
+  const planoId = subscription.metadata?.planoId
+    || planoPorPrecoStripe(subscription.items?.data?.[0]?.price?.id)
+    || extras.planoId
+    || user.assinatura?.plano
+    || user.plano;
+  user.assinatura = {
+    ...(user.assinatura || {}),
+    plano: planoId,
+    stripeCustomerId: typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id,
+    stripeSubscriptionId: subscription.id,
+    status: subscription.status,
+    cancelarNoFimDoPeriodo: Boolean(subscription.cancel_at_period_end),
+    fimDoPeriodo: dataStripe(subscription.current_period_end),
+    atualizadaEm: new Date().toISOString(),
+    ...extras,
+  };
+  if (['active', 'trialing', 'past_due', 'unpaid'].includes(subscription.status) && planoId) user.plano = planoId;
+  return user.assinatura;
+}
+
+function registrarEventoStripe(evento) {
+  if (!evento?.id) return false;
+  if (!store.stripeEventos || typeof store.stripeEventos !== 'object') store.stripeEventos = {};
+  if (store.stripeEventos[evento.id]) return true;
+  store.stripeEventos[evento.id] = { tipo: evento.type, em: new Date().toISOString() };
+  const ids = Object.keys(store.stripeEventos);
+  if (ids.length > EVENTOS_STRIPE_MAX) {
+    ids.sort((a, b) => store.stripeEventos[a].em.localeCompare(store.stripeEventos[b].em))
+      .slice(0, ids.length - EVENTOS_STRIPE_MAX)
+      .forEach(idEvento => delete store.stripeEventos[idEvento]);
+  }
+  return false;
 }
 
 // ── PIX: BR Code (EMV) ────────────────────────────────────────────────────
@@ -121,6 +177,13 @@ export const transacoesDoUsuario = (userId) =>
  */
 export async function criarCheckoutPlano(user, planoId) {
   const plano = config.plans.find(p => p.id === planoId);
+  if (user.plano !== 'free' && user.assinatura && (
+    user.assinatura.stripeSubscriptionId
+    || user.assinatura.transacaoId
+    || ['active', 'trialing', 'past_due', 'unpaid'].includes(user.assinatura.status)
+  )) {
+    throw Object.assign(new Error('Você já possui uma assinatura. Use “Gerenciar assinatura” para trocar ou cancelar seu plano.'), { status: 409 });
+  }
   if (!plano) throw Object.assign(new Error('Plano não encontrado.'), { status: 404 });
   if (plano.preco <= 0) throw Object.assign(new Error('O plano Free não exige pagamento.'), { status: 400 });
 
@@ -140,11 +203,14 @@ export async function criarCheckoutPlano(user, planoId) {
     return registrar({ ...base, simulado: true, url: `${pagamentosConfig.urlBase}/planos?checkout=${txId}` });
   }
 
+  const priceId = PRECO_STRIPE[planoId];
   const sessao = await s.checkout.sessions.create({
     mode: 'subscription',
-    customer_email: user.email,
+    ...(user.assinatura?.stripeCustomerId
+      ? { customer: user.assinatura.stripeCustomerId }
+      : { customer_email: user.email }),
     client_reference_id: txId,
-    line_items: [{
+    line_items: [priceId ? { price: priceId, quantity: 1 } : {
       price_data: {
         currency: 'brl',
         recurring: { interval: 'month' },
@@ -159,6 +225,7 @@ export async function criarCheckoutPlano(user, planoId) {
     success_url: `${pagamentosConfig.urlBase}/planos?sucesso=${txId}`,
     cancel_url: `${pagamentosConfig.urlBase}/planos?cancelado=${txId}`,
     metadata: { txId, userId: user.id, planoId },
+    subscription_data: { metadata: { txId, userId: user.id, planoId } },
   });
 
   return registrar({ ...base, simulado: false, url: sessao.url, stripeSessionId: sessao.id });
@@ -196,10 +263,18 @@ export async function criarPix({ user, valor, descricao, tipo = 'credito', meta 
  * Confirma uma transação e aplica o efeito: crédito de seiva, upgrade de plano
  * ou liberação da compra de carbono. Idempotente.
  */
-export function confirmarTransacao(txId, { origem = 'manual' } = {}) {
+export function confirmarTransacao(txId, { origem = 'manual', stripeSubscription = null, stripeCustomerId = null } = {}) {
   const t = transacoes()[txId];
   if (!t) throw Object.assign(new Error('Transação não encontrada.'), { status: 404 });
-  if (t.status === 'pago') return { transacao: t, jaProcessada: true };
+  if (t.status === 'pago') {
+    const usuarioPago = store.users[t.userId];
+    if (usuarioPago && stripeSubscription) atualizarAssinaturaStripe(usuarioPago, stripeSubscription, { transacaoId: t.id });
+    else if (usuarioPago && stripeCustomerId && t.tipo === 'assinatura') {
+      usuarioPago.assinatura = { ...(usuarioPago.assinatura || {}), stripeCustomerId };
+    }
+    if (stripeSubscription || stripeCustomerId) save();
+    return { transacao: t, jaProcessada: true };
+  }
 
   const user = store.users[t.userId];
   if (!user) throw Object.assign(new Error('Usuário da transação não encontrado.'), { status: 404 });
@@ -212,7 +287,11 @@ export function confirmarTransacao(txId, { origem = 'manual' } = {}) {
   if (t.tipo === 'assinatura') {
     user.plano = t.planoId;
     if (t.creditos > 0) movimentarSeiva({ user, quantidade: t.creditos, tipo: 'assinatura_credito', descricao: `Seiva do plano ${t.planoId}`, transacaoId: t.id, origem });
-    user.assinatura = { plano: t.planoId, desde: t.pagoEm, transacaoId: t.id };
+    if (stripeSubscription) atualizarAssinaturaStripe(user, stripeSubscription, { desde: t.pagoEm, transacaoId: t.id });
+    else user.assinatura = {
+      ...(user.assinatura || {}), plano: t.planoId, desde: t.pagoEm, transacaoId: t.id,
+      ...(stripeCustomerId ? { stripeCustomerId } : {}), status: user.assinatura?.status || 'active',
+    };
   } else if (t.tipo === 'credito') {
     if (t.meta?.creditos > 0) movimentarSeiva({ user, quantidade: t.meta.creditos, tipo: 'compra_seiva', descricao: t.descricao, transacaoId: t.id, origem });
   } else if (t.tipo === 'carbono') {
@@ -230,26 +309,154 @@ export function confirmarTransacao(txId, { origem = 'manual' } = {}) {
 }
 
 /** Valida a assinatura do webhook do Stripe (quando configurado). */
+async function assinaturaDaSessao(s, sessao) {
+  const subscriptionId = typeof sessao.subscription === 'string' ? sessao.subscription : sessao.subscription?.id;
+  return subscriptionId ? s.subscriptions.retrieve(subscriptionId) : null;
+}
+
+// A Stripe vem migrando o campo de assinatura das faturas entre versões de
+// API. Aceitar as duas formas evita que um upgrade de versão interrompa a
+// renovação de Seiva.
+function assinaturaDaFatura(invoice) {
+  const subscription = invoice.subscription
+    || invoice.parent?.subscription_details?.subscription
+    || invoice.lines?.data?.[0]?.parent?.subscription_item_details?.subscription;
+  return typeof subscription === 'string' ? subscription : subscription?.id || null;
+}
+
+async function sincronizarAssinaturaStripe(s, subscription) {
+  const user = encontrarUsuarioStripe({
+    userId: subscription.metadata?.userId,
+    customerId: typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id,
+    subscriptionId: subscription.id,
+  });
+  if (!user) return null;
+  atualizarAssinaturaStripe(user, subscription);
+  if (['canceled', 'incomplete_expired'].includes(subscription.status)) {
+    user.plano = 'free';
+    user.assinatura.encerradaEm = new Date().toISOString();
+  }
+  save();
+  return user;
+}
+
+async function creditarRenovacaoStripe(s, invoice) {
+  // A primeira fatura e confirmada pelo checkout. So ciclos mensais recebem
+  // uma nova Seiva aqui, evitando duplicar o credito inicial.
+  if (invoice.billing_reason !== 'subscription_cycle') return { ignorado: 'fatura_inicial_ou_ajuste' };
+  const subscriptionId = assinaturaDaFatura(invoice);
+  if (!subscriptionId || !invoice.id) return { ignorado: 'fatura_sem_assinatura' };
+  if (Object.values(transacoes()).some(t => t.meta?.stripeInvoiceId === invoice.id)) return { jaProcessada: true };
+
+  const subscription = await s.subscriptions.retrieve(subscriptionId);
+  const user = await sincronizarAssinaturaStripe(s, subscription);
+  if (!user) return { ignorado: 'usuario_nao_encontrado' };
+  const planoId = subscription.metadata?.planoId || planoPorPrecoStripe(subscription.items?.data?.[0]?.price?.id) || user.plano;
+  const plano = config.plans.find(p => p.id === planoId);
+  if (!plano || plano.creditos <= 0) return { ignorado: 'plano_sem_creditos' };
+
+  const transacao = {
+    id: id('sub'), userId: user.id, tipo: 'renovacao_assinatura', planoId,
+    descricao: `Renovação mensal ${plano.nome}`,
+    valor: (invoice.amount_paid || 0) / 100, moeda: String(invoice.currency || 'brl').toUpperCase(),
+    creditos: plano.creditos, status: 'pago', metodo: 'stripe',
+    criadoEm: new Date().toISOString(), pagoEm: new Date().toISOString(),
+    origemConfirmacao: 'stripe_webhook', comprovante: invoice.payment_intent || invoice.id,
+    meta: { stripeInvoiceId: invoice.id, stripeSubscriptionId: subscriptionId },
+  };
+  transacoes()[transacao.id] = transacao;
+  movimentarSeiva({ user, quantidade: plano.creditos, tipo: 'renovacao_assinatura', descricao: `Seiva da renovação do plano ${plano.nome}`, transacaoId: transacao.id, origem: 'stripe_webhook' });
+  save();
+  return { transacao };
+}
+
+async function registrarFalhaDePagamento(s, invoice) {
+  const subscriptionId = assinaturaDaFatura(invoice);
+  const user = encontrarUsuarioStripe({ customerId: invoice.customer, subscriptionId });
+  if (!user) return { ignorado: 'usuario_nao_encontrado' };
+  const subscription = subscriptionId ? await s.subscriptions.retrieve(subscriptionId) : null;
+  if (subscription) atualizarAssinaturaStripe(user, subscription);
+  else user.assinatura = { ...(user.assinatura || {}), status: 'past_due' };
+  user.assinatura.ultimaFalhaEm = new Date().toISOString();
+  user.assinatura.ultimaFaturaStripeId = invoice.id;
+  save();
+  return { userId: user.id, status: user.assinatura.status };
+}
+
+async function reconciliarAssinaturaDoUsuario(s, user) {
+  if (user.assinatura?.stripeCustomerId) return user.assinatura;
+  const anterior = transacoesDoUsuario(user.id).find(t => t.metodo === 'stripe' && t.stripeSessionId);
+  if (!anterior) return null;
+  const sessao = await s.checkout.sessions.retrieve(anterior.stripeSessionId, { expand: ['subscription'] });
+  const subscription = await assinaturaDaSessao(s, sessao);
+  if (subscription) atualizarAssinaturaStripe(user, subscription, { transacaoId: anterior.id });
+  else if (sessao.customer) user.assinatura = { ...(user.assinatura || {}), stripeCustomerId: sessao.customer };
+  save();
+  return user.assinatura;
+}
+
+export async function criarPortalCliente(user) {
+  const s = await stripe();
+  if (!s) throw Object.assign(new Error('O portal do Stripe não está disponível enquanto os pagamentos estiverem em modo simulado.'), { status: 503, publico: true });
+  await reconciliarAssinaturaDoUsuario(s, user);
+  const customer = user.assinatura?.stripeCustomerId;
+  if (!customer) throw Object.assign(new Error('Não encontramos uma assinatura Stripe ativa para esta conta.'), { status: 404, publico: true });
+  const sessao = await s.billingPortal.sessions.create({ customer, return_url: `${pagamentosConfig.urlBase}/planos` });
+  return { url: sessao.url };
+}
+
+export function resumoAssinatura(user) {
+  const assinatura = user.assinatura || null;
+  if (!assinatura) return null;
+  return {
+    plano: assinatura.plano || user.plano, status: assinatura.status || 'active',
+    cancelarNoFimDoPeriodo: Boolean(assinatura.cancelarNoFimDoPeriodo),
+    fimDoPeriodo: assinatura.fimDoPeriodo || null,
+    portalDisponivel: Boolean(pagamentosConfig.stripeAtivo && assinatura.stripeCustomerId),
+  };
+}
+
+/** Valida a assinatura e processa o ciclo completo dos webhooks do Stripe. */
 export async function processarWebhookStripe(rawBody, assinatura) {
   const s = await stripe();
   const segredo = process.env.STRIPE_WEBHOOK_SECRET;
   if (!s || !segredo) throw Object.assign(new Error('Webhook do Stripe não configurado.'), { status: 503, publico: true });
 
   const evento = s.webhooks.constructEvent(rawBody, assinatura, segredo);
+  if (store.stripeEventos?.[evento.id]) return { jaProcessado: true, evento: evento.type };
+  let resultado;
   if (evento.type === 'checkout.session.completed') {
-    const txId = evento.data.object.client_reference_id || evento.data.object.metadata?.txId;
-    if (txId) return confirmarTransacao(txId, { origem: 'stripe_webhook' });
+    const sessao = evento.data.object;
+    const txId = sessao.client_reference_id || sessao.metadata?.txId;
+    const subscription = await assinaturaDaSessao(s, sessao);
+    resultado = txId
+      ? confirmarTransacao(txId, { origem: 'stripe_webhook', stripeSubscription: subscription, stripeCustomerId: sessao.customer })
+      : { ignorado: 'checkout_sem_transacao' };
+  } else if (evento.type === 'invoice.paid' || evento.type === 'invoice.payment_succeeded') {
+    resultado = await creditarRenovacaoStripe(s, evento.data.object);
+  } else if (evento.type === 'invoice.payment_failed') {
+    resultado = await registrarFalhaDePagamento(s, evento.data.object);
+  } else if (evento.type === 'customer.subscription.created' || evento.type === 'customer.subscription.updated' || evento.type === 'customer.subscription.deleted') {
+    const user = await sincronizarAssinaturaStripe(s, evento.data.object);
+    resultado = user ? { userId: user.id, status: user.assinatura.status } : { ignorado: 'usuario_nao_encontrado' };
+  } else {
+    resultado = { ignorado: evento.type };
   }
-  return { ignorado: evento.type };
+  registrarEventoStripe(evento);
+  save();
+  return { evento: evento.type, ...resultado };
 }
 
 /** Estado da integração, para o painel de configurações. */
 export function statusPagamentos() {
+  const chaveStripe = process.env.STRIPE_SECRET_KEY || '';
   return {
     stripe: {
       ativo: pagamentosConfig.stripeAtivo,
-      modo: pagamentosConfig.stripeAtivo ? 'produção' : 'simulado',
+      modo: !pagamentosConfig.stripeAtivo ? 'simulado' : chaveStripe.startsWith('sk_test_') ? 'teste' : 'produção',
       webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
+      portal: pagamentosConfig.stripeAtivo,
+      precosRecorrentes: Boolean(PRECO_STRIPE.pro && PRECO_STRIPE.business),
       comoAtivar: 'Defina STRIPE_SECRET_KEY e STRIPE_WEBHOOK_SECRET no ambiente.',
     },
     pix: {

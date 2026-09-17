@@ -10,7 +10,7 @@ const empty = () => ({
   users: {}, projects: {}, sessions: {}, carbonOrders: {},
   pic: null, picAgentes: null, nudges: {}, reports: {},
   radar: null, pulso: null, planosCompensacao: {},
-  elenco: null, conselhos: {}, transacoes: {},
+  elenco: null, conselhos: {}, transacoes: {}, stripeEventos: {},
   seivaExtrato: [],
   sessoesPainel: {}, auditoria: [], vitrine: null, recuperacoes: {},
   sites: {},
@@ -100,6 +100,10 @@ export const store = {
   // Transações de pagamento (Stripe e PIX)
   get transacoes() { return db.transacoes; },
   set transacoes(v) { db.transacoes = v; },
+  // IDs de webhooks já aplicados. Impede que uma nova entrega do Stripe
+  // conceda crédito recorrente duas vezes.
+  get stripeEventos() { return db.stripeEventos; },
+  set stripeEventos(v) { db.stripeEventos = v; },
   // Extrato append-only de créditos, débitos e estornos de Seiva.
   get seivaExtrato() { return db.seivaExtrato; },
   set seivaExtrato(v) { db.seivaExtrato = v; },

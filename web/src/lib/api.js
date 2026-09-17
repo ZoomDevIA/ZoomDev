@@ -171,6 +171,7 @@ export const api = {
   transacoes: () => req('/pagamentos/transacoes'),
   extratoSeiva: (limite = 100) => req(`/pagamentos/extrato?limite=${limite}`),
   assinar: (planoId) => req('/pagamentos/assinar', { method: 'POST', body: JSON.stringify({ planoId }) }),
+  portalAssinatura: () => req('/pagamentos/portal', { method: 'POST' }),
   comprarSeiva: (pacoteId) => req('/pagamentos/seiva', { method: 'POST', body: JSON.stringify({ pacoteId }) }),
   pixCarbono: (pedidoId) => req(`/pagamentos/carbono/${pedidoId}`, { method: 'POST' }),
   confirmarPagamento: (txId) => req(`/pagamentos/transacoes/${txId}/confirmar`, { method: 'POST' }),

@@ -7,6 +7,7 @@ import { config } from '../config.js';
 import {
   criarCheckoutPlano, criarPix, confirmarTransacao,
   transacoesDoUsuario, transacoes, statusPagamentos, pagamentosConfig,
+  criarPortalCliente, resumoAssinatura,
 } from '../services/pagamentos.js';
 import { awardXP } from '../services/gamification.js';
 import { isAdmin } from '../auth.js';
@@ -15,7 +16,7 @@ import { extratoSeiva } from '../services/seiva.js';
 export const pagamentosRouter = Router();
 
 // Estado da integração (o que está em produção e o que está simulado)
-pagamentosRouter.get('/status', (_req, res) => res.json(statusPagamentos()));
+pagamentosRouter.get('/status', (req, res) => res.json({ ...statusPagamentos(), assinatura: resumoAssinatura(req.user) }));
 
 // Histórico do usuário
 pagamentosRouter.get('/transacoes', (req, res) => res.json(transacoesDoUsuario(req.user.id)));
@@ -36,6 +37,14 @@ pagamentosRouter.post('/assinar', async (req, res, next) => {
   try {
     const t = await criarCheckoutPlano(req.user, req.body?.planoId);
     res.json(t);
+  } catch (e) { next(e); }
+});
+
+// O Stripe hospeda troca de plano, cartão, faturas e cancelamento. A URL é
+// efêmera e sempre é criada no servidor para o cliente autenticado correto.
+pagamentosRouter.post('/portal', async (req, res, next) => {
+  try {
+    res.json(await criarPortalCliente(req.user));
   } catch (e) { next(e); }
 });
 

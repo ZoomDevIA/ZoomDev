@@ -102,6 +102,15 @@ export default function Planos() {
     finally { setCarregando(null); }
   };
 
+  const gerenciarAssinatura = async () => {
+    setErro(null); setAviso(null); setCarregando('portal');
+    try {
+      const r = await api.portalAssinatura();
+      if (r.url) window.location.assign(r.url);
+    } catch (e) { setErro(e.message); }
+    finally { setCarregando(null); }
+  };
+
   const comprarSeiva = async (pacoteId) => {
     setErro(null); setAviso(null); setCarregando(pacoteId);
     try { setPix(await api.comprarSeiva(pacoteId)); }
@@ -145,6 +154,25 @@ export default function Planos() {
         </div>
       </div>
 
+      {status?.stripe?.ativo && user.plano !== 'free' && (
+        <div className="zd-card rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div className="font-semibold text-sm">Gerencie sua assinatura pelo Stripe</div>
+            <div className="text-xs text-white/45 mt-1">
+              {['past_due', 'unpaid'].includes(status.assinatura?.status)
+                ? 'Há uma falha de pagamento. Atualize seu método de cobrança para manter o plano ativo.'
+                : status.assinatura?.cancelarNoFimDoPeriodo
+                ? `Cancelamento agendado${status.assinatura?.fimDoPeriodo ? ` para ${new Date(status.assinatura.fimDoPeriodo).toLocaleDateString('pt-BR')}` : ''}.`
+                : 'Troque de plano, atualize o cartão, consulte faturas ou cancele sem fidelidade.'}
+            </div>
+          </div>
+          <button onClick={gerenciarAssinatura} disabled={carregando === 'portal'}
+            className="rounded-lg border border-[#00c8ff55] text-[#00c8ff] hover:bg-[#00c8ff12] transition-colors px-4 py-2.5 text-sm font-semibold">
+            {carregando === 'portal' ? 'Abrindo…' : 'Gerenciar assinatura'}
+          </button>
+        </div>
+      )}
+
       <section>
         <h2 className="font-heading text-lg font-bold mb-1">Extrato de Seiva</h2>
         <p className="text-xs text-white/45 mb-3">Cada consumo, crédito e estorno fica registrado com o saldo após a movimentação.</p>
@@ -184,6 +212,11 @@ export default function Planos() {
                 <div className="rounded-lg border border-white/15 text-white/50 py-2.5 text-sm text-center mt-4">Plano atual</div>
               ) : p.preco === 0 ? (
                 <div className="rounded-lg border border-white/10 text-white/30 py-2.5 text-sm text-center mt-4">Incluído</div>
+              ) : user.plano !== 'free' && user.assinatura && status?.stripe?.ativo ? (
+                <button onClick={gerenciarAssinatura} disabled={carregando === 'portal'}
+                  className="rounded-lg border border-white/15 text-white/75 hover:bg-white/5 transition-colors py-2.5 text-sm font-semibold mt-4">
+                  {carregando === 'portal' ? 'Abrindo…' : 'Trocar no Stripe'}
+                </button>
               ) : (
                 <button onClick={() => assinar(p.id)} disabled={carregando === p.id}
                   className={`rounded-lg py-2.5 text-sm font-semibold mt-4 ${p.id === 'pro' ? 'zd-gradient-btn' : 'border border-white/15 text-white/75 hover:bg-white/5 transition-colors'}`}>
@@ -244,6 +277,7 @@ export default function Planos() {
           <div className="font-bold text-white/60 uppercase text-[10px] tracking-wider mb-1.5">Integração de pagamentos</div>
           <div>💳 Stripe: <b className={status.stripe.ativo ? 'zd-green' : 'text-white/50'}>{status.stripe.modo}</b>
             {!status.stripe.ativo && `: ${status.stripe.comoAtivar}`}</div>
+          {status.stripe.ativo && !status.stripe.precosRecorrentes && <div className="text-[#ffd700]">Configure STRIPE_PRICE_PRO e STRIPE_PRICE_BUSINESS para permitir trocas de plano no Portal.</div>}
           <div>⚡ PIX: <b className={status.pix.ativo ? 'zd-green' : 'text-white/50'}>{status.pix.modo}</b>
             {!status.pix.ativo && `: ${status.pix.comoAtivar}`}</div>
           <div className="text-white/30 pt-1">O BR Code do PIX já é gerado no padrão do Banco Central, com CRC16 válido.</div>
