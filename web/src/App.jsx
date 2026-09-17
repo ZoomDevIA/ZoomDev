@@ -1,5 +1,5 @@
 import React, { createContext, lazy, Suspense, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { api, getToken, setToken } from './lib/api.js';
 import { supabase, pareceJwt } from './lib/supabase.js';
 import { aplicar as aplicarTema, gravarLocal as gravarTema } from './lib/tema.js';
@@ -61,6 +61,7 @@ export const UserContext = createContext(null);
 export const useUser = () => useContext(UserContext);
 
 export default function App() {
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [carregando, setCarregando] = useState(Boolean(getToken()));
   const [toasts, setToasts] = useState([]);
@@ -155,6 +156,16 @@ export default function App() {
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 5200);
   }, []);
 
+  const encerrarAposRedefinicao = useCallback(async () => {
+    // Remove tanto o token que a API recebe quanto a sessão persistida pelo
+    // Supabase. O signOut local basta: as demais sessões já são encerradas no
+    // servidor ao redefinir a senha.
+    setToken(null);
+    setUser(null);
+    setCarregando(false);
+    if (supabase) await supabase.auth.signOut({ scope: 'local' });
+  }, []);
+
   // Celebra eventos de gamificação vindos da API
   const celebrar = useCallback((gam) => {
     const lista = Array.isArray(gam) ? gam : [gam];
@@ -184,10 +195,14 @@ export default function App() {
         {/* A cortina fica no mesmo lugar da árvore o tempo todo, para que a
             chegada do perfil não reinicie a sequência do zero. Ela sai quando
             a partida termina E o perfil já chegou. */}
-        {(ignicao || carregando) && (
+        {location.pathname !== '/redefinir' && (ignicao || carregando) && (
           <Ignicao nome={user?.nome?.split(' ')[0]} onFim={() => setIgnicao(false)} />
         )}
-        {carregando ? null : !user ? (
+        {location.pathname === '/redefinir' ? (
+          /* Recuperação é pública mesmo se o link for aberto em uma aba que
+              ainda tenha uma sessão ativa. */
+          <Routes><Route path="/redefinir" element={<Redefinir onConcluiu={encerrarAposRedefinicao} />} /></Routes>
+        ) : carregando ? null : !user ? (
           /* Visitante: a home é pública, escreve a ideia primeiro, cria conta depois. */
           <Routes>
             <Route path="/" element={<Home />} />

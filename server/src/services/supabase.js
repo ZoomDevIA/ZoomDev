@@ -328,6 +328,33 @@ export async function criarUsuarioSupabaseAuth({ email, password, nome, provedor
   return corpo.id;
 }
 
+/**
+ * Mantém a senha do Supabase Auth igual à senha que a ZoomDev guarda como
+ * hash. Sem isso, a recuperação parecia funcionar, mas o próximo login pelo
+ * Supabase ainda aceitava a senha antiga.
+ */
+export async function atualizarSenhaSupabaseAuth(authUserId, password) {
+  if (!supabaseConfigurado() || !authUserId) return { ignorado: true };
+  const resposta = await fetch(`${config.supabase.url}/auth/v1/admin/users/${encodeURIComponent(authUserId)}`, {
+    method: 'PUT',
+    headers: {
+      apikey: config.supabase.serviceRoleKey,
+      Authorization: `Bearer ${config.supabase.serviceRoleKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ password }),
+  });
+  if (!resposta.ok) {
+    console.error(`Supabase Auth: não foi possível atualizar a senha (HTTP ${resposta.status}).`);
+    throw Object.assign(new Error('Não foi possível atualizar a senha de acesso. Tente novamente em instantes.'), {
+      status: 503,
+      code: 'SUPABASE_SENHA_FALHOU',
+      publico: true,
+    });
+  }
+  return { ok: true };
+}
+
 /** Confere o access token no Supabase antes de confiar na identidade. */
 export async function identidadeSupabase(accessToken) {
   if (!supabaseConfigurado() || !accessToken) return null;

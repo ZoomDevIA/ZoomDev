@@ -12,7 +12,7 @@ import { Painel, Botao, Campo, Rotulo } from '../components/hud/index.jsx';
 // a conta e não precisa saber: o servidor resolve isso pelo token.
 // ═══════════════════════════════════════════════════════════════════════════
 
-export default function Redefinir() {
+export default function Redefinir({ onConcluiu }) {
   const [params] = useSearchParams();
   const nav = useNavigate();
   const token = params.get('token') || '';
@@ -33,6 +33,10 @@ export default function Redefinir() {
     setErro(null); setEnviando(true);
     try {
       await api.redefinirSenha({ token, senha });
+      // O link pode ter sido aberto no mesmo navegador já autenticado. A senha
+      // nova só vale depois de uma entrada deliberada, nunca por reaproveitar
+      // a sessão anterior.
+      await onConcluiu?.();
       setPronto(true);
       setTimeout(() => nav('/entrar'), 2600);
     } catch (err) {

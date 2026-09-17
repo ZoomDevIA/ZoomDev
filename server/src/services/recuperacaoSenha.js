@@ -17,6 +17,7 @@ import crypto from 'node:crypto';
 import { store, save } from '../store.js';
 import { hashSenha, encerrarSessoesDe } from '../auth.js';
 import { enviar, modeloRecuperacao, modeloSenhaAlterada, modoEmail } from './email.js';
+import { atualizarSenhaSupabaseAuth } from './supabase.js';
 
 const VALIDADE_MIN = 30;
 const MAX_PEDIDOS_HORA = 3;
@@ -173,6 +174,9 @@ export async function redefinir({ token, senha }) {
     throw Object.assign(new Error('Conta não encontrada.'), { status: 404 });
   }
 
+  // Atualiza primeiro o provedor que emite o JWT. Assim não existe uma janela
+  // em que o navegador saia da sessão, mas a senha nova não serve para entrar.
+  await atualizarSenhaSupabaseAuth(user.supabaseAuthId, String(senha));
   user.passwordHash = hashSenha(String(senha));
   delete store.recuperacoes[id];
   encerrarSessoesDe(user.id);
@@ -195,6 +199,7 @@ export async function trocarSenha(user, { atual, nova }) {
   if (String(nova) === String(atual)) {
     throw Object.assign(new Error('A nova senha precisa ser diferente da atual.'), { status: 400 });
   }
+  await atualizarSenhaSupabaseAuth(user.supabaseAuthId, String(nova));
   user.passwordHash = hashSenha(String(nova));
   encerrarSessoesDe(user.id);
   save();
