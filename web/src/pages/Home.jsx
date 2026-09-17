@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api, getToken } from '../lib/api.js';
+import { api } from '../lib/api.js';
 import { APP_URL, CHAVE_RASCUNHO, emVitrine } from '../lib/dominio.js';
 import { useUser } from '../App.jsx';
 import ModuloSwitch from '../components/ModuloSwitch.jsx';
@@ -67,7 +67,11 @@ export default function Home() {
   const nav = useNavigate();
   const ctx = useUser();
   const user = ctx?.user || null;
-  const logado = Boolean(user && getToken());
+  // App só entrega `user` depois de validar a sessão. Exigir também o token
+  // do localStorage criava um estado impossível após uma restauração parcial:
+  // o Layout entendia que a pessoa estava logada, mas esta página se desenhava
+  // como visitante dentro dele, deslocando toda a home pela largura do menu.
+  const logado = Boolean(user);
 
   const [dados, setDados] = useState(null);
   const [descricao, setDescricao] = useState(() => sessionStorage.getItem(RASCUNHO) || '');
