@@ -76,6 +76,7 @@ const MENU = [
     ],
   },
   { to: '/configuracoes', icone: 'engrenagem', label: 'Configurações' },
+  { to: '/planos', icone: 'moeda', label: 'Planos' },
 ];
 
 const GRUPOS_PADRAO = MENU.filter(m => m.grupo).map(m => m.to);
