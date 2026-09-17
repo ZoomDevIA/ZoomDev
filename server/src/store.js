@@ -71,6 +71,46 @@ export function salvarAgoraSePendente() {
   return gravarAgora();
 }
 
+/**
+ * Restaura apenas a economia do espelho Postgres. Não toca em projetos ou
+ * perfis fora de plano/créditos e nunca substitui o JSON por uma base vazia.
+ */
+export function hidratarEconomiaSupabase(economia) {
+  if (!economia || typeof economia !== 'object') return false;
+  const transacoes = Array.isArray(economia.transacoes) ? economia.transacoes.filter(t => t?.id) : [];
+  const movimentos = Array.isArray(economia.seivaExtrato) ? economia.seivaExtrato.filter(m => m?.id) : [];
+  const eventos = economia.stripeEventos && typeof economia.stripeEventos === 'object' ? economia.stripeEventos : {};
+  const assinaturas = Array.isArray(economia.assinaturas) ? economia.assinaturas : [];
+  if (!transacoes.length && !movimentos.length && !Object.keys(eventos).length && !assinaturas.length) return false;
+
+  if (transacoes.length) db.transacoes = Object.fromEntries(transacoes.map(t => [t.id, t]));
+  if (movimentos.length) db.seivaExtrato = movimentos;
+  if (Object.keys(eventos).length) db.stripeEventos = eventos;
+
+  for (const assinatura of assinaturas) {
+    const user = db.users[assinatura.user_id];
+    if (!user) continue;
+    user.plano = assinatura.plano_id || user.plano;
+    user.assinatura = assinatura.dados && typeof assinatura.dados === 'object'
+      ? assinatura.dados
+      : {
+        plano: assinatura.plano_id, status: assinatura.status,
+        stripeCustomerId: assinatura.stripe_customer_id,
+        stripeSubscriptionId: assinatura.stripe_subscription_id,
+        cancelarNoFimDoPeriodo: assinatura.cancelar_no_fim_do_periodo,
+        fimDoPeriodo: assinatura.fim_do_periodo,
+      };
+  }
+  // O primeiro movimento de cada titular é o mais recente, pois o ledger é
+  // gravado em ordem decrescente. Ele é a fonte do saldo, não uma soma sujeita
+  // a arredondamentos ou a eventos repetidos.
+  for (const movimento of movimentos) {
+    const user = db.users[movimento.userId];
+    if (user && Number.isInteger(movimento.saldoApos)) user.creditos = movimento.saldoApos;
+  }
+  return true;
+}
+
 export const store = {
   get users() { return db.users; },
   get projects() { return db.projects; },

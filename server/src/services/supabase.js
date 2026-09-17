@@ -106,6 +106,107 @@ function projetoDaLinha(linha) {
   };
 }
 
+function paraTransacao(t, agora) {
+  return {
+    id: t.id, user_id: t.userId, tipo: t.tipo || 'outro', plano_id: t.planoId || null,
+    descricao: t.descricao || 'Transação ZoomDev', valor: Number(t.valor || 0), moeda: t.moeda || 'BRL',
+    creditos: Number(t.creditos || t.meta?.creditos || 0), status: t.status || 'pendente', metodo: t.metodo || 'interno',
+    stripe_session_id: t.stripeSessionId || null, stripe_invoice_id: t.meta?.stripeInvoiceId || null,
+    stripe_subscription_id: t.meta?.stripeSubscriptionId || null, dados: t,
+    criado_em: t.criadoEm || agora, pago_em: t.pagoEm || null, cancelado_em: t.canceladoEm || null, atualizado_em: agora,
+  };
+}
+
+function paraMovimentoSeiva(m, agora) {
+  return {
+    id: m.id, user_id: m.userId, tipo: m.tipo || 'outro', quantidade: Number(m.quantidade),
+    saldo_apos: Number(m.saldoApos), descricao: m.descricao || 'Movimentação de Seiva',
+    projeto_id: m.projetoId || null, transacao_id: m.transacaoId || null, origem: m.origem || 'sistema',
+    dados: m, ocorrido_em: m.em || agora,
+  };
+}
+
+function paraAssinatura(user, agora) {
+  const assinatura = user.assinatura;
+  if (!assinatura || !user?.id) return null;
+  return {
+    user_id: user.id, plano_id: assinatura.plano || user.plano || 'free', status: assinatura.status || 'active',
+    stripe_customer_id: assinatura.stripeCustomerId || null, stripe_subscription_id: assinatura.stripeSubscriptionId || null,
+    cancelar_no_fim_do_periodo: Boolean(assinatura.cancelarNoFimDoPeriodo),
+    fim_do_periodo: assinatura.fimDoPeriodo || null, iniciada_em: assinatura.desde || null,
+    encerrada_em: assinatura.encerradaEm || null, dados: assinatura, atualizado_em: agora,
+  };
+}
+
+async function upsertEmLotes(tabela, linhas, conflito = 'id') {
+  const TAMANHO_LOTE = 250;
+  for (let inicio = 0; inicio < linhas.length; inicio += TAMANHO_LOTE) {
+    const resposta = await supabaseFetch(`/${tabela}?on_conflict=${conflito}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(linhas.slice(inicio, inicio + TAMANHO_LOTE)),
+    });
+    if (!resposta.ok) throw Object.assign(new Error(`Supabase ${tabela}: HTTP ${resposta.status}`), { status: resposta.status, tabela });
+  }
+  return linhas.length;
+}
+
+/** Espelha os registros financeiros append-only no Postgres em lotes. */
+async function espelharEconomia({ users = {}, transacoes = {}, seivaExtrato = [], stripeEventos = {} }, agora) {
+  const movimentos = Array.isArray(seivaExtrato) ? seivaExtrato.filter(m => m?.id && m?.userId).map(m => paraMovimentoSeiva(m, agora)) : [];
+  const compras = Object.values(transacoes).filter(t => t?.id && t?.userId).map(t => paraTransacao(t, agora));
+  const assinaturas = Object.values(users).map(u => paraAssinatura(u, agora)).filter(Boolean);
+  const eventos = Object.entries(stripeEventos || {}).map(([id, e]) => ({ id, tipo: e?.tipo || 'evento_desconhecido', recebido_em: e?.em || agora }));
+  await upsertEmLotes('zoomdev_payment_transactions', compras);
+  await upsertEmLotes('zoomdev_seiva_ledger', movimentos);
+  await upsertEmLotes('zoomdev_subscriptions', assinaturas, 'user_id');
+  await upsertEmLotes('zoomdev_stripe_events', eventos);
+  return { transacoes: compras.length, movimentos: movimentos.length, assinaturas: assinaturas.length, eventos: eventos.length };
+}
+
+async function lerLinhasFinanceiras(tabela, select, ordem) {
+  const tamanho = 1_000;
+  const limite = 20_000;
+  const linhas = [];
+  for (let inicio = 0; inicio < limite; inicio += tamanho) {
+    const resposta = await supabaseFetch(`/${tabela}?select=${select}&order=${ordem}&limit=${tamanho}&offset=${inicio}`);
+    if (!resposta.ok) return null;
+    const lote = await resposta.json();
+    if (!Array.isArray(lote)) return null;
+    linhas.push(...lote);
+    if (lote.length < tamanho) break;
+  }
+  return linhas;
+}
+
+/**
+ * Recupera o espelho financeiro ao iniciar. Se as tabelas ainda não existem
+ * (migration pendente) ou estão vazias, devolve null e o JSON permanece como
+ * fallback sem apagar nenhum registro local.
+ */
+export async function carregarEconomiaSupabase() {
+  if (!supabaseConfigurado()) return null;
+  try {
+    const [transacoes, movimentos, assinaturas, eventos] = await Promise.all([
+      lerLinhasFinanceiras('zoomdev_payment_transactions', 'dados', 'criado_em.desc'),
+      lerLinhasFinanceiras('zoomdev_seiva_ledger', 'dados', 'ocorrido_em.desc'),
+      lerLinhasFinanceiras('zoomdev_subscriptions', 'user_id,plano_id,status,stripe_customer_id,stripe_subscription_id,cancelar_no_fim_do_periodo,fim_do_periodo,iniciada_em,encerrada_em,dados', 'atualizado_em.desc'),
+      lerLinhasFinanceiras('zoomdev_stripe_events', 'id,tipo,recebido_em', 'recebido_em.desc'),
+    ]);
+    if (!transacoes || !movimentos || !assinaturas || !eventos) return null;
+    if (!transacoes.length && !movimentos.length && !assinaturas.length && !eventos.length) return null;
+    return {
+      transacoes: transacoes.map(l => l.dados).filter(d => d?.id),
+      seivaExtrato: movimentos.map(l => l.dados).filter(d => d?.id),
+      assinaturas,
+      stripeEventos: Object.fromEntries(eventos.map(e => [e.id, { tipo: e.tipo, em: e.recebido_em }])),
+    };
+  } catch (e) {
+    console.error('supabase: não foi possível recuperar a economia:', e.message);
+    return null;
+  }
+}
+
 /** Leitura principal dos projetos; `null` significa indisponível, não vazio. */
 export async function listarProjetosSupabase(userId) {
   if (!supabaseConfigurado()) return null;
@@ -146,7 +247,7 @@ export async function lerConteudoProjetoSupabase(projectId) {
 }
 
 /** Espelho transitório: JSON segue como backup enquanto cada rota é migrada. */
-export async function espelharUsuariosProjetos({ users = {}, projects = {} }) {
+export async function espelharUsuariosProjetos({ users = {}, projects = {}, transacoes = {}, seivaExtrato = [], stripeEventos = {} }) {
   if (!supabaseConfigurado()) return { ignorado: true };
   const agora = new Date().toISOString();
   const upsert = async (tabela, linhas) => {
@@ -194,7 +295,9 @@ export async function espelharUsuariosProjetos({ users = {}, projects = {} }) {
     usuariosEspelhados = await upsert('zoomdev_users', usuarios);
   }
 
-  return { usuarios: usuariosEspelhados, projetos: await upsert('zoomdev_projects', projetos) };
+  const projetosEspelhados = await upsert('zoomdev_projects', projetos);
+  const economia = await espelharEconomia({ users, transacoes, seivaExtrato, stripeEventos }, agora);
+  return { usuarios: usuariosEspelhados, projetos: projetosEspelhados, economia };
 }
 /** Cria a identidade no Supabase Auth para contas novas; a sessão legada continua ativa durante a transição. */
 export async function criarUsuarioSupabaseAuth({ email, password, nome, provedor = 'senha' }) {

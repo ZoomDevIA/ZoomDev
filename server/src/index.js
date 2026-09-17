@@ -9,7 +9,7 @@ import { migrarConteudo } from './services/conteudo.js';
 import { siteDoSlug, montarPagina, registrarLead, registrarVisita, paginaObrigado, esc as escaparHtml, PREFIXO } from './services/publicacao.js';
 import { register, login, loginComGoogle, authMiddleware, adminMiddleware, publicUser, rotularAparelho } from './auth.js';
 import { modoLoginGoogle, clientIdGoogle, verificarCredencialGoogle } from './services/loginGoogle.js';
-import { save, store, salvarAgoraSePendente } from './store.js';
+import { save, store, salvarAgoraSePendente, hidratarEconomiaSupabase } from './store.js';
 import { projectsRouter } from './routes/projects.js';
 import { carbonRouter } from './routes/carbon.js';
 import { platformRouter } from './routes/platform.js';
@@ -39,6 +39,7 @@ import { migrarPicAgentes } from './protocols/migracao.js';
 import { agendarPulso } from './services/pulsoDiario.js';
 import { initPic } from './agents/sextaFeira.js';
 import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gamification.js';
+import { carregarEconomiaSupabase } from './services/supabase.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -351,6 +352,11 @@ process.on('SIGTERM', encerrar('SIGTERM'));
 // porta livre, então o teste roda mesmo com a plataforma já no ar na 4000.
 export const servidor = app.listen(config.port, async () => {
   console.log(`ZoomDev OS API na porta ${config.port}: modo ${config.hasApiKey ? 'IA (' + config.model + ')' : 'DEMO'}`);
+  const economiaSupabase = await carregarEconomiaSupabase();
+  if (hidratarEconomiaSupabase(economiaSupabase)) {
+    save();
+    console.log('supabase: economia financeira restaurada no boot');
+  }
   // Destravamento de emergência: só faz alguma coisa se ZOOMDEV_RECUPERAR
   // estiver definida. Imprime um link de uso único no log e nada mais.
   await destravarNaPartida().catch(e => console.error('ZOOMDEV_RECUPERAR falhou:', e.message));
