@@ -66,7 +66,10 @@ async function req(path, opts = {}, podeRenovar = true) {
     // 401 não significa necessariamente que o LOGIN caiu: senha do painel
     // incorreta e ações sem elevação também usam 401. Só um código emitido
     // pelo middleware de autenticação pode renovar/encerrar a sessão.
-    const sessaoInvalida = ['TOKEN_SUPABASE_INVALIDO', 'SESSAO_EXPIRADA', 'NAO_AUTENTICADO'].includes(data.code);
+    // NAO_AUTENTICADO também é usado pela elevação do painel quando a
+    // senha administrativa está incorreta. Nessa situação, o JWT do
+    // usuário continua válido e jamais deve ser removido do navegador.
+    const sessaoInvalida = ['TOKEN_SUPABASE_INVALIDO', 'SESSAO_EXPIRADA'].includes(data.code);
     // A Studio message must never sign the user out just because an access
     // token expired between two requests. Renew once, then replay once.
     if (res.status === 401 && sessaoInvalida && token && podeRenovar && await renovarTokenSupabase(token)) {

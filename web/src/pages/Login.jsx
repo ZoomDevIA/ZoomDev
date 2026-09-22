@@ -34,6 +34,8 @@ export default function Login() {
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState(null);
+  const [emailConfirmacaoPendente, setEmailConfirmacaoPendente] = useState(null);
+  const [reenviandoConfirmacao, setReenviandoConfirmacao] = useState(false);
   // Recuperação de senha: um passo à parte, dentro da mesma caixa
   const [recuperando, setRecuperando] = useState(false);
   const [recuperacao, setRecuperacao] = useState(null);
@@ -106,6 +108,25 @@ export default function Login() {
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
+  const reenviarConfirmacao = async () => {
+    if (!supabaseAtivo || !emailConfirmacaoPendente) return;
+    setErro(null);
+    setReenviandoConfirmacao(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: emailConfirmacaoPendente,
+        options: { emailRedirectTo: `${window.location.origin}/entrar` },
+      });
+      if (error) throw error;
+      setAviso('Enviamos um novo link de confirmação. Verifique sua caixa de entrada e o spam.');
+    } catch (err) {
+      setErro(err.message || 'Não foi possível reenviar a confirmação agora.');
+    } finally {
+      setReenviandoConfirmacao(false);
+    }
+  };
+
   const enviar = async (e) => {
     e.preventDefault();
     setErro(null);
@@ -135,6 +156,7 @@ export default function Login() {
           throw resultado.error;
         }
         if (!resultado.data.session) {
+          setEmailConfirmacaoPendente(email);
           setAviso('Conta criada. Confirme o e-mail enviado pelo Supabase para entrar.');
           return;
         }
@@ -277,7 +299,17 @@ export default function Login() {
             <span className="text-[10px] text-white/40 uppercase tracking-wider">ou continue com</span>
             <div className="flex-1 h-px bg-white/10" />
           </div>
-          {aviso && <div className="zd-notification rounded-lg px-3 py-2 text-xs mb-3">{aviso}</div>}
+          {aviso && (
+            <div className="zd-notification rounded-lg px-3 py-2 text-xs mb-3">
+              <p>{aviso}</p>
+              {emailConfirmacaoPendente && (
+                <button type="button" onClick={reenviarConfirmacao} disabled={reenviandoConfirmacao}
+                  className="zd-green hover:underline mt-2 disabled:opacity-50">
+                  {reenviandoConfirmacao ? 'Reenviando…' : 'Reenviar e-mail de confirmação'}
+                </button>
+              )}
+            </div>
+          )}
           {/* O contêiner do botão do Google existe sempre; o script oficial
               desenha o botão dentro dele quando o recurso está configurado. */}
           <div ref={googleBotao} className={googleAtivo ? 'flex justify-center mb-2' : 'hidden'} />
