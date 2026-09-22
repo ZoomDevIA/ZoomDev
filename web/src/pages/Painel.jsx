@@ -29,6 +29,7 @@ const ABAS = [
   { id: 'seiva', label: 'Seiva', icone: 'moeda', cap: 'financeiro.ler' },
   { id: 'papeis', label: 'Níveis de acesso', icone: 'chave', cap: 'usuarios.ler' },
   { id: 'auditoria', label: 'Auditoria', icone: 'lista', cap: 'sistema.configurar' },
+  { id: 'operacao', label: 'Operação', icone: 'radar', cap: 'sistema.configurar' },
 ];
 
 export default function Painel() {
@@ -117,6 +118,7 @@ export default function Painel() {
       {abaAtual === 'seiva' && <GestaoSeiva />}
       {abaAtual === 'papeis' && <Papeis contexto={contexto} />}
       {abaAtual === 'auditoria' && <Auditoria />}
+      {abaAtual === 'operacao' && <Operacao />}
     </div>
   );
 }
@@ -602,6 +604,75 @@ function Vitrine() {
           </div>
         </Bloco>
       ))}
+    </div>
+  );
+}
+
+// ── Operação: saúde, incidentes e cópias de segurança ──────────────────────
+function tempo(valor) {
+  const total = Math.max(0, Number(valor) || 0);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  return h ? `${h}h ${m}min` : `${m} min`;
+}
+
+function dataCurta(valor) {
+  if (!valor) return '—';
+  return new Date(valor).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function Operacao() {
+  const [dados, setDados] = useState(null);
+  const [erro, setErro] = useState(null);
+  const [gerando, setGerando] = useState(false);
+  const carregar = useCallback(() => {
+    setErro(null);
+    return api.painelOperacao().then(setDados).catch(e => setErro(e.message));
+  }, []);
+  useEffect(() => { carregar(); }, [carregar]);
+
+  const criarBackup = async () => {
+    setGerando(true); setErro(null);
+    try { await api.painelBackup(); await carregar(); }
+    catch (e) { setErro(e.message); }
+    finally { setGerando(false); }
+  };
+
+  if (!dados) return <Carga erro={erro} oQue="a operação" aoTentar={carregar} />;
+  const ultimo = dados.ultimoIncidente;
+  return (
+    <div className="space-y-5 max-w-5xl">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <Rotulo cor="#00e5ff">CONFIABILIDADE</Rotulo>
+          <h2 className="font-heading text-lg font-bold mt-1.5">Saúde da operação</h2>
+          <p className="text-white/45 text-[13px] mt-1">Incidentes técnicos ficam registrados sem guardar corpo de requisição, tokens ou senhas.</p>
+        </div>
+        <div className="flex gap-2">
+          <Botao variante="vazio" onClick={carregar} className="px-3 py-2 text-xs"><Icon nome="atualizar" tam={13} /> Atualizar</Botao>
+          <Botao onClick={criarBackup} disabled={gerando} className="px-3 py-2 text-xs"><Icon nome="download" tam={13} /> {gerando ? 'Copiando…' : 'Gerar backup'}</Botao>
+        </div>
+      </div>
+
+      {erro && <div className="text-sm text-[#ff4d8d] bg-[#ff4d8d14] border border-[#ff4d8d44] px-3 py-2">{erro}</div>}
+
+      <div className="grid sm:grid-cols-3 gap-3">
+        <Bloco className="p-4"><div className="text-[10px] text-white/40 uppercase tracking-wider">Tempo no ar</div><div className="font-heading text-xl mt-1">{tempo(dados.tempoNoArSegundos)}</div></Bloco>
+        <Bloco className="p-4"><div className="text-[10px] text-white/40 uppercase tracking-wider">Falhas nas últimas 24h</div><div className={`font-heading text-xl mt-1 ${dados.incidentes24h ? 'text-[#ffc531]' : 'text-[#00ff64]'}`}>{dados.incidentes24h}</div></Bloco>
+        <Bloco className="p-4"><div className="text-[10px] text-white/40 uppercase tracking-wider">Backup</div><div className={`font-heading text-xl mt-1 ${dados.backupRecente ? 'text-[#00ff64]' : 'text-[#ffc531]'}`}>{dados.backupRecente ? 'em dia' : 'verificar'}</div></Bloco>
+      </div>
+
+      <Bloco className="p-4">
+        <div className="flex items-center justify-between gap-3 mb-3"><div><Rotulo>BACKUPS ROTATIVOS</Rotulo><p className="text-[11px] text-white/40 mt-1">Cópias diárias no volume persistente; são mantidas as 7 mais recentes.</p></div><span className="text-xs text-white/50">{dados.backups.length} disponível(is)</span></div>
+        {dados.backups.length ? <div className="space-y-1.5">{dados.backups.map(b => <div key={b.arquivo} className="flex justify-between gap-3 text-xs border-t border-white/10 pt-2"><span className="text-white/70">{b.arquivo}</span><span className="text-white/40">{dataCurta(b.em)} · {(b.bytes / 1024).toFixed(1)} KB</span></div>)}</div> : <p className="text-sm text-[#ffc531]">Nenhuma cópia encontrada. Gere uma agora e confirme que o volume persistente está montado.</p>}
+      </Bloco>
+
+      <Bloco className="p-4">
+        <Rotulo cor="#ff9f43">ÚLTIMO INCIDENTE</Rotulo>
+        {ultimo ? <div className="mt-2 text-sm"><div className="flex gap-2 flex-wrap"><Etiqueta cor="#ff9f43">HTTP {ultimo.status}</Etiqueta><span className="font-mono text-white/70">{ultimo.ref || ultimo.code}</span><span className="text-white/40">{dataCurta(ultimo.em)}</span></div><p className="text-white/60 mt-2">{ultimo.metodo} {ultimo.rota} · {ultimo.mensagem}</p></div> : <p className="text-sm text-[#00ff64] mt-2">Nenhum incidente interno registrado nesta base.</p>}
+      </Bloco>
+
+      <div><Rotulo>HISTÓRICO DE INCIDENTES</Rotulo><div className="mt-2 space-y-1.5">{dados.incidentes.length ? dados.incidentes.map(i => <Bloco key={i.id} tamanho="p" className="px-3 py-2 flex gap-3 text-xs"><span className="text-[#ff9f43] font-mono">{i.ref || i.code}</span><span className="text-white/55 flex-1 truncate">{i.metodo} {i.rota}</span><span className="text-white/35">{dataCurta(i.em)}</span></Bloco>) : <p className="text-sm text-white/40">Sem ocorrências registradas.</p>}</div></div>
     </div>
   );
 }

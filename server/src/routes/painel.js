@@ -23,6 +23,8 @@ import {
 } from '../services/sessaoPainel.js';
 import { listarParaCuradoria, alternarDestaque, alternarOculto } from '../services/vitrine.js';
 import { ajustarSeivaAdministrativo, extratoSeiva } from '../services/seiva.js';
+import { estadoOperacao } from '../services/observabilidade.js';
+import { copiar as criarBackup } from '../services/backup.js';
 
 export const painelRouter = Router();
 
@@ -203,6 +205,20 @@ painelRouter.post('/vitrine/:id/ocultar', exigir('comunidade.curar'), (req, res)
 // ── Trilha de auditoria ────────────────────────────────────────────────────
 painelRouter.get('/auditoria', exigir('sistema.configurar'), (req, res) => {
   res.json(listarAuditoria(req.query.limite));
+});
+
+// Saúde operacional e backups só aparecem atrás da sessão elevada. O endpoint
+// público /api/health continua mínimo para Render/Railway, sem revelar a casa.
+painelRouter.get('/operacao', exigir('sistema.configurar'), (_req, res) => {
+  res.json(estadoOperacao());
+});
+
+painelRouter.post('/operacao/backup', exigir('sistema.configurar'), (req, res) => {
+  const backup = criarBackup();
+  req.auditar('operacao.backup_manual', {
+    detalhe: backup.ok ? `${backup.arquivo} · ${backup.mantidos} cópia(s) retida(s)` : `falhou: ${backup.motivo}`,
+  });
+  res.status(backup.ok ? 200 : 503).json(backup);
 });
 
 export { registrarAuditoria };

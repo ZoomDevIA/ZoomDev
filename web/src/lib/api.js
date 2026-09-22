@@ -222,6 +222,8 @@ export const api = {
   painelDestacar: (id, destacar) => req(`/painel/vitrine/${id}/destaque`, { method: 'POST', body: JSON.stringify({ destacar }) }),
   painelOcultar: (id, ocultar) => req(`/painel/vitrine/${id}/ocultar`, { method: 'POST', body: JSON.stringify({ ocultar }) }),
   painelAuditoria: (limite = 100) => req(`/painel/auditoria?limite=${limite}`),
+  painelOperacao: () => req('/painel/operacao'),
+  painelBackup: () => req('/painel/operacao/backup', { method: 'POST' }),
   painelSeiva: (usuarioId, limite = 100) => req(`/painel/seiva${usuarioId ? `?usuarioId=${encodeURIComponent(usuarioId)}&limite=${limite}` : ''}`),
   painelAjustarSeiva: (body) => req('/painel/seiva/ajustes', { method: 'POST', body: JSON.stringify(body) }),
 

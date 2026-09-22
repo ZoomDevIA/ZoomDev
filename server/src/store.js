@@ -13,6 +13,7 @@ const empty = () => ({
   elenco: null, conselhos: {}, transacoes: {}, stripeEventos: {},
   seivaExtrato: [],
   sessoesPainel: {}, auditoria: [], vitrine: null, recuperacoes: {},
+  operacao: { incidentes: [] },
   sites: {},
   eventos: [], evidencias: {},
   modelosIA: {},
@@ -152,6 +153,10 @@ export const store = {
   // Trilha de auditoria das ações administrativas (500 mais recentes)
   get auditoria() { return db.auditoria; },
   set auditoria(v) { db.auditoria = v; },
+  // Incidentes técnicos sem corpo de requisição ou segredos: servem para o
+  // operador correlacionar o código que a pessoa viu com a falha real.
+  get operacao() { return db.operacao; },
+  set operacao(v) { db.operacao = v; },
   // Curadoria da vitrine da comunidade (destaques e ocultações)
   get vitrine() { return db.vitrine; },
   set vitrine(v) { db.vitrine = v; },

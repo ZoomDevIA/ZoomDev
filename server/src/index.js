@@ -40,6 +40,7 @@ import { agendarPulso } from './services/pulsoDiario.js';
 import { initPic } from './agents/sextaFeira.js';
 import { nivelFundador, conquistasCatalogo, NIVEL_STARTUP } from './services/gamification.js';
 import { carregarEconomiaSupabase } from './services/supabase.js';
+import { registrarIncidente } from './services/observabilidade.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -90,6 +91,7 @@ app.post('/api/pagamentos/webhook/stripe', express.raw({ type: 'application/json
     res.json({ recebido: true, ...r });
   } catch (e) {
     console.error('webhook stripe:', e.message);
+    registrarIncidente({ status: e.status || 400, code: e.code || 'STRIPE_WEBHOOK_FALHOU', metodo: 'POST', rota: '/api/pagamentos/webhook/stripe', erro: e });
     res.status(e.status || 400).json({ error: e.message });
   }
 });
@@ -168,9 +170,10 @@ app.get(`${PREFIXO}/:slug/:pagina?`, (req, res) => {
 app.use('/api/studio', express.json({ limit: '12mb' }));
 app.use(express.json({ limit: '1mb' }));
 
-app.get('/api/health', (_req, res) => res.json({
+app.get('/api/health', (_req, res) => res.status(200).json({
   ok: true,
-  modo: config.hasApiKey ? `ia (${config.model})` : 'demo (sem ANTHROPIC_API_KEY)',
+  servico: 'zoomdev-os',
+  iniciadoEm: new Date(Date.now() - process.uptime() * 1000).toISOString(),
 }));
 
 app.use('/api', diagnosticoRouter);
@@ -293,13 +296,14 @@ app.use('/api', (req, res) => {
 // escritos de propósito para quem opera a instalação (falta a chave da IA,
 // falta o GOOGLE_CLIENT_ID). Esses dizem exatamente o que fazer e não contêm
 // nada de dentro.
-app.use((err, _req, res, _next) => {
+app.use((err, req, res, _next) => {
   const status = err.status || 500;
   if (status < 500 || err.publico) {
     return res.status(status).json({ error: err.message || 'Requisição inválida.', code: err.code });
   }
   const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
   console.error(`[erro ${ref}]`, err);
+  registrarIncidente({ ref, status, code: err.code || 'ERRO_INTERNO', metodo: req.method, rota: req.originalUrl || req.path, erro: err });
   res.status(status).json({
     error: 'Algo quebrou do nosso lado. Tente de novo em instantes; se insistir, informe o código abaixo ao suporte.',
     code: err.code || 'ERRO_INTERNO',
@@ -346,6 +350,16 @@ const encerrar = (sinal) => () => {
 };
 process.on('SIGINT', encerrar('SIGINT'));
 process.on('SIGTERM', encerrar('SIGTERM'));
+
+// Não altera o comportamento padrão do Node (um erro não tratado continua
+// visível e fatal quando apropriado); apenas deixa uma pista persistida para o
+// operador investigar depois do reinício.
+process.on('uncaughtExceptionMonitor', erro => {
+  registrarIncidente({ code: 'EXCECAO_NAO_TRATADA', metodo: 'PROCESSO', rota: 'uncaughtException', erro });
+});
+process.on('unhandledRejection', motivo => {
+  registrarIncidente({ code: 'PROMESSA_NAO_TRATADA', metodo: 'PROCESSO', rota: 'unhandledRejection', erro: motivo });
+});
 
 // Exportado para o teste de rota poder subir a aplicação de verdade, ler a
 // porta que o sistema deu e fechar no fim. Com PORT=0 o sistema escolhe uma

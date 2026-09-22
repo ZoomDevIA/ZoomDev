@@ -138,6 +138,23 @@ function paraAssinatura(user, agora) {
   };
 }
 
+function paraAuditoria(a, agora) {
+  return {
+    id: a.id, ocorrido_em: a.em || agora, ator_id: a.atorId || null,
+    ator_nome: a.atorNome || 'sistema', ator_email: a.atorEmail || null,
+    acao: a.acao || 'acao_desconhecida', alvo: a.alvo || null,
+    detalhe: a.detalhe || null, ip: a.ip || null,
+  };
+}
+
+function paraIncidente(i, agora) {
+  return {
+    id: i.id, referencia: i.ref || null, ocorrido_em: i.em || agora,
+    http_status: Number(i.status || 500), codigo: i.code || 'ERRO_INTERNO',
+    metodo: i.metodo || 'PROCESSO', rota: i.rota || 'interno', mensagem: i.mensagem || 'Erro sem mensagem',
+  };
+}
+
 async function upsertEmLotes(tabela, linhas, conflito = 'id') {
   const TAMANHO_LOTE = 250;
   for (let inicio = 0; inicio < linhas.length; inicio += TAMANHO_LOTE) {
@@ -162,6 +179,21 @@ async function espelharEconomia({ users = {}, transacoes = {}, seivaExtrato = []
   await upsertEmLotes('zoomdev_subscriptions', assinaturas, 'user_id');
   await upsertEmLotes('zoomdev_stripe_events', eventos);
   return { transacoes: compras.length, movimentos: movimentos.length, assinaturas: assinaturas.length, eventos: eventos.length };
+}
+
+async function espelharObservabilidade({ auditoria = [], operacao = {} }, agora) {
+  const logs = Array.isArray(auditoria) ? auditoria.filter(a => a?.id).map(a => paraAuditoria(a, agora)) : [];
+  const incidentes = Array.isArray(operacao?.incidentes) ? operacao.incidentes.filter(i => i?.id).map(i => paraIncidente(i, agora)) : [];
+  try {
+    await upsertEmLotes('zoomdev_audit_logs', logs);
+    await upsertEmLotes('zoomdev_operation_incidents', incidentes);
+    return { logs: logs.length, incidentes: incidentes.length };
+  } catch (erro) {
+    // A migration de observabilidade pode entrar depois do código sem impedir
+    // cadastro, projetos, cobrança ou o espelho financeiro já existente.
+    if (erro.status === 404) return { migrationPendente: true };
+    throw erro;
+  }
 }
 
 async function lerLinhasFinanceiras(tabela, select, ordem) {
@@ -247,7 +279,7 @@ export async function lerConteudoProjetoSupabase(projectId) {
 }
 
 /** Espelho transitório: JSON segue como backup enquanto cada rota é migrada. */
-export async function espelharUsuariosProjetos({ users = {}, projects = {}, transacoes = {}, seivaExtrato = [], stripeEventos = {} }) {
+export async function espelharUsuariosProjetos({ users = {}, projects = {}, transacoes = {}, seivaExtrato = [], stripeEventos = {}, auditoria = [], operacao = {} }) {
   if (!supabaseConfigurado()) return { ignorado: true };
   const agora = new Date().toISOString();
   const upsert = async (tabela, linhas) => {
@@ -297,7 +329,8 @@ export async function espelharUsuariosProjetos({ users = {}, projects = {}, tran
 
   const projetosEspelhados = await upsert('zoomdev_projects', projetos);
   const economia = await espelharEconomia({ users, transacoes, seivaExtrato, stripeEventos }, agora);
-  return { usuarios: usuariosEspelhados, projetos: projetosEspelhados, economia };
+  const observabilidade = await espelharObservabilidade({ auditoria, operacao }, agora);
+  return { usuarios: usuariosEspelhados, projetos: projetosEspelhados, economia, observabilidade };
 }
 /** Cria a identidade no Supabase Auth para contas novas; a sessão legada continua ativa durante a transição. */
 export async function criarUsuarioSupabaseAuth({ email, password, nome, provedor = 'senha' }) {
