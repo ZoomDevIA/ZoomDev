@@ -75,9 +75,13 @@ export default function App() {
   const refreshUser = useCallback(async () => {
     try {
       setUser(await api.me());
-    } catch {
+    } catch (erro) {
       setToken(null);
       setUser(null);
+      // Um JWT recusado não pode continuar guardado no Supabase: sem este
+      // logout local, a sessão persistida podia recolocar o mesmo token e
+      // deixar a tela presa num ciclo de 401.
+      if (erro?.status === 401 && supabase) supabase.auth.signOut({ scope: 'local' }).catch(() => {});
     } finally {
       setCarregando(false);
     }
@@ -134,6 +138,10 @@ export default function App() {
     const aoExpirar = (e) => {
       setUser(null);
       setCarregando(false);
+      // `api.js` só dispara este evento depois de tentar renovar uma vez. A
+      // renovação falhou, portanto a sessão persistida também é inválida e
+      // deve sair para a pessoa entrar novamente com uma credencial nova.
+      if (supabase) supabase.auth.signOut({ scope: 'local' }).catch(() => {});
       // Com prazo, como todo aviso: sem isto o "Sessão encerrada" ficava
       // colado no canto da tela para sempre, inclusive depois de a pessoa
       // já ter entrado de novo.
